@@ -1,0 +1,43 @@
+#
+# setup host url 
+#
+export HOST={{=it.PROTOCOL}}{{=it.ADMIN_USER}}:{{=it.ADMIN_PW}}@{{=it.DB_HOST}}
+
+#
+# delete existing db
+#
+curl -X DELETE $HOST/{{=it.DB_NAME}}
+
+#
+# create db
+#
+
+curl -X PUT $HOST/{{=it.DB_NAME}}
+
+#
+# create db reader user 
+#
+curl -X PUT $HOST/_users/org.couchdb.user:{{=it.DB_READER_USER}} \
+     -H "Accept: application/json" \
+     -H "Content-Type: application/json" \
+     -d '{"name": "{{=it.DB_READER_USER}}",  "password": "{{=it.DB_READER_PW}}", "roles": [], "type": "user"}'
+#
+# create db admin user 
+#
+curl -X PUT $HOST/_users/org.couchdb.user:{{=it.DB_ADMIN_USER}} \
+     -H "Accept: application/json" \
+     -H "Content-Type: application/json" \
+     -d '{"name": "{{=it.DB_ADMIN_USER}}", "password": "{{=it.DB_ADMIN_PW}}", "roles": [], "type": "user"}'
+#
+# mark reader user as regular member 
+#
+
+curl -X PUT $HOST/{{=it.DB_NAME}}/_security \
+     -u {{=it.ADMIN_USER}}:{{=it.ADMIN_PW}} \
+     -H "Content-Type: application/json" \
+     -d '{"admins": { "names": [], "roles": [] }, "members": { "names": ["{{=it.DB_READER_USER}}"], "roles": [] } }'
+
+curl -X PUT $HOST/{{=it.DB_NAME}}/_security \
+     -u {{=it.ADMIN_USER}}:{{=it.ADMIN_PW}} \
+     -H "Content-Type: application/json" \
+     -d '{"admins": { "names": ["{{=it.DB_ADMIN_USER}}"], "roles": [] }, "members": { "names": [], "roles": [] } }'
