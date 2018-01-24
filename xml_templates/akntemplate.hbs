@@ -1,0 +1,68 @@
+<an:akomaNtoso 
+    xmlns:gw="http://gawati.org/ns/1.0" 
+    xmlns:an="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
+    <an:{{ aknType }} name={{ localTypeNormalized }}>
+        <an:meta>
+            <an:identification source="#gawati">
+                <an:FRBRWork>
+                    <an:FRBRthis value="{{ workIRIthis }}"/>
+                    <an:FRBRuri value="{{ workIRI }}"/>
+                    <an:FRBRdate name="Work Date" date="{{ workDate }}"/>
+                    <an:FRBRauthor href="#author"/>
+                    <an:FRBRcountry value="{{ countryCode }}" showAs="{{ countryShowAs }}"/>
+                    {{!-- if subType is true only then render the subtype element --}}
+                    {{#if subType}} 
+                    <an:FRBRsubtype value="{{ localTypeNormalized }}"/>
+                    {{/if}}
+                    <an:FRBRnumber value="{{ docNumberNormalized }}" showAs="{{ docNumber }}"/>
+                    <an:FRBRprescriptive value="{{ docPrescriptive }}"/>
+                    <an:FRBRauthoritative value="{{ docAuthoritative }}"/>
+                </an:FRBRWork>
+                <an:FRBRExpression>
+                    <an:FRBRthis value="{{ exprIRIthis }}"/>
+                    <an:FRBRuri value="{{ exprIRI }}"/>
+                    <an:FRBRdate name="Expression Date" date="{{ exprVersionDate }}"/>
+                    <an:FRBRauthor href="#author"/>
+                    <an:FRBRlanguage language="{{ exprLangCode }}" />
+                </an:FRBRExpression>
+                <an:FRBRManifestation>
+                    <an:FRBRthis value="{{ manIRIthis }}"/>
+                    <an:FRBRuri value="{{ manIRI }}"/>
+                    <an:FRBRdate name="Manifestation Date" date="{{ manVersionDate }}"/>
+                    <an:FRBRauthor href="#author"/>
+                    <an:FRBRformat value="xml"/>
+                </an:FRBRManifestation>
+            </an:identification>
+            <an:publication date="{{ publicationDate }}" showAs="{{ docTitle }}" name="{{ localTypeNormalized }}" number="{{ docNumber }}"/>
+            <an:classification source="#gawati">
+            </an:classification>
+            <an:lifecycle source="#all">
+                <an:eventRef date="{{ exprVersionDate }}" source="#original" type="generation"/>
+            </an:lifecycle>
+            <an:references source="#source">
+                <an:original eId="original" href="{{ exprIRIthis }}" showAs="{{ docNumber }}"/>
+                <an:TLCOrganization eId="all" href="/ontology/Organization/AfricanLawLibrary" showAs="African Law Library"/>
+            </an:references>
+            <an:proprietary source="#all">
+                <gw:gawati>
+                    <gw:languages>
+                        <gw:language code="{{ exprLangCode }}"/>
+                    </gw:languages>
+                    <gw:embeddedContents>
+                        <gw:embeddedContent eId="embedded-doc-1" type="{{ embeddedOrigFileType }}" file="{{ embeddedOrigFileName }}" state="true"/>
+                    </gw:embeddedContents>
+                    <gw:dateTime refersTo="#dtCreated" datetime="{{ createdDate }}"/>
+                    <gw:dateTime refersTo="#dtModified" datetime="{{ modifiedDate }}"/>
+                    <gw:themes source="#legacy">
+                    </gw:themes>
+                </gw:gawati>
+            </an:proprietary>
+        </an:meta>
+        <an:body>
+            <an:book refersTo="#mainDocument">
+                <an:componentRef src="{{ manIRIthis }}" alt="{{ embeddedOrigFileNameNormalized }}" GUID="#embedded-doc-1" showAs="{{ docTitle }}"/>
+            </an:book>
+        </an:body>
+
+    </an:{{ aknType}}>
+</an:akomaNtoso>

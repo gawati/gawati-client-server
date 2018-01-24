@@ -35,9 +35,4 @@ curl -X PUT $HOST/_users/org.couchdb.user:gwadmin \
 curl -X PUT $HOST/gawati/_security \
      -u admin:admin \
      -H "Content-Type: application/json" \
-     -d '{"admins": { "names": [], "roles": [] }, "members": { "names": ["gwuser"], "roles": [] } }'
-
-curl -X PUT $HOST/gawati/_security \
-     -u admin:admin \
-     -H "Content-Type: application/json" \
-     -d '{"admins": { "names": ["gwadmin"], "roles": [] }, "members": { "names": [], "roles": [] } }'
+     -d '{"admins": { "names": ["gwadmin"], "roles": [] }, "members": { "names": ["gwuser"], "roles": [] } }'
