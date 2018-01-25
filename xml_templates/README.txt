@@ -6,14 +6,14 @@ Precompile your template using the -c flag (which precompiles to Node's CommonJS
 
 Given you've already followed the directions for setting up precompilation (npm install handlebars -g), then for your example of generating email-template.js from ./email-template.hbs, try running this on the command line:
 
-handlebars ./email-template.hbs -f ./email-template.js -c handlebars/runtime 
-...which should produce an email-template.js with
+handlebars ./akntemplate.hbs -f ./akntemplate.js -c handlebars/runtime 
+...which should produce an akntemplate.js with
 
 var Handlebars = require("handlebars/runtime");  var template = Handlebars.template, templates = Handlebars.templates = Handlebars.templates || {};
 at the top. Then you can use it in your app.js like so:
 
 var Handlebars = require('handlebars/runtime');
-var hbtemplate = require('./email-template.js');
+var hbtemplate = require('./akntemplate.js');
 
 // You don't even seem to need the "var hbtemplate =" above, 
 // as precompiling puts your template into the Handlebars object.

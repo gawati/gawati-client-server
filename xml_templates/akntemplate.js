@@ -10,9 +10,9 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
 
   return "<an:akomaNtoso \r\n    xmlns:gw=\"http://gawati.org/ns/1.0\" \r\n    xmlns:an=\"http://docs.oasis-open.org/legaldocml/ns/akn/3.0\">\r\n    <an:"
     + alias4(((helper = (helper = helpers.aknType || (depth0 != null ? depth0.aknType : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"aknType","hash":{},"data":data}) : helper)))
-    + " name="
+    + " name=\""
     + alias4(((helper = (helper = helpers.localTypeNormalized || (depth0 != null ? depth0.localTypeNormalized : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"localTypeNormalized","hash":{},"data":data}) : helper)))
-    + ">\r\n        <an:meta>\r\n            <an:identification source=\"#gawati\">\r\n                <an:FRBRWork>\r\n                    <an:FRBRthis value=\""
+    + "\">\r\n        <an:meta>\r\n            <an:identification source=\"#gawati\">\r\n                <an:FRBRWork>\r\n                    <an:FRBRthis value=\""
     + alias4(alias5((depth0 != null ? depth0.workIRIthis : depth0), depth0))
     + "\"/>\r\n                    <an:FRBRuri value=\""
     + alias4(((helper = (helper = helpers.workIRI || (depth0 != null ? depth0.workIRI : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"workIRI","hash":{},"data":data}) : helper)))
@@ -40,7 +40,7 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + alias4(((helper = (helper = helpers.exprVersionDate || (depth0 != null ? depth0.exprVersionDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"exprVersionDate","hash":{},"data":data}) : helper)))
     + "\"/>\r\n                    <an:FRBRauthor href=\"#author\"/>\r\n                    <an:FRBRlanguage language=\""
     + alias4(((helper = (helper = helpers.exprLangCode || (depth0 != null ? depth0.exprLangCode : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"exprLangCode","hash":{},"data":data}) : helper)))
-    + "\"/>\r\n                </an:FRBRExpression>\r\n                <an:FRBRManifestation>\r\n                    <an:FRBRthis value=\""
+    + "\" />\r\n                </an:FRBRExpression>\r\n                <an:FRBRManifestation>\r\n                    <an:FRBRthis value=\""
     + alias4(alias5((depth0 != null ? depth0.manIRIthis : depth0), depth0))
     + "\"/>\r\n                    <an:FRBRuri value=\""
     + alias4(((helper = (helper = helpers.manIRI || (depth0 != null ? depth0.manIRI : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"manIRI","hash":{},"data":data}) : helper)))

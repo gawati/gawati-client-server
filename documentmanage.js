@@ -37,7 +37,10 @@ const convertFormObjectToAknObject = (req, res, next) => {
  */
 const convertAknObjectToXml = (req, res, next) => {
     let xml = aknobject.aknTemplateToAknXML(res.locals.aknObject);
-    res.locals.returnResponse = {data: xml};
+    res.locals.returnResponse = {
+        "exprIRIthis": res.locals.aknObject.exprIRIthis,
+        "data": xml
+    };
     next();
 }
 

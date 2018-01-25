@@ -1,7 +1,7 @@
 <an:akomaNtoso 
     xmlns:gw="http://gawati.org/ns/1.0" 
     xmlns:an="http://docs.oasis-open.org/legaldocml/ns/akn/3.0">
-    <an:{{ aknType }} name={{ localTypeNormalized }}>
+    <an:{{ aknType }} name="{{ localTypeNormalized }}">
         <an:meta>
             <an:identification source="#gawati">
                 <an:FRBRWork>
@@ -63,6 +63,5 @@
                 <an:componentRef src="{{ manIRIthis }}" alt="{{ embeddedOrigFileNameNormalized }}" GUID="#embedded-doc-1" showAs="{{ docTitle }}"/>
             </an:book>
         </an:body>
-
     </an:{{ aknType}}>
 </an:akomaNtoso>
