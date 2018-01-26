@@ -1,5 +1,5 @@
 const aknobject = require('./aknobject');
-
+const urihelper = require('./utils/urihelper');
 /** */
 
 
@@ -37,10 +37,14 @@ const convertFormObjectToAknObject = (req, res, next) => {
  */
 const convertAknObjectToXml = (req, res, next) => {
     let xml = aknobject.aknTemplateToAknXML(res.locals.aknObject);
+    let iriThis = res.locals.aknObject.exprIRIthis;
+
     res.locals.returnResponse = {
-        "exprIRIthis": res.locals.aknObject.exprIRIthis,
+        "fileXml": urihelper.fileNameFromIRI(iriThis, "xml"),
+        "iri": iriThis,
         "data": xml
     };
+    
     next();
 }
 
