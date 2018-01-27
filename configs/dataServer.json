@@ -1,0 +1,8 @@
+{
+    "xmlServer" : {
+        "serviceEndPoint" : "http://localhost:8080/exist/restxq",
+        "api": {
+            "saveXml": "/saveXml"
+        }
+    }
+}

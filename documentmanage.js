@@ -1,5 +1,9 @@
+const axios = require('axios');
+
 const aknobject = require('./aknobject');
 const urihelper = require('./utils/urihelper');
+const servicehelper = require('./utils/servicehelper');
+
 /** */
 
 
@@ -39,14 +43,35 @@ const convertAknObjectToXml = (req, res, next) => {
     let xml = aknobject.aknTemplateToAknXML(res.locals.aknObject);
     let iriThis = res.locals.aknObject.exprIRIthis;
 
-    res.locals.returnResponse = {
+    res.locals.xmlPackage = {
         "fileXml": urihelper.fileNameFromIRI(iriThis, "xml"),
         "iri": iriThis,
         "data": xml
     };
-    
+
     next();
-}
+};
+
+
+const saveToXmlDb = (req, res, next) => {
+    const saveXmlApi = servicehelper.getApi('xmlServer', 'saveXml');
+    console.log(" SAVE XML DB ", saveXmlApi);
+    axios({
+        method: 'post',
+        url: saveXmlApi,
+        data: res.locals.xmlPackage
+    }).then(
+        (response) => {
+            res.locals.returnResponse = response.data;
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.returnResponse = err;
+            next();
+        }
+    )
+};
 
 /**
  * 
@@ -69,6 +94,7 @@ const documentManageAPIs = {
         receiveFormObject,
         convertFormObjectToAknObject,
         convertAknObjectToXml,
+        saveToXmlDb,
         returnResponse
     ]
 };
