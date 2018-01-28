@@ -6,7 +6,7 @@
  * which is an es6 construct not supported on node yet. Instead we use the more 
  * verbose module.exports mechanism
  */
-
+const moment = require('moment');
 
 /**
  * Generates a normalized file name from a FRBRExpression/FRBRthis/@value iri
@@ -28,6 +28,13 @@ const fileNameFromIRI = (iri, fileType) => {
         }
     ).join("_");
     return `${filePrefix}.${fileType}`;
+};
+
+const collectionRelativePathFromIri = (iri) => {
+    let iriParts = iri.split("/");
+    let dateIndex = iriParts.findIndex( (item, index) => moment(item, "YYYY-MM-DD", true).isValid());
+    let aknFolderParts = iriParts.slice(0, dateIndex);
+    return aknFolderParts.join("/");
 };
 
 const unknownIriComponent = () => {
@@ -94,5 +101,6 @@ module.exports = {
     aknWorkIri: aknWorkIri,
     aknWorkIriThis: aknWorkIriThis,
     fileNameFromIRI: fileNameFromIRI,
-    normalizeDocNumber: normalizeDocNumber
+    normalizeDocNumber: normalizeDocNumber,
+    collectionRelativePathFromIri: collectionRelativePathFromIri
 };

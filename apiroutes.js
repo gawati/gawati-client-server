@@ -22,6 +22,10 @@ router.post("/document/add",
     docmanage.documentManage["/document/add"]
 );
 
+router.post("/document/load",
+    jsonParser,
+    docmanage.documentManager["/document/load"]
+);
 
 
 module.exports = router;

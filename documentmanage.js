@@ -73,6 +73,20 @@ const saveToXmlDb = (req, res, next) => {
     )
 };
 
+
+const receiveIriObject = (req, res, next) => {
+    next();
+}
+
+const loadXmlForIri = (req, res, next) => {
+    next();
+};
+
+const convertXmltoJsonObject = (req, res, next) => {
+    next();
+}
+
+
 /**
  * 
  * @param {*} req 
@@ -95,6 +109,12 @@ const documentManageAPIs = {
         convertFormObjectToAknObject,
         convertAknObjectToXml,
         saveToXmlDb,
+        returnResponse
+    ],
+    "/document/load": [
+        receiveIriObject,
+        loadXmlForIri,
+        convertXmltoJsonObject,
         returnResponse
     ]
 };
