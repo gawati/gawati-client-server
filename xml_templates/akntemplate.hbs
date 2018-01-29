@@ -9,7 +9,7 @@
                     <an:FRBRuri value="{{ workIRI }}"/>
                     <an:FRBRdate name="Work Date" date="{{ workDate }}"/>
                     <an:FRBRauthor href="#author"/>
-                    <an:FRBRcountry value="{{ countryCode }}" showAs="{{ countryShowAs }}"/>
+                    <an:FRBRcountry value="{{ workCountryCode }}" showAs="{{ workCountryShowAs }}"/>
                     {{!-- if subType is true only then render the subtype element --}}
                     {{#if subType}} 
                     <an:FRBRsubtype value="{{ localTypeNormalized }}"/>
@@ -45,8 +45,9 @@
             </an:references>
             <an:proprietary source="#all">
                 <gw:gawati>
+                    <gw:docPart>{{ docPart }}</gw:docPart>
                     <gw:languages>
-                        <gw:language code="{{ exprLangCode }}"/>
+                        <gw:language code="{{ exprLangCode }}" showAs="{{ exprLangShowAs }}" />
                     </gw:languages>
                     <gw:embeddedContents>
                         <gw:embeddedContent eId="embedded-doc-1" type="{{ embeddedOrigFileType }}" file="{{ embeddedOrigFileName }}" state="true"/>

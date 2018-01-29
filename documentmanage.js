@@ -4,7 +4,11 @@ const aknobject = require('./aknobject');
 const urihelper = require('./utils/urihelper');
 const servicehelper = require('./utils/servicehelper');
 
-/** */
+/*
+Generic Middleware ROute handlers 
+*/
+
+var documentManageAPIs  = {};
 
 
 /**
@@ -18,6 +22,24 @@ const receiveFormObject = (req, res, next) =>  {
     res.locals.formObject = formObject; 
     next();
 };
+
+/**
+ * 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const returnResponse = (req, res, next) => {
+    console.log( " res.")
+    res.json(res.locals.returnResponse);
+};
+
+
+/*
+ROUTEHANDLER_DOCUMENT_ADD
+*/
+
+
 
 /**
  * Converts the Form Posting to an AKN Object which is the input for the
@@ -70,32 +92,58 @@ const saveToXmlDb = (req, res, next) => {
             res.locals.returnResponse = err;
             next();
         }
-    )
+    );
 };
 
 
-const receiveIriObject = (req, res, next) => {
-    next();
-}
+documentManageAPIs["/document/add"] = [
+    receiveFormObject,
+    convertFormObjectToAknObject,
+    convertAknObjectToXml,
+    saveToXmlDb,
+    returnResponse
+];
+
+
+
+
+/*
+ROUTEHANDLER_DOCUMENT_LOAD
+*/
+
 
 const loadXmlForIri = (req, res, next) => {
-    next();
+    const loadXmlApi = servicehelper.getApi('xmlServer', 'getXml');
+    console.log(" get XML from DB ", loadXmlApi);
+    axios({
+        method: 'post',
+        url: loadXmlApi,
+        data: res.locals.formObject
+    }).then(
+        (response) => {
+            res.locals.returnResponse = response.data;
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.returnResponse = err;
+            next();
+        }
+    );
 };
 
 const convertXmltoJsonObject = (req, res, next) => {
     next();
 }
 
+documentManageAPIs["/document/load"] = [
+    receiveFormObject,
+    loadXmlForIri,
+    //convertXmltoJsonObject,
+    returnResponse
+];
 
-/**
- * 
- * @param {*} req 
- * @param {*} res 
- * @param {*} next 
- */
-const returnResponse = (req, res, next) => {
-    res.json(res.locals.returnResponse);
-};
+
 
 /**
  * API stack for each Request end point. 
@@ -103,20 +151,5 @@ const returnResponse = (req, res, next) => {
  * YOu need to call next() at the end to ensure the next api in the chain
  * gets called.
  */
-const documentManageAPIs = {
-    "/document/add": [
-        receiveFormObject,
-        convertFormObjectToAknObject,
-        convertAknObjectToXml,
-        saveToXmlDb,
-        returnResponse
-    ],
-    "/document/load": [
-        receiveIriObject,
-        loadXmlForIri,
-        convertXmltoJsonObject,
-        returnResponse
-    ]
-};
 
 module.exports.documentManage = documentManageAPIs ;

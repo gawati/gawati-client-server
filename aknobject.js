@@ -36,7 +36,8 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.docAuthoritative = "true";
     aknTmpl.docPrescriptive = "true";
     aknTmpl.publicationDate = docOfficialDate.value;
-
+    aknTmpl.docPart = docPart;
+    
     aknTmpl.workIRI = urihelper.aknWorkIri(
         docCountry.value, 
         aknTmpl.aknType, 
@@ -50,6 +51,7 @@ const formObject2AknTemplateObject = (form) => {
     );
     aknTmpl.workCountryCode = docCountry.value ; 
     aknTmpl.workCountryCodeShowAs = docCountry.value ;
+    aknTmpl.workDate = aknDate;
 
     aknTmpl.exprIRI = urihelper.aknExprIri(
         aknTmpl.workIRI, 
@@ -61,6 +63,7 @@ const formObject2AknTemplateObject = (form) => {
         docPart.value
     );
     aknTmpl.exprLangCode = docLang.value.value ; 
+    aknTmpl.exprLangShowAs = docLang.value.label ;
     aknTmpl.exprVersionDate = docOfficialDate.value ; 
     
     aknTmpl.manIRI = urihelper.aknManIri(aknTmpl.exprIRI);

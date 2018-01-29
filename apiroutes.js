@@ -24,7 +24,7 @@ router.post("/document/add",
 
 router.post("/document/load",
     jsonParser,
-    docmanage.documentManager["/document/load"]
+    docmanage.documentManage["/document/load"]
 );
 
 
