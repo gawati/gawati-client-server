@@ -36,8 +36,8 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.docAuthoritative = "true";
     aknTmpl.docPrescriptive = "true";
     aknTmpl.publicationDate = docOfficialDate.value;
-    aknTmpl.docPart = docPart;
-    
+    aknTmpl.docPart = docPart.value;
+
     aknTmpl.workIRI = urihelper.aknWorkIri(
         docCountry.value, 
         aknTmpl.aknType, 
@@ -64,11 +64,11 @@ const formObject2AknTemplateObject = (form) => {
     );
     aknTmpl.exprLangCode = docLang.value.value ; 
     aknTmpl.exprLangShowAs = docLang.value.label ;
-    aknTmpl.exprVersionDate = docOfficialDate.value ; 
+    aknTmpl.exprVersionDate = aknDate ; 
     
     aknTmpl.manIRI = urihelper.aknManIri(aknTmpl.exprIRI);
     aknTmpl.manIRIthis = urihelper.aknManIriThis(aknTmpl.exprIRIthis);
-    aknTmpl.manVersionDate = docOfficialDate.value;
+    aknTmpl.manVersionDate = aknDate;
 
     aknTmpl.createdDate = moment().format('YYYY-MM-DDTHH:MM:SSZ');
     aknTmpl.modifiedDate = aknTmpl.createdDate ;
