@@ -15,8 +15,20 @@ var router = express.Router();
 
 var jsonParser = bodyParser.json();
 
+/*
+Map all the routes 
+*/
+Object.keys(docmanage.documentManage).forEach( 
+    (routePath) => {
+        console.log(" ROUTE PATH ", routePath);
+     router.post(
+         routePath,
+         jsonParser,
+         docmanage.documentManage[routePath]
+     );
+});
 
-
+/*
 router.post("/document/add",
     jsonParser,
     docmanage.documentManage["/document/add"]
@@ -27,6 +39,7 @@ router.post("/document/load",
     docmanage.documentManage["/document/load"]
 );
 
+*/
 
 module.exports = router;
 

@@ -1,9 +1,10 @@
 const axios = require('axios');
-
+const moment = require('moment');
 const aknobject = require('./aknobject');
 const urihelper = require('./utils/urihelper');
 const servicehelper = require('./utils/servicehelper');
-
+const langhelper = require('./utils/langhelper');
+const generalhelper = require('./utils/generalhelper');
 /*
 Generic Middleware ROute handlers 
 */
@@ -17,8 +18,9 @@ var documentManageAPIs  = {};
  * @param {*} res 
  * @param {*} next 
  */
-const receiveFormObject = (req, res, next) =>  {
+const receiveSubmitData = (req, res, next) =>  {
     const formObject = req.body.data ; 
+    //console.log(" RECEIVING ", req.body);
     res.locals.formObject = formObject; 
     next();
 };
@@ -30,7 +32,6 @@ const receiveFormObject = (req, res, next) =>  {
  * @param {*} next 
  */
 const returnResponse = (req, res, next) => {
-    console.log( " res.")
     res.json(res.locals.returnResponse);
 };
 
@@ -77,7 +78,6 @@ const convertAknObjectToXml = (req, res, next) => {
 
 const saveToXmlDb = (req, res, next) => {
     const saveXmlApi = servicehelper.getApi('xmlServer', 'saveXml');
-    console.log(" SAVE XML DB ", saveXmlApi);
     axios({
         method: 'post',
         url: saveXmlApi,
@@ -97,7 +97,7 @@ const saveToXmlDb = (req, res, next) => {
 
 
 documentManageAPIs["/document/add"] = [
-    receiveFormObject,
+    receiveSubmitData,
     convertFormObjectToAknObject,
     convertAknObjectToXml,
     saveToXmlDb,
@@ -105,20 +105,20 @@ documentManageAPIs["/document/add"] = [
 ];
 
 
-
-
-/*
-ROUTEHANDLER_DOCUMENT_LOAD
-*/
-
-
-const loadXmlForIri = (req, res, next) => {
-    const loadXmlApi = servicehelper.getApi('xmlServer', 'getXml');
-    console.log(" get XML from DB ", loadXmlApi);
+const updateAknField = (req, res, next) => {
+    const updateXmlApi = servicehelper.getApi('xmlServer', 'updateXml');
+    const {docTitle, docIri} = res.locals.formObject ;
+    const postData = {
+        "iri": docIri.value,
+        "data": [{
+            "name": "docTitle",
+            "value": docTitle.value
+        }]
+    };
     axios({
         method: 'post',
-        url: loadXmlApi,
-        data: res.locals.formObject
+        url: updateXmlApi,
+        data: postData
     }).then(
         (response) => {
             res.locals.returnResponse = response.data;
@@ -132,13 +132,100 @@ const loadXmlForIri = (req, res, next) => {
     );
 };
 
-const convertXmltoJsonObject = (req, res, next) => {
+documentManageAPIs["/document/edit"] = [
+    receiveSubmitData,
+    updateAknField,
+    //convertXmltoJsonObject,
+    returnResponse
+];
+
+
+
+
+
+/*
+ROUTEHANDLER_DOCUMENT_LOAD
+*/
+
+
+const loadXmlForIri = (req, res, next) => {
+    const loadXmlApi = servicehelper.getApi('xmlServer', 'getXml');
+    axios({
+        method: 'post',
+        url: loadXmlApi,
+        data: res.locals.formObject
+    }).then(
+        (response) => {
+            res.locals.aknObject = response.data;
+            console.log(" aknObject  ", res.locals.aknObject);
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.aknObject = err;
+            next();
+        }
+    );
+};
+
+const formStateFromAknDocument = (aknDoc) => {
+    var uiData = {
+        docLang: {value: {} , error: null },
+        docType: {value: '', error: null },
+        docAknType: {value: '', error: null },
+        docCountry: {value: '', error: null },
+        docTitle: {value: '', error: null},
+        docOfficialDate: {value: undefined, error: null },
+        docNumber: {value: '', error: null },
+        docPart: {value: '', error: null },
+        docIri : {value: '', error: null }
+    };
+
+    const aknTypeValue = Object.keys(aknDoc)[0];
+    const docAknType = aknTypeValue;
+    uiData.docAknType.value = docAknType ;
+    const xmlDoc = aknDoc[aknTypeValue];
+    uiData.docType.value = xmlDoc.name ;
+    const langValue = xmlDoc.meta.identification.FRBRExpression.FRBRlanguage.language;
+    uiData.docLang.value = { 
+      value: langValue, 
+      label: langhelper.getLangDesc(langValue).content
+    };
+    const countryValue = xmlDoc.meta.identification.FRBRWork.FRBRcountry.value;
+    uiData.docCountry.value = countryValue;
+    uiData.docTitle.value = xmlDoc.meta.publication.showAs;
+    uiData.docOfficialDate.value = 
+          xmlDoc.meta.identification.FRBRExpression.FRBRdate.date, 
+    
+    uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
+    uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
+    uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
+    return uiData;
+    /*
+    {
+      docLang: {value: {value:       } , error: null },
+      docType: {value: '', error: null },
+      docAknType: {value: '', error: null },
+      docCountry: {value: '', error: null },
+      docTitle: {value: '', error: null},
+      docOfficialDate: {value: '', error: null },
+      docNumber: {value: '', error: null },
+      docPart: {value: '', error: null },
+      docIri : {value: '', error: null }
+    }
+    */      
+  }
+
+const convertAknXmlToObject = (req, res, next) => {
+    let uiData = formStateFromAknDocument(res.locals.aknObject.akomaNtoso);
+    res.locals.returnResponse = uiData;
     next();
-}
+};
 
 documentManageAPIs["/document/load"] = [
-    receiveFormObject,
+    receiveSubmitData,
     loadXmlForIri,
+    convertAknXmlToObject,
     //convertXmltoJsonObject,
     returnResponse
 ];

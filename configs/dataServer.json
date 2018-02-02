@@ -3,7 +3,8 @@
         "serviceEndPoint" : "http://localhost:8080/exist/restxq",
         "api": {
             "saveXml": "/saveXml",
-            "getXml" : "/getXml"
+            "getXml" : "/getXml",
+            "updateXml" : "/updateXml"
         }
     }
 }
