@@ -8,7 +8,11 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression, alias5=container.lambda;
 
-  return "<an:akomaNtoso \r\n    xmlns:gw=\"http://gawati.org/ns/1.0\" \r\n    xmlns:an=\"http://docs.oasis-open.org/legaldocml/ns/akn/3.0\">\r\n    <an:"
+  return "<gwd:package xmlns:gwd=\"http://gawati.org/ns/1.0/data\" \r\n    created=\""
+    + alias4(((helper = (helper = helpers.createdDate || (depth0 != null ? depth0.createdDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"createdDate","hash":{},"data":data}) : helper)))
+    + "\"  \r\n    modified=\""
+    + alias4(((helper = (helper = helpers.modifiedDate || (depth0 != null ? depth0.modifiedDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"modifiedDate","hash":{},"data":data}) : helper)))
+    + "\"\r\n    >\r\n    <gwd:permissions>\r\n        <!-- role based permissions -->\r\n        <gwd:read>\r\n            <gwd:role name=\"reader\" />\r\n        </gwd:read>\r\n        <gwd:edit>\r\n            <gwd:role name=\"editor\" />\r\n        </gwd:edit>\r\n        <gwd:delete>\r\n            <gwd:role name=\"deletor\" />\r\n        </gwd:delete>\r\n        <gwd:view>\r\n            <gwd:role name=\"viewer\" />\r\n        </gwd:view>\r\n        <!-- user specific permissions -->\r\n        <gwd:users>\r\n            <gwd:user name=\"xuser\">\r\n                <gwd:edit />\r\n            </gwd:user>\r\n        </gwd:users>\r\n    </gwd:permissions>\r\n<an:akomaNtoso \r\n    xmlns:gw=\"http://gawati.org/ns/1.0\" \r\n    xmlns:an=\"http://docs.oasis-open.org/legaldocml/ns/akn/3.0\">\r\n    <an:"
     + alias4(((helper = (helper = helpers.aknType || (depth0 != null ? depth0.aknType : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"aknType","hash":{},"data":data}) : helper)))
     + " name=\""
     + alias4(((helper = (helper = helpers.localTypeNormalized || (depth0 != null ? depth0.localTypeNormalized : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"localTypeNormalized","hash":{},"data":data}) : helper)))
@@ -82,5 +86,5 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + alias4(((helper = (helper = helpers.docTitle || (depth0 != null ? depth0.docTitle : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docTitle","hash":{},"data":data}) : helper)))
     + "\"/>\r\n            </an:book>\r\n        </an:body>\r\n    </an:"
     + alias4(((helper = (helper = helpers.aknType || (depth0 != null ? depth0.aknType : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"aknType","hash":{},"data":data}) : helper)))
-    + ">\r\n</an:akomaNtoso>";
+    + ">\r\n</an:akomaNtoso>\r\n</gwd:package>";
 },"useData":true});

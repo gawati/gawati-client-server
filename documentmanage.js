@@ -20,7 +20,6 @@ var documentManageAPIs  = {};
  */
 const receiveSubmitData = (req, res, next) =>  {
     const formObject = req.body.data ; 
-    //console.log(" RECEIVING ", req.body);
     res.locals.formObject = formObject; 
     next();
 };
@@ -157,7 +156,6 @@ const loadXmlForIri = (req, res, next) => {
     }).then(
         (response) => {
             res.locals.aknObject = response.data;
-            console.log(" aknObject  ", res.locals.aknObject);
             next();
         }
     ).catch(
@@ -222,11 +220,55 @@ const convertAknXmlToObject = (req, res, next) => {
     next();
 };
 
+
 documentManageAPIs["/document/load"] = [
     receiveSubmitData,
     loadXmlForIri,
     convertAknXmlToObject,
     //convertXmltoJsonObject,
+    returnResponse
+];
+
+
+const convertAknXmlToObjects = (req, res, next) => {
+    let aknObjects = res.locals.aknObjects.package.map(
+        (aknObject) => formStateFromAknDocument(aknObject.akomaNtoso)
+    );
+    res.locals.returnResponse = { 
+            timestamp: res.locals.aknObjects.timestamp,
+            start: 1, 
+            end: 10,
+            total: 10,
+            documents: aknObjects
+    };
+    next();
+};
+
+
+const loadListing = (req, res, next) => {
+    const loadDocumentsApi = servicehelper.getApi('xmlServer', 'getDocuments');
+    console.log(" loadListing ", res.locals.formObject);
+    axios({
+        method: 'post',
+        url: loadDocumentsApi,
+        data: res.locals.formObject
+    }).then(
+        (response) => {
+            res.locals.aknObjects = response.data;
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.aknObjects = err;
+            next();
+        }
+    );    
+};
+
+documentManageAPIs["/documents"] = [
+    receiveSubmitData,
+    loadListing,
+    convertAknXmlToObjects,
     returnResponse
 ];
 

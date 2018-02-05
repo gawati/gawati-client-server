@@ -4,7 +4,8 @@
         "api": {
             "saveXml": "/saveXml",
             "getXml" : "/getXml",
-            "updateXml" : "/updateXml"
+            "updateXml" : "/updateXml",
+            "getDocuments": "/getDocuments"
         }
     }
 }

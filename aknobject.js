@@ -27,6 +27,7 @@ const formObject2AknTemplateObject = (form) => {
     const {docAknType, docType, docNumber, docTitle, docOfficialDate, docPart, docIri, docCountry, docLang} = form ;
     let aknTmpl = aknTemplateObject();
     const aknDate = moment(docOfficialDate.value, "YYYY-MM-DD").format("YYYY-MM-DD");
+    console.log(" AKNDATE, DOCOFFICIALDATE ", aknDate, docOfficialDate);
     aknTmpl.aknType = docAknType.value ;
     aknTmpl.localTypeNormalized = docType.value; 
     aknTmpl.subType = aknTmpl.aknType.value === aknTmpl.localTypeNormalized ? false: true ; 
