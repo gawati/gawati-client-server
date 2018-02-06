@@ -214,8 +214,17 @@ const formStateFromAknDocument = (aknDoc) => {
     */      
   }
 
+const getOnlineDocumentFromAknObject = (aknObject) => {
+    return {
+        created: aknObject.created,
+        modified: aknObject.modified,
+        akomaNtoso: formStateFromAknDocument(aknObject.akomaNtoso)
+    } ;
+}
+
 const convertAknXmlToObject = (req, res, next) => {
-    let uiData = formStateFromAknDocument(res.locals.aknObject.akomaNtoso);
+    console.log(" GW DOC ====== ", res.locals.aknObject);
+    let uiData = getOnlineDocumentFromAknObject(res.locals.aknObject);
     res.locals.returnResponse = uiData;
     next();
 };
@@ -232,7 +241,7 @@ documentManageAPIs["/document/load"] = [
 
 const convertAknXmlToObjects = (req, res, next) => {
     let aknObjects = res.locals.aknObjects.package.map(
-        (aknObject) => formStateFromAknDocument(aknObject.akomaNtoso)
+        (aknObject) => getOnlineDocumentFromAknObject(aknObject)
     );
     res.locals.returnResponse = { 
             timestamp: res.locals.aknObjects.timestamp,
