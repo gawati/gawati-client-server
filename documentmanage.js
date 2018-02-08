@@ -223,7 +223,6 @@ const getOnlineDocumentFromAknObject = (aknObject) => {
 }
 
 const convertAknXmlToObject = (req, res, next) => {
-    console.log(" GW DOC ====== ", res.locals.aknObject);
     let uiData = getOnlineDocumentFromAknObject(res.locals.aknObject);
     res.locals.returnResponse = uiData;
     next();
@@ -256,7 +255,6 @@ const convertAknXmlToObjects = (req, res, next) => {
 
 const loadListing = (req, res, next) => {
     const loadDocumentsApi = servicehelper.getApi('xmlServer', 'getDocuments');
-    console.log(" loadListing ", res.locals.formObject);
     axios({
         method: 'post',
         url: loadDocumentsApi,
