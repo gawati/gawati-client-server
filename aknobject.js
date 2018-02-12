@@ -71,7 +71,7 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.manIRIthis = urihelper.aknManIriThis(aknTmpl.exprIRIthis);
     aknTmpl.manVersionDate = aknDate;
 
-    aknTmpl.createdDate = moment().format('YYYY-MM-DDTHH:MM:SSZ');
+    aknTmpl.createdDate = moment().format('YYYY-MM-DDTHH:mm:ssZ');
     aknTmpl.modifiedDate = aknTmpl.createdDate ;
     return aknTmpl;
 };
