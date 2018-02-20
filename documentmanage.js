@@ -5,6 +5,12 @@ const urihelper = require('./utils/urihelper');
 const servicehelper = require('./utils/servicehelper');
 const langhelper = require('./utils/langhelper');
 const generalhelper = require('./utils/generalhelper');
+const Busboy = require('busboy');
+const path = require('path');
+const mkdirp = require('mkdirp');
+const constants = require('./constants');
+const winston = require('winston');
+const fs = require('fs');
 /*
 Generic Middleware ROute handlers 
 */
@@ -13,7 +19,7 @@ var documentManageAPIs  = {};
 
 
 /**
- * Receives the Form posting
+ * Receives the Form posting, not suitable for multipart form data
  * @param {*} req 
  * @param {*} res 
  * @param {*} next 
@@ -23,6 +29,19 @@ const receiveSubmitData = (req, res, next) =>  {
     res.locals.formObject = formObject; 
     next();
 };
+
+/**
+ * Receives the submitted data. This particular API expects multipart form data. 
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const receiveFilesSubmitData = (req, res, next) => {
+    res.locals.formObject = req.body ; 
+    res.locals.formFiles = req.files ; 
+    next();
+};
+
 
 /**
  * 
@@ -178,7 +197,6 @@ const formStateFromAknDocument = (aknDoc) => {
         docPart: {value: '', error: null },
         docIri : {value: '', error: null }
     };
-
     const aknTypeValue = Object.keys(aknDoc)[0];
     const docAknType = aknTypeValue;
     uiData.docAknType.value = docAknType ;
@@ -223,8 +241,12 @@ const getOnlineDocumentFromAknObject = (aknObject) => {
 }
 
 const convertAknXmlToObject = (req, res, next) => {
-    let uiData = getOnlineDocumentFromAknObject(res.locals.aknObject);
-    res.locals.returnResponse = uiData;
+    if (res.locals.aknObject.error) {
+        res.locals.returnResponse = res.locals.aknObject;
+    } else {
+        let uiData = getOnlineDocumentFromAknObject(res.locals.aknObject);
+        res.locals.returnResponse = uiData;
+    }
     next();
 };
 
@@ -279,6 +301,57 @@ documentManageAPIs["/documents"] = [
     returnResponse
 ];
 
+/**
+ * Writes binary files to file system
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const writeSubmittedFiletoFS = (req, res, next) => {
+    let iri = res.locals.formObject['docIri'];
+    let formFiles = res.locals.formFiles ;
+
+    let arrIri = iri.split('/');
+    let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
+    let newPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
+    let aknFileName = urihelper.fileNameFromIRI(iri, "doc");
+    let responseMsg = {"status": "", "msg": [] };
+    mkdirp(newPath, function(err) {
+        if (err) {
+            winston.log(" ERROR while creating folder ", err) ;
+        } else {
+            formFiles.forEach( (file, index) => {
+                const origName = file.originalname;
+                const mimeType = file.mimetype ; 
+                const buffer = file.buffer ; 
+                const fileExt = path.extname(origName); 
+                const filePrefix = urihelper.fileNamePrefixFromIRI(iri);
+                const newFileName = `${filePrefix}_${ index + 1 }${fileExt}` ;
+                fs.writeFile(path.join(newPath, newFileName), buffer,  function(err) {
+                    if (err) {
+                        winston.error("ERROR while writing to file ", err) ;
+                        throw err
+                        responseMsg.msg.push({'origName': origName, 'err': err });
+                    } else {
+                        winston.log(" File was written to file system ");
+                        responseMsg.msg.push({'origName': origName, 'newName': newFileName});
+                    }
+                });
+            });
+        }
+    });
+    // iterate through each binary file , generate a file name and write to file system location
+    responseMsg.status = "Saved Files";
+    res.locals.returnResponse = responseMsg;
+    next();
+}
+
+
+documentManageAPIs["/document/upload"] = [
+    receiveFilesSubmitData,
+    writeSubmittedFiletoFS,
+    returnResponse
+];
 
 
 /**

@@ -4,6 +4,8 @@ const favicon = require('serve-favicon');
 const routes = require('./apiroutes');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var multer = require('multer');
+var upload = multer();
 
 var index = require('./routes/index');
 
@@ -28,8 +30,16 @@ app.set('view engine', 'hbs');
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 //app.use(logger('dev'));
 
-app.use(bodyParser.urlencoded({ extended: false }));
+// for parsing application/json
 app.use(bodyParser.json());
+
+// for parsing application/xwwww-form-encoded etc
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// for parsing multipart/form-data
+app.use(upload.array()); 
+
+// for parsing cookies
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 

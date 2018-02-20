@@ -5,6 +5,9 @@ const aknobject = require('./aknobject');
 const docmanage = require ('./documentmanage');
 
 var bodyParser = require('body-parser')
+var multer = require('multer');
+
+var upload = multer();
 
 /**
  * Log level
@@ -21,12 +24,20 @@ Map all the routes
 Object.keys(docmanage.documentManage).forEach( 
     (routePath) => {
         console.log(" ROUTE PATH ", routePath);
-     router.post(
-         routePath,
-         jsonParser,
-         docmanage.documentManage[routePath]
-     );
+     if (routePath !== '/document/upload') {
+        router.post(
+            routePath,
+            jsonParser,
+            docmanage.documentManage[routePath]
+        );
+     }
 });
+
+var cpUpload = upload.fields(); //[{ name: 'file_0', maxCount: 1 }]
+router.post("/document/upload",
+    upload.any(),
+    docmanage.documentManage["/document/upload"]
+);
 
 /*
 router.post("/document/add",

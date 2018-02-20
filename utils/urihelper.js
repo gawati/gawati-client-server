@@ -12,6 +12,11 @@ const moment = require('moment');
  * Generates a normalized file name from a FRBRExpression/FRBRthis/@value iri
  */
 const fileNameFromIRI = (iri, fileType) => {
+    let filePrefix = fileNamePrefixFromIRI(iri);
+    return `${filePrefix}.${fileType}`;
+};
+
+const fileNamePrefixFromIRI = (iri) => {
     let iriArr = iri.split("/");
     iriArr.shift();
     let filePrefix = iriArr.map(
@@ -27,8 +32,8 @@ const fileNameFromIRI = (iri, fileType) => {
             }
         }
     ).join("_");
-    return `${filePrefix}.${fileType}`;
-};
+    return filePrefix;
+}
 
 const collectionRelativePathFromIri = (iri) => {
     let iriParts = iri.split("/");
@@ -101,6 +106,7 @@ module.exports = {
     aknWorkIri: aknWorkIri,
     aknWorkIriThis: aknWorkIriThis,
     fileNameFromIRI: fileNameFromIRI,
+    fileNamePrefixFromIRI: fileNamePrefixFromIRI,
     normalizeDocNumber: normalizeDocNumber,
     collectionRelativePathFromIri: collectionRelativePathFromIri
 };
