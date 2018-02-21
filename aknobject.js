@@ -9,6 +9,7 @@ const aknTemplateToAknXML = (aknTmpl) => {
     return aknXml;
 }
 
+
 /*
     Populates an aknTemplate object
         {

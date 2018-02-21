@@ -9,7 +9,6 @@
   "dependencies": {
     "axios": "^0.17.1",
     "body-parser": "~1.18.2",
-    "busboy": "^0.2.14",
     "cookie-parser": "~1.4.3",
     "debug": "~2.6.9",
     "dot": "^1.1.2",

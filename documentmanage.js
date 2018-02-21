@@ -5,7 +5,6 @@ const urihelper = require('./utils/urihelper');
 const servicehelper = require('./utils/servicehelper');
 const langhelper = require('./utils/langhelper');
 const generalhelper = require('./utils/generalhelper');
-const Busboy = require('busboy');
 const path = require('path');
 const mkdirp = require('mkdirp');
 const constants = require('./constants');
@@ -37,7 +36,8 @@ const receiveSubmitData = (req, res, next) =>  {
  * @param {*} next 
  */
 const receiveFilesSubmitData = (req, res, next) => {
-    res.locals.formObject = req.body ; 
+    // convert the formdata multipart object to use the json object form expected in formObject.
+    res.locals.formObject = constructFormObject(req.body) ; 
     res.locals.formFiles = req.files ; 
     next();
 };
@@ -302,7 +302,10 @@ documentManageAPIs["/documents"] = [
 ];
 
 /**
- * Writes binary files to file system
+ * Writes binary files to file system.
+ * Multiple uploads are supported, they are processed from the files 
+ * array provided by multer 
+ * 
  * @param {*} req 
  * @param {*} res 
  * @param {*} next 
@@ -315,7 +318,10 @@ const writeSubmittedFiletoFS = (req, res, next) => {
     let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
     let newPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
     let aknFileName = urihelper.fileNameFromIRI(iri, "doc");
-    let responseMsg = {"status": "", "msg": [] };
+    let responseMsg = {
+            "step_1": {"status": "", "msg": [] },
+            "step_2": {"status": "", "msg": [] }
+        };
     mkdirp(newPath, function(err) {
         if (err) {
             winston.log(" ERROR while creating folder ", err) ;
@@ -331,25 +337,82 @@ const writeSubmittedFiletoFS = (req, res, next) => {
                     if (err) {
                         winston.error("ERROR while writing to file ", err) ;
                         throw err
-                        responseMsg.msg.push({'origName': origName, 'err': err });
+                        responseMsg.step_1.msg.push(
+                            {
+                                'origName': origName, 
+                                'err': err 
+                            }
+                        );
                     } else {
                         winston.log(" File was written to file system ");
-                        responseMsg.msg.push({'origName': origName, 'newName': newFileName});
+                        responseMsg.step_1.msg.push(
+                            {
+                                'originalname': origName, 
+                                'newname': newFileName,
+                                'extension': filePrefix
+                            }
+                        );
                     }
                 });
             });
         }
     });
     // iterate through each binary file , generate a file name and write to file system location
-    responseMsg.status = "Saved Files";
+    responseMsg.step_1.status = "write_to_fs_success";
     res.locals.returnResponse = responseMsg;
+    next();
+};
+
+/**
+ * Restructures the formObject to a standard form that `convertFormObjectToAknObject` expects.
+ * @param {object} req.body object 
+ */
+const constructFormObject = (bodyObject) => {
+    var formObject = bodyObject; 
+    var newObj = Object.assign({}, formObject);
+    for (const key in formObject) {
+        if (key.startsWith('doc')) {
+            newObj[key] = JSON.parse(formObject[key]);
+        }
+    }
+    return newObj;
+};
+
+/**
+ * Convert the AKN Object to XML by applying the pre-compiled template
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const convertAknObjectToXmlWithAtts = (req, res, next) => {
+    let xml = aknobject.aknTemplateToAknXML(res.locals.aknObject);
+    let iriThis = res.locals.aknObject.exprIRIthis;
+
+    res.locals.xmlPackage = {
+        "fileXml": urihelper.fileNameFromIRI(iriThis, "xml"),
+        "iri": iriThis,
+        "data": xml
+    };
+
+    next();
+};
+
+
+const updateXmlData = (req, res, next) => {
+
     next();
 }
 
-
+/* 
+* Receive the JSON containing the file info and the document info. 
+* Write the file info to the file system
+* Add the file info to the XML document in the XML Database
+*/
 documentManageAPIs["/document/upload"] = [
     receiveFilesSubmitData,
+    convertFormObjectToAknObject,
     writeSubmittedFiletoFS,
+    updateXmlData,
     returnResponse
 ];
 
