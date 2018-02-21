@@ -1,13 +1,42 @@
 var Handlebars = require('handlebars/runtime');
-const akntmpl = require('./xml_templates/akntemplate');
-const urihelper = require('./utils/urihelper');
 const moment = require('moment');
+/** 
+ * Generated templates
+ **/
+const akntmpl = require('./xml_templates/akntemplate');
+const aknComponentReftmpl = require('./xml_templates/akntemplate.componentRef');
+const aknEmbeddedContenttmpl = require('./xml_templates/akntemplate.embeddedContent');
+
+const urihelper = require('./utils/urihelper');
 
 const aknTemplateToAknXML = (aknTmpl) => {
-    const template = Handlebars.templates['akntemplate.hbs'];
+    return templateToAknXML(
+        aknTmpl, 
+        'akntemplate.hbs'
+    ) ;
+};
+
+const aknTemplateToEmbeddedContentFragment = (aknTmpl) => {
+    return templateToAknXML(
+        aknTmpl, 
+        'akntemplate.embeddedContent.hbs'
+    );
+};
+
+
+const aknTemplateToComponentRef= (aknTmpl) => {
+    return templateToAknXML(
+        aknTmpl, 
+        'akntemplate.componentRef.hbs'
+    );
+};
+
+
+const templateToAknXML = (aknTmpl, tmplName) => {
+    const template = Handlebars.templates[tmplName];
     const aknXml = template(aknTmpl);
     return aknXml;
-}
+};
 
 
 /*
@@ -124,6 +153,9 @@ const aknTemplateObject = () => {
     };    
 };
 
-module.exports.aknTemplateObject = aknTemplateObject;
-module.exports.aknTemplateToAknXML = aknTemplateToAknXML;
+module.exports.aknTemplateObject = aknTemplateObject ;
+module.exports.aknTemplateToAknXML = aknTemplateToAknXML ;
+module.exports.aknTemplateToEmbeddedContentFragment = aknTemplateToEmbeddedContentFragment ; 
+module.exports.aknTemplateToComponentRef = aknTemplateToComponentRef ; 
+module.exports.templateToAknXML = templateToAknXML ; 
 module.exports.formObject2AknTemplateObject = formObject2AknTemplateObject;

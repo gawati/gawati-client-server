@@ -38,6 +38,7 @@ const receiveSubmitData = (req, res, next) =>  {
 const receiveFilesSubmitData = (req, res, next) => {
     // convert the formdata multipart object to use the json object form expected in formObject.
     res.locals.formObject = constructFormObject(req.body) ; 
+    console.log(" FORM OBJECT ====> ", res.locals.formObject);
     res.locals.formFiles = req.files ; 
     next();
 };
@@ -311,7 +312,7 @@ documentManageAPIs["/documents"] = [
  * @param {*} next 
  */
 const writeSubmittedFiletoFS = (req, res, next) => {
-    let iri = res.locals.formObject['docIri'];
+    let iri = res.locals.formObject['docIri'].value;
     let formFiles = res.locals.formFiles ;
 
     let arrIri = iri.split('/');
@@ -324,43 +325,54 @@ const writeSubmittedFiletoFS = (req, res, next) => {
         };
     mkdirp(newPath, function(err) {
         if (err) {
+            console.log(" ERROR while creating folder ", err) ;
             winston.log(" ERROR while creating folder ", err) ;
         } else {
+            console.log(" formFiles = ", formFiles);
+            // iterate through each submitted file 
             formFiles.forEach( (file, index) => {
+                const attTitle = res.locals.formObject[`title_${index}`]; 
                 const origName = file.originalname;
                 const mimeType = file.mimetype ; 
                 const buffer = file.buffer ; 
                 const fileExt = path.extname(origName); 
                 const filePrefix = urihelper.fileNamePrefixFromIRI(iri);
+                const embeddedIri = `${iri}_${index + 1}`;
+                console.log(" EMBEDDED URU ", embeddedIri);
                 const newFileName = `${filePrefix}_${ index + 1 }${fileExt}` ;
                 fs.writeFile(path.join(newPath, newFileName), buffer,  function(err) {
                     if (err) {
+                        console.log(" ERROR while writing to file ", err);
                         winston.error("ERROR while writing to file ", err) ;
-                        throw err
-                        responseMsg.step_1.msg.push(
-                            {
-                                'origName': origName, 
-                                'err': err 
-                            }
-                        );
-                    } else {
-                        winston.log(" File was written to file system ");
+                        responseMsg.step_1.status = "failure";
                         responseMsg.step_1.msg.push(
                             {
                                 'originalname': origName, 
-                                'newname': newFileName,
-                                'extension': filePrefix
+                                'err': err 
                             }
                         );
+                        throw err;
+                        next();
+                    } else {
+                        console.log(" File was written to file system ");
+                        winston.log(" File was written to file system ");
+                        responseMsg.step_1.msg.push(
+                            {
+                                'title': attTitle,
+                                'iri': embeddedIri,
+                                'originalname': origName, 
+                                'newname': newFileName,
+                                'extension': fileExt
+                            }
+                        );
+                        responseMsg.step_1.status = "write_to_fs_success";
+                        res.locals.binaryFilesWriteResponse = responseMsg;
+                        next();
                     }
                 });
             });
         }
     });
-    // iterate through each binary file , generate a file name and write to file system location
-    responseMsg.step_1.status = "write_to_fs_success";
-    res.locals.returnResponse = responseMsg;
-    next();
 };
 
 /**
@@ -399,7 +411,39 @@ const convertAknObjectToXmlWithAtts = (req, res, next) => {
 
 
 const updateXmlData = (req, res, next) => {
-
+    const writeResponse = res.locals.binaryFilesWriteResponse;
+    if (writeResponse.step_1.status === 'write_to_fs_success') {
+        console.log(" OBJECT === ", JSON.stringify(writeResponse.step_1));
+        // see msg object shape below in comment 
+        const writeInfo = writeResponse.step_1.msg ; 
+        /*
+        responseMsg.step_1.msg.push (
+            {
+                'title': attTitle,
+                'originalname': origName, 
+                'newname': newFileName,
+                'extension': fileExt,
+                'iri': embeddedIri
+            }
+        )
+        ;
+        */
+       writeInfo.forEach( (item, index) => {
+            var tmplObject = {} ;
+            tmplObject.embeddedIndex = index + 1 ;
+            tmplObject.embeddedOrigFileType = item.extension.replace(".", "");
+            tmplObject.embeddedFileName = item.newname ; 
+            tmplObject.embeddedOrigFileName = item.originalname ; 
+            tmplObject.embeddedShowAs = item.title ; 
+            tmplObject.embeddedIRIthis = item.iri ; 
+            const embeddedObj = aknobject.aknTemplateToEmbeddedContentFragment(tmplObject);
+            const componentRef = aknobject.aknTemplateToComponentRef(tmplObject);
+            console.log(" EMBEDDED CONTENT == ", embeddedObj, componentRef);
+       });
+        //   <gw:embeddedContent eId="embedded-doc-{{ embeddedIndex }}" type="{{ embeddedOrigFileType }}" file="{{ embeddedFileName }}" origFile="{{ embeddedOrigFileName }}" state="true"/>
+    }
+    console.log(" WRITE RESPONSE ", writeResponse );
+    res.locals.returnResponse = {success: "finished"};
     next();
 }
 
