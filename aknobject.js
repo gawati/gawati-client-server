@@ -1,14 +1,30 @@
 var Handlebars = require('handlebars/runtime');
 const moment = require('moment');
+const yup  = require('yup');
 /** 
  * Generated templates
+ * These are required only to be imported.
  **/
-const akntmpl = require('./xml_templates/akntemplate');
-const aknComponentReftmpl = require('./xml_templates/akntemplate.componentRef');
-const aknEmbeddedContenttmpl = require('./xml_templates/akntemplate.embeddedContent');
+const tmplAkn = require('./xml_templates/akntemplate');
+const tmplComponentRef = require('./xml_templates/akntemplate.componentRef');
+const tmplEmbeddedContent = require('./xml_templates/akntemplate.embeddedContent');
+/**Yup custom validator */
+yup.addMethod(yup.date, 'format', function(formats, parseStrict) {
+    let invalidDate = new Date('');
+    return this.transform(function(value, originalValue){
+      //console.log(" ov, form, parset ", value, originalValue, formats, parseStrict);
+      let date = moment(originalValue, formats, parseStrict)
+
+      return date.isValid() ? date.toDate() : invalidDate
+    })
+  });
 
 const urihelper = require('./utils/urihelper');
 
+/**
+ * Takes an AKN Object and converts it to XML 
+ * @param {object} aknTmpl object containing values to populate into akn handlebar template
+ */
 const aknTemplateToAknXML = (aknTmpl) => {
     return templateToAknXML(
         aknTmpl, 
@@ -38,6 +54,44 @@ const templateToAknXML = (aknTmpl, tmplName) => {
     return aknXml;
 };
 
+const aknTmplSchema = yup.object().shape({
+    "aknType": yup.string().required(),
+    "localTypeNormalized":  yup.string().required(),
+    "subType": yup.boolean().required(),
+    "docNumber": yup.string().required(),
+    "docNumberNormalized": yup.string().required(),        
+    "docTitle": yup.string().required(),
+    "publicationDate": yup.date().format('YYYY-MM-DD', true).required(),
+    "docAuthoritative": yup.boolean().required(),      
+    "docPrescriptive": yup.boolean().required(),
+    "workIRIthis":  yup.string().required(),
+    "workIRI":  yup.string().required(),
+    "workDate" :  yup.string().required(),
+    "workCountryCode":  yup.string().required(),
+    "workCountryCodeShowAs":  yup.string().required(),
+    "exprIRIthis": yup.string().required(),
+    "exprIRI": yup.string().required(),
+    "exprVersionDate": yup.string().required(),
+    "exprLangCode": yup.string().required(),
+    "manIRIthis": yup.string().required(),
+    "manIRI": yup.string().required(),
+    "manVersionDate": yup.string().required(),
+    "createdDate":  yup.date().required(),
+    "modifiedDate":  yup.date().required(),
+    "components": yup.array().of(
+        yup.object().shape({
+            index: yup.number().required(), 
+            type: yup.string().oneOf(['embedded', 'content']).required(),
+            iriThis: yup.string().required(),
+            showAs: yup.string().required(),
+            fileType: yup.string().required(),
+            fileName: yup.string().required(), 
+            origFileName: yup.string().required()
+        })
+    )
+});
+
+
 
 /*
     Populates an aknTemplate object
@@ -55,9 +109,8 @@ const templateToAknXML = (aknTmpl, tmplName) => {
 */
 const formObject2AknTemplateObject = (form) => {
     const {docAknType, docType, docNumber, docTitle, docOfficialDate, docPart, docIri, docCountry, docLang} = form ;
-    let aknTmpl = aknTemplateObject();
+    let aknTmpl = {} ;
     const aknDate = moment(docOfficialDate.value, "YYYY-MM-DD").format("YYYY-MM-DD");
-    console.log(" AKNDATE, DOCOFFICIALDATE ", aknDate, docOfficialDate);
     aknTmpl.aknType = docAknType.value ;
     aknTmpl.localTypeNormalized = docType.value; 
     aknTmpl.subType = aknTmpl.aknType.value === aknTmpl.localTypeNormalized ? false: true ; 
@@ -103,12 +156,20 @@ const formObject2AknTemplateObject = (form) => {
 
     aknTmpl.createdDate = moment().format('YYYY-MM-DDTHH:mm:ssZ');
     aknTmpl.modifiedDate = aknTmpl.createdDate ;
+
     return aknTmpl;
+};
+
+const validateAknObject = (aknObject) => {
+    const valid = aknTmplSchema.validate(aknObject);
+    return valid;
 };
 
 /**
  * Returns an empty aknTemplate Object
  */
+
+ /*
 const aknTemplateObject = () => {
     return {
         "aknType": "",
@@ -152,8 +213,9 @@ const aknTemplateObject = () => {
         ]
     };    
 };
+*/
 
-module.exports.aknTemplateObject = aknTemplateObject ;
+module.exports.validateAknObject = validateAknObject ; 
 module.exports.aknTemplateToAknXML = aknTemplateToAknXML ;
 module.exports.aknTemplateToEmbeddedContentFragment = aknTemplateToEmbeddedContentFragment ; 
 module.exports.aknTemplateToComponentRef = aknTemplateToComponentRef ; 

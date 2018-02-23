@@ -77,9 +77,15 @@
                     <gw:languages>
                         <gw:language code="{{ exprLangCode }}" showAs="{{ exprLangShowAs }}" />
                     </gw:languages>
+                    {{#if components}}
                     <gw:embeddedContents>
-                        <gw:embeddedContent eId="embedded-doc-1" type="{{ embeddedOrigFileType }}" file="{{ embeddedOrigFileName }}" state="true"/>
+                        {{#each components}}
+                        <gw:embeddedContent eId="embedded-doc-{{ index }}" 
+                            type="{{ type }}" fileType="{{ fileType }}" file="{{ fileName }}" 
+                            origFileName="{{ origFileName }}" state="true"/>
+                        {{/each}}
                     </gw:embeddedContents>
+                    {{/if}}
                     <gw:dateTime refersTo="#dtCreated" datetime="{{ createdDate }}"/>
                     <gw:dateTime refersTo="#dtModified" datetime="{{ modifiedDate }}"/>
                     <gw:themes source="#legacy">
@@ -88,8 +94,10 @@
             </an:proprietary>
         </an:meta>
         <an:body>
-            <an:book refersTo="#mainDocument">
-                <an:componentRef src="{{ manIRIthis }}" alt="{{ embeddedOrigFileNameNormalized }}" GUID="#embedded-doc-1" showAs="{{ docTitle }}"/>
+            <an:book refersTo="#mainDocument">  
+                {{#each components}}
+                <an:componentRef src="{{ iriThis }}" alt="{{ origFileName }}" GUID="#embedded-doc-{{ index }}" showAs="{{ showAs }}"/>
+                {{/each}}
             </an:book>
         </an:body>
     </an:{{ aknType}}>

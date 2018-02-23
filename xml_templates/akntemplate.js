@@ -5,6 +5,38 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
   return "                    <an:FRBRsubtype value=\""
     + container.escapeExpression(((helper = (helper = helpers.localTypeNormalized || (depth0 != null ? depth0.localTypeNormalized : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"localTypeNormalized","hash":{},"data":data}) : helper)))
     + "\"/>\r\n";
+},"3":function(container,depth0,helpers,partials,data) {
+    var stack1;
+
+  return "                    <gw:embeddedContents>\r\n"
+    + ((stack1 = helpers.each.call(depth0 != null ? depth0 : (container.nullContext || {}),(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(4, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + "                    </gw:embeddedContents>\r\n";
+},"4":function(container,depth0,helpers,partials,data) {
+    var helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;
+
+  return "                        <gw:embeddedContent eId=\"embedded-doc-"
+    + alias4(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"index","hash":{},"data":data}) : helper)))
+    + "\" \r\n                            type=\""
+    + alias4(((helper = (helper = helpers.type || (depth0 != null ? depth0.type : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"type","hash":{},"data":data}) : helper)))
+    + "\" fileType=\""
+    + alias4(((helper = (helper = helpers.fileType || (depth0 != null ? depth0.fileType : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"fileType","hash":{},"data":data}) : helper)))
+    + "\" file=\""
+    + alias4(((helper = (helper = helpers.fileName || (depth0 != null ? depth0.fileName : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"fileName","hash":{},"data":data}) : helper)))
+    + "\" \r\n                            origFileName=\""
+    + alias4(((helper = (helper = helpers.origFileName || (depth0 != null ? depth0.origFileName : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"origFileName","hash":{},"data":data}) : helper)))
+    + "\" state=\"true\"/>\r\n";
+},"6":function(container,depth0,helpers,partials,data) {
+    var helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;
+
+  return "                <an:componentRef src=\""
+    + alias4(((helper = (helper = helpers.iriThis || (depth0 != null ? depth0.iriThis : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"iriThis","hash":{},"data":data}) : helper)))
+    + "\" alt=\""
+    + alias4(((helper = (helper = helpers.origFileName || (depth0 != null ? depth0.origFileName : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"origFileName","hash":{},"data":data}) : helper)))
+    + "\" GUID=\"#embedded-doc-"
+    + alias4(((helper = (helper = helpers.index || (depth0 != null ? depth0.index : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"index","hash":{},"data":data}) : helper)))
+    + "\" showAs=\""
+    + alias4(((helper = (helper = helpers.showAs || (depth0 != null ? depth0.showAs : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"showAs","hash":{},"data":data}) : helper)))
+    + "\"/>\r\n";
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression, alias5=container.lambda;
 
@@ -70,21 +102,15 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + alias4(((helper = (helper = helpers.exprLangCode || (depth0 != null ? depth0.exprLangCode : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"exprLangCode","hash":{},"data":data}) : helper)))
     + "\" showAs=\""
     + alias4(((helper = (helper = helpers.exprLangShowAs || (depth0 != null ? depth0.exprLangShowAs : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"exprLangShowAs","hash":{},"data":data}) : helper)))
-    + "\" />\r\n                    </gw:languages>\r\n                    <gw:embeddedContents>\r\n                        <gw:embeddedContent eId=\"embedded-doc-1\" type=\""
-    + alias4(((helper = (helper = helpers.embeddedOrigFileType || (depth0 != null ? depth0.embeddedOrigFileType : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"embeddedOrigFileType","hash":{},"data":data}) : helper)))
-    + "\" file=\""
-    + alias4(((helper = (helper = helpers.embeddedOrigFileName || (depth0 != null ? depth0.embeddedOrigFileName : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"embeddedOrigFileName","hash":{},"data":data}) : helper)))
-    + "\" state=\"true\"/>\r\n                    </gw:embeddedContents>\r\n                    <gw:dateTime refersTo=\"#dtCreated\" datetime=\""
+    + "\" />\r\n                    </gw:languages>\r\n"
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"if","hash":{},"fn":container.program(3, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + "                    <gw:dateTime refersTo=\"#dtCreated\" datetime=\""
     + alias4(((helper = (helper = helpers.createdDate || (depth0 != null ? depth0.createdDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"createdDate","hash":{},"data":data}) : helper)))
     + "\"/>\r\n                    <gw:dateTime refersTo=\"#dtModified\" datetime=\""
     + alias4(((helper = (helper = helpers.modifiedDate || (depth0 != null ? depth0.modifiedDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"modifiedDate","hash":{},"data":data}) : helper)))
-    + "\"/>\r\n                    <gw:themes source=\"#legacy\">\r\n                    </gw:themes>\r\n                </gw:gawati>\r\n            </an:proprietary>\r\n        </an:meta>\r\n        <an:body>\r\n            <an:book refersTo=\"#mainDocument\">\r\n                <an:componentRef src=\""
-    + alias4(alias5((depth0 != null ? depth0.manIRIthis : depth0), depth0))
-    + "\" alt=\""
-    + alias4(((helper = (helper = helpers.embeddedOrigFileNameNormalized || (depth0 != null ? depth0.embeddedOrigFileNameNormalized : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"embeddedOrigFileNameNormalized","hash":{},"data":data}) : helper)))
-    + "\" GUID=\"#embedded-doc-1\" showAs=\""
-    + alias4(((helper = (helper = helpers.docTitle || (depth0 != null ? depth0.docTitle : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docTitle","hash":{},"data":data}) : helper)))
-    + "\"/>\r\n            </an:book>\r\n        </an:body>\r\n    </an:"
+    + "\"/>\r\n                    <gw:themes source=\"#legacy\">\r\n                    </gw:themes>\r\n                </gw:gawati>\r\n            </an:proprietary>\r\n        </an:meta>\r\n        <an:body>\r\n            <an:book refersTo=\"#mainDocument\">  \r\n"
+    + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(6, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + "            </an:book>\r\n        </an:body>\r\n    </an:"
     + alias4(((helper = (helper = helpers.aknType || (depth0 != null ? depth0.aknType : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"aknType","hash":{},"data":data}) : helper)))
     + ">\r\n</an:akomaNtoso>\r\n</gwd:package>";
 },"useData":true});
