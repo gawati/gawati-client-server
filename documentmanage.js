@@ -395,6 +395,11 @@ const writeSubmittedFiletoFS = (req, res, next) => {
         } else {
             //console.log(" formFiles = ", formFiles);
             // iterate through each submitted file 
+            // within a promise.all - we aggregate the promises, 
+            // the then is called only after all the promises within
+            // promise.all have resolved.
+            // see https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html for an explanation
+            // of the promise.all mechanism
             return Promise.all(formFiles.map(
                 (file, index) => {
                     console.log(" CALLING PROMISE ", index);
@@ -448,50 +453,6 @@ const writeSubmittedFiletoFS = (req, res, next) => {
                 next();
             })
             .catch(console.log.bind(console));
-            /*
-            formFiles.forEach( (file, index) => {
-                const attTitle = res.locals.formObject[`title_${index}`]; 
-                const origName = file.originalname;
-                const mimeType = file.mimetype ; 
-                const buffer = file.buffer ; 
-                const fileExt = path.extname(origName); 
-                const filePrefix = urihelper.fileNamePrefixFromIRI(iri);
-                const embeddedIri = `${iri}_${index + 1}`;
-                //console.log(" EMBEDDED URU ", embeddedIri);
-                const newFileName = `${filePrefix}_${ index + 1 }${fileExt}` ;
-                fs.writeFile(path.join(newPath, newFileName), buffer,  function(err) {
-                    if (err) {
-                        //console.log(" ERROR while writing to file ", err);
-                        winston.error("ERROR while writing to file ", err) ;
-                        responseMsg.step_1.status = "failure";
-                        responseMsg.step_1.msg.push(
-                            {
-                                'originalname': origName, 
-                                'err': err 
-                            }
-                        );
-                        throw err;
-                    } else {
-                        //console.log(" File was written to file system ");
-                        winston.log(" File was written to file system ");
-                        responseMsg.step_1.msg.push(
-                            {
-                                'index': index + 1,
-                                'showAs': attTitle,
-                                'iriThis': embeddedIri,
-                                'origFileName': origName, 
-                                'fileName': newFileName,
-                                'fileType': fileExt,
-                                'type': 'embedded'
-                            }
-                        );
-                        responseMsg.step_1.status = "write_to_fs_success";
-                      
-                    }
-                });
-            });
-            */
-
         }
     });
 };
