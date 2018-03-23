@@ -24,33 +24,23 @@ Map all the routes
 Object.keys(docmanage.documentManage).forEach( 
     (routePath) => {
         console.log(" ROUTE PATH ", routePath);
-     if (routePath !== '/document/upload') {
-        router.post(
-            routePath,
-            jsonParser,
-            docmanage.documentManage[routePath]
-        );
-     }
+        // map all the paths except /document/upload
+        if (routePath !== '/document/upload') {
+            router.post(
+                routePath,
+                jsonParser,
+                docmanage.documentManage[routePath]
+            );
+        }
 });
 
+// handle /document/upload here because it is special as it has attachments
 var cpUpload = upload.fields(); //[{ name: 'file_0', maxCount: 1 }]
 router.post("/document/upload",
     upload.any(),
     docmanage.documentManage["/document/upload"]
 );
 
-/*
-router.post("/document/add",
-    jsonParser,
-    docmanage.documentManage["/document/add"]
-);
-
-router.post("/document/load",
-    jsonParser,
-    docmanage.documentManage["/document/load"]
-);
-
-*/
 
 module.exports = router;
 

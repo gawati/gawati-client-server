@@ -2,10 +2,10 @@
     "xmlServer" : {
         "serviceEndPoint" : "http://localhost:8080/exist/restxq",
         "api": {
-            "saveXml": "/saveXml",
-            "getXml" : "/getXml",
-            "updateXml" : "/updateXml",
-            "getDocuments": "/getDocuments"
+            "saveXml": "/gwdc/document/add",
+            "getXml" : "/gwdc/document/load",
+            "updateXml" : "/gwdc/document/edit",
+            "getDocuments": "/gwdc/documents"
         }
     }
 }

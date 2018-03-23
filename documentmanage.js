@@ -225,6 +225,8 @@ const loadXmlForIri = (req, res, next) => {
     );
 };
 
+
+
 /**
  * Given an aknDoc from the database convert it to the format that the
  * form expects
@@ -261,6 +263,61 @@ const formStateFromAknDocument = (aknDoc) => {
     uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
     uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
     uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
+    console.log(" UI DATA = ", uiData);
+    return uiData;
+    /*
+    {
+      docLang: {value: {value:       } , error: null },
+      docType: {value: '', error: null },
+      docAknType: {value: '', error: null },
+      docCountry: {value: '', error: null },
+      docTitle: {value: '', error: null},
+      docOfficialDate: {value: '', error: null },
+      docNumber: {value: '', error: null },
+      docPart: {value: '', error: null },
+      docIri : {value: '', error: null }
+    }
+    */      
+  }
+
+
+/**
+ * Given an aknDoc from the database convert it to the format that the
+ * form expects
+ * @param {object} aknDoc 
+ */
+const formStateFromAknDocument2 = (aknDoc) => {
+    var uiData = {
+        docLang: {value: {} , error: null },
+        docType: {value: '', error: null },
+        docAknType: {value: '', error: null },
+        docCountry: {value: '', error: null },
+        docTitle: {value: '', error: null},
+        docOfficialDate: {value: undefined, error: null },
+        docNumber: {value: '', error: null },
+        docPart: {value: '', error: null },
+        docIri : {value: '', error: null }
+    };
+    const aknTypeValue = Object.keys(aknDoc)[0];
+    const docAknType = aknTypeValue;
+    uiData.docAknType.value = docAknType ;
+    const xmlDoc = aknDoc[aknTypeValue];
+    uiData.docType.value = xmlDoc.name ;
+    const langValue = xmlDoc.meta.identification.FRBRExpression.FRBRlanguage.language;
+    uiData.docLang.value = { 
+      value: langValue, 
+      label: langhelper.getLangDesc(langValue).content
+    };
+    const countryValue = xmlDoc.meta.identification.FRBRWork.FRBRcountry.value;
+    uiData.docCountry.value = countryValue;
+    uiData.docTitle.value = xmlDoc.meta.publication.showAs;
+    uiData.docOfficialDate.value = 
+          xmlDoc.meta.identification.FRBRExpression.FRBRdate.date, 
+    
+    uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
+    uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
+    uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
+    console.log(" UI DATA = ", uiData);
     return uiData;
     /*
     {
@@ -285,6 +342,8 @@ const getOnlineDocumentFromAknObject = (aknObject) => {
     return {
         created: aknObject.created,
         modified: aknObject.modified,
+        workflow: aknObject.workflow,
+        permissions: aknObject.permissions,
         akomaNtoso: formStateFromAknDocument(aknObject.akomaNtoso)
     } ;
 }
@@ -329,7 +388,6 @@ const convertAknXmlToObjects = (req, res, next) => {
 
 
 const loadListing = (req, res, next) => {
-    console.log(" IN: loadListing");  
     const loadDocumentsApi = servicehelper.getApi('xmlServer', 'getDocuments');
     axios({
         method: 'post',
