@@ -13,6 +13,7 @@
     "debug": "~2.6.9",
     "dot": "^1.1.2",
     "express": "~4.15.5",
+    "express-bearer-token": "^2.1.1",
     "gawati-workflow": "^1.0.0",
     "handlebars": "^4.0.11",
     "hbs": "~4.0.1",

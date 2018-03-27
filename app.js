@@ -1,10 +1,14 @@
 const express = require('express');
+const bearerToken = require('express-bearer-token');
 const path = require('path');
 const favicon = require('serve-favicon');
+const wf = require('./utils/workflow');
 const routes = require('./apiroutes');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var multer = require('multer');
+
+
 var upload = multer();
 
 var index = require('./routes/index');
@@ -19,7 +23,9 @@ winston.level = process.env.LOG_LEVEL || 'error' ;
 
 var app = express();
 
-app.use('/gwc', routes);
+// enable bearer token extraction
+app.use(bearerToken());
+
 
 // view engine setup
 
