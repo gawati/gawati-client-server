@@ -48,21 +48,15 @@ router.post("/document/upload",
 
 router.post("/document/auth",
         jsonParser,
-        [testAuth]
+        [gauth.authTokenValidate, terminal]
 );
 
-function testAuth(req, res, next) {
-    const data = req.body; 
-    const token = req.token;
-    console.log(" BODY DATA ", data);
-    gauth.introspect(authJSON, token)
-        .then( (introsp) => {
-            res.json(introsp);
-        })
-        .catch( (err) => {
-            res.json(err);
-        })
-} 
+
+function terminal(req, res) {
+    res.json({msg:"Completed !", auth: res.locals.gawati_auth});
+}
+
+
 
 module.exports = router;
 
