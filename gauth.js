@@ -1,6 +1,11 @@
 const axios = require('axios');
 const winston = require('winston');
 const querystring = require('querystring');
+const serializeError = require('serialize-error');
+
+const AUTH_EXCEPTION = "auth_exception";
+const AUTH_TOKEN_INACTIVE = "auth_token_inactive";
+const AUTH_TOKEN_INVALID = "auth_token_invalid";
 
 /**
  * Returns the Token introspect URL for Keycloak. 
@@ -39,13 +44,16 @@ const introspectHeader = (authObject) => {
     };
 };
 
+/**
+ * Given a keycloak json object and token , validates the token 
+ * by introspecting it
+ * @param {*} authObject 
+ * @param {*} token 
+ */
 const introspect = async (authObject, token) => {
     const url = introspectUrl(authObject);
     const authz = authorization(authObject);
-    const headers = {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${authz}`
-    };
+    const headers = introspectHeader(authObject);
     const data = {
         'token': token
     };
@@ -62,32 +70,58 @@ const introspect = async (authObject, token) => {
 };
 
 /**
- * express js middleware function to validate the Client token's validity
+ * express js middleware function to validate the Client token's validity. 
+ * Should be placed before functions in the call stack. 
+ * This middle ware API expects an options object which has an 'authJSON' property that contains the KeyCloak json object. It sets the decoded authentication token into ``res.locals.gawati_auth``.
+ * To use this as an express JS middleware you need to invoke it via an anonymous function.
+ * @example
+ *   const AUTH_OPTIONS = {'authJSON': authJSON};
+ *   router.post("/doc/file/open",
+ *           jsonParser,
+ *          [
+ *               function (req, res, next) {
+ *                   return gauth.authTokenValidate(req, res, next, AUTH_OPTIONS)
+ *               },
+ *               terminal
+ *           ]
+ *   );
+ * 
  * @param {*} req 
  * @param {*} res 
  * @param {*} next 
+ * @param {*} options 
  */
-async function authTokenValidate(req, res, next) {
+const authTokenValidate = async (req, res, next, options) => {
     const data = req.body; 
     const token = req.token;
     try {
-        const introspectedObject = await gauth.introspect(authJSON, token);
+        const introspectedObject = await introspect(options.authJSON, token);
         if (introspectedObject.active) {
             if (introspectedObject.active === true) {
                 res.locals.gawati_auth = introspectedObject;
+                // returned a valid introspection response, so proceed
                 next();
             } else {
                 winston.log("info", "auth_token_inactive: the auth token is not active anymore");
                 res.json(
                     {"error": 
-                        {"code": "auth_token_inactive"}
+                        {"code": AUTH_TOKEN_INACTIVE}
                     });
             }
+        } else {
+            winston.log("info", "auth_token_invalid: an invalid auth token was provided");
+            res.json(
+                {"error": 
+                    {"code": AUTH_TOKEN_INVALID}
+                }
+            );
         }
     } catch (err) {
-        res.json({"error": err});
+        winston.log("error", "authTokenValidate exception ", err);
+        res.json({"error": {"code": AUTH_EXCEPTION, "value": serializeError(err)}});
     }
 } ;
+
 
 
 

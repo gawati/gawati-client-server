@@ -18,6 +18,7 @@ winston.level = process.env.LOG_LEVEL || 'error' ;
 
 var router = express.Router();
 
+
 var jsonParser = bodyParser.json();
 
 const EXCLUDE_FROM_AUTO_ROUTE = ['/document/upload', '/document/auth'];
@@ -46,9 +47,16 @@ router.post("/document/upload",
 );
 
 
+/** AUTH ROUTE */
+const AUTH_OPTIONS = {'authJSON': authJSON};
 router.post("/document/auth",
         jsonParser,
-        [gauth.authTokenValidate, terminal]
+        [
+            function (req, res, next) {
+                return gauth.authTokenValidate(req, res, next, AUTH_OPTIONS)
+            },
+            terminal
+        ]
 );
 
 
