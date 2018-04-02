@@ -226,6 +226,31 @@ const loadXmlForIri = (req, res, next) => {
 };
 
 
+// see http://schema.akomantoso.com/index.html?type=element&item=akomaNtoso
+const AKN_DOC_TYPES = [
+    "amendmentList",
+    "officialGazette", 
+    "documentCollection", 
+    "act", 
+    "bill", 
+    "debateReport", 
+    "debate",
+    "statement",
+    "amendment",
+    "judgment",
+    "portion",
+    "doc" 
+];
+
+const getAknRootDocType = (aknDoc)  => {
+    for (var i=0 ; i < AKN_DOC_TYPES.length; i++ ) {
+        if (aknDoc.hasOwnProperty(AKN_DOC_TYPES[i])) {
+            return AKN_DOC_TYPES[i];
+        }
+    }
+    winston.log("ERROR", "AKOMA NTOSO DOC TYPE could not be determined, falling back to doc as the doc type ");
+    return "doc";
+};
 
 /**
  * Given an aknDoc from the database convert it to the format that the
@@ -244,7 +269,7 @@ const formStateFromAknDocument = (aknDoc) => {
         docPart: {value: '', error: null },
         docIri : {value: '', error: null }
     };
-    const aknTypeValue = Object.keys(aknDoc)[0];
+    const aknTypeValue = getAknRootDocType(aknDoc);
     const docAknType = aknTypeValue;
     uiData.docAknType.value = docAknType ;
     const xmlDoc = aknDoc[aknTypeValue];
@@ -298,7 +323,7 @@ const formStateFromAknDocument2 = (aknDoc) => {
         docPart: {value: '', error: null },
         docIri : {value: '', error: null }
     };
-    const aknTypeValue = Object.keys(aknDoc)[0];
+    const aknTypeValue = getAknRootDocType(aknDoc);
     const docAknType = aknTypeValue;
     uiData.docAknType.value = docAknType ;
     const xmlDoc = aknDoc[aknTypeValue];

@@ -3,7 +3,7 @@ const path = require('path');
 const winston = require('winston');
 const aknobject = require('./aknobject');
 const docmanage = require ('./documentmanage');
-const gauth = require('./gauth');
+const gauth = require('gawati-auth-middleware');
 const authJSON = require('./auth');
 
 var bodyParser = require('body-parser')
@@ -47,7 +47,7 @@ router.post("/document/upload",
 );
 
 
-/** AUTH ROUTE */
+/** AUTH ROUTE TO TEST AUTHENTICATING SERVICES */
 const AUTH_OPTIONS = {'authJSON': authJSON};
 router.post("/document/auth",
         jsonParser,
