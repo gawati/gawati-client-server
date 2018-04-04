@@ -369,7 +369,7 @@ const getOnlineDocumentFromAknObject = (aknObject) => {
 
     //Get all workflow state info
     var curWFState = aknObject.workflow.state.status;
-    var workflow = Object.assign({}, aknObject.workflow, wf.getWFStateInfo(uiData.docAknType.value, curWFState, wf.wf));
+    var workflow = Object.assign({}, aknObject.workflow, wf.getWFStateInfo(uiData.docAknType.value, uiData.docType.value, curWFState, wf.wf));
 
     return {
         created: aknObject.created,
