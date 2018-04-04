@@ -367,14 +367,14 @@ const formStateFromAknDocument2 = (aknDoc) => {
 const getOnlineDocumentFromAknObject = (aknObject) => {
     var uiData = formStateFromAknDocument(aknObject.akomaNtoso)
 
-    //Get possible next Workflow states
+    //Get all workflow state info
     var curWFState = aknObject.workflow.state.status;
-    uiData["nextWFStates"] = wf.nextStates(uiData.docAknType.value, curWFState, wf.wf)
+    var workflow = Object.assign({}, aknObject.workflow, wf.getWFStateInfo(uiData.docAknType.value, curWFState, wf.wf));
 
     return {
         created: aknObject.created,
         modified: aknObject.modified,
-        workflow: aknObject.workflow,
+        workflow: workflow,
         permissions: aknObject.permissions,
         akomaNtoso: uiData
     } ;

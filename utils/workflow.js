@@ -3,17 +3,21 @@ const path = require('path');
 
 const wf = workflow.discoverSync(path.join(".", "workflow_configs"))
 
-const nextStates = (docAknType, curWFState, wfArr) => {
-    let relevantWF = wfArr.filter(function (el) {
+const getWFStateInfo = (docAknType, curWFState, wfArr) => {
+    //Get the relevant Workflow config for the current doc type and subtype
+    var relevantWF = wfArr.filter(function (el) {
         return el.object.wfInfo.status === 'valid' &&
                el.object.wfInfo.wf.workflow.doctype === docAknType &&
                el.object.wfInfo.wf.workflow.subtype === 'legislation';
     });
-    return relevantWF[0].object.getNextStateNames(curWFState);
+
+    return {
+        nextStates: relevantWF[0].object.getNextStateNames(curWFState),
+        allStates: relevantWF[0].object.getStates()
+    }
 }
 
 module.exports = {
     wf: wf,
-    nextStates: nextStates
+    getWFStateInfo: getWFStateInfo
 };
-
