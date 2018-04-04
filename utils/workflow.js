@@ -1,20 +1,19 @@
 const workflow = require('gawati-workflow');
 const path = require('path');
 
-const wf = workflow.discover(path.join(".", "workflow_configs"))
-    .catch( (err) => {
-        return err;
+const wf = workflow.discoverSync(path.join(".", "workflow_configs"))
+
+const nextStates = (docAknType, curWFState, wfArr) => {
+    let relevantWF = wfArr.filter(function (el) {
+        return el.object.wfInfo.status === 'valid' &&
+               el.object.wfInfo.wf.workflow.doctype === docAknType &&
+               el.object.wfInfo.wf.workflow.subtype === 'legislation';
     });
+    return relevantWF[0].object.getNextStateNames(curWFState);
+}
 
-wf.then(
-    (code) => {
-        if (code.Error && code.errno) {
-            console.log(" ERROR = ", code);
-        } else {
-            console.log(" CODE = ", code);
-        }
-    }
-);
-
-
+module.exports = {
+    wf: wf,
+    nextStates: nextStates
+};
 

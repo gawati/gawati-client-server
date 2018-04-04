@@ -10,6 +10,7 @@ const mkdirp = require('mkdirp');
 const constants = require('./constants');
 const winston = require('winston');
 const fs = require('fs');
+const wf = require('./utils/workflow');
 /*
 Generic Middleware ROute handlers 
 */
@@ -364,17 +365,23 @@ const formStateFromAknDocument2 = (aknDoc) => {
    * @param {object} aknObject 
    */
 const getOnlineDocumentFromAknObject = (aknObject) => {
+    var uiData = formStateFromAknDocument(aknObject.akomaNtoso)
+
+    //Get possible next Workflow states
+    var curWFState = aknObject.workflow.state.status;
+    uiData["nextWFStates"] = wf.nextStates(uiData.docAknType.value, curWFState, wf.wf)
+
     return {
         created: aknObject.created,
         modified: aknObject.modified,
         workflow: aknObject.workflow,
         permissions: aknObject.permissions,
-        akomaNtoso: formStateFromAknDocument(aknObject.akomaNtoso)
+        akomaNtoso: uiData
     } ;
 }
 
 const convertAknXmlToObject = (req, res, next) => {
-    console.log(" IN: convertAknXmlToObject"); 
+    console.log(" IN: convertAknXmlToObject");
     if (res.locals.aknObject.error) {
         res.locals.returnResponse = res.locals.aknObject;
     } else {
@@ -397,7 +404,7 @@ documentManageAPIs["/document/load"] = [
 
 
 const convertAknXmlToObjects = (req, res, next) => {
-    console.log(" IN: convertAknXmlToObjects");  
+    console.log(" IN: convertAknXmlToObjects");
     let aknObjects = res.locals.aknObjects.package.map(
         (aknObject) => getOnlineDocumentFromAknObject(aknObject)
     );
