@@ -1,6 +1,6 @@
 {"workflow": {
     "doctype": "act",
-    "subtype": "legislation",
+    "subtype": "legge",
     "permissions": {"permission": [
         {
             "name": "view",
