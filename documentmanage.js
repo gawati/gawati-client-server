@@ -405,14 +405,14 @@ documentManageAPIs["/document/load"] = [
 
 const convertAknXmlToObjects = (req, res, next) => {
     console.log(" IN: convertAknXmlToObjects");
-    let aknObjects = res.locals.aknObjects.package.map(
+    let packages = generalhelper.coerceIntoArray(res.locals.aknObjects.package);
+    let aknObjects = packages.map(
         (aknObject) => getOnlineDocumentFromAknObject(aknObject)
     );
     res.locals.returnResponse = { 
             timestamp: res.locals.aknObjects.timestamp,
-            start: 1, 
-            end: 10,
-            total: 10,
+            start: parseInt(res.locals.aknObjects.itemsFrom),
+            total: parseInt(res.locals.aknObjects.records),
             documents: aknObjects
     };
     next();
