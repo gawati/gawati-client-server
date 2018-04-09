@@ -80,12 +80,10 @@ const convertFormObjectToAknObject = (req, res, next) => {
     aknobject.validateAknObject(aknDoc)
         .then( (value) => {
             res.locals.aknObject = aknDoc ;
-            console.log(" IN: convertFormObjectToAknObject - then next() ");
             next();
         })
         .catch( (err) => {
             res.locals.aknObject = err;
-            console.log(" IN: convertFormObjectToAknObject - catch next() ");
             next();
         })
 };
@@ -98,9 +96,6 @@ const convertFormObjectToAknObject = (req, res, next) => {
  */
 const convertAknObjectToXml = (req, res, next) => {
     // convert the akn object to XML document applying the handlebars template
-    //console.log("____AKNOBJECT______");
-    //console.log(JSON.stringify(res.locals.aknObject));
-    //console.log("____AKNOBJECT______");
     console.log(" IN: convertAknObjectToXml");    
     let xml = aknobject.aknTemplateToAknXML(res.locals.aknObject);
     let iriThis = res.locals.aknObject.exprIRIthis;
@@ -289,7 +284,6 @@ const formStateFromAknDocument = (aknDoc) => {
     uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
     uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
     uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
-    console.log(" UI DATA = ", uiData);
     return uiData;
     /*
     {
@@ -343,7 +337,6 @@ const formStateFromAknDocument2 = (aknDoc) => {
     uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
     uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
     uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
-    console.log(" UI DATA = ", uiData);
     return uiData;
     /*
     {
