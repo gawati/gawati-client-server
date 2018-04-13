@@ -5,7 +5,7 @@ const aknobject = require('./aknobject');
 const docmanage = require ('./documentmanage');
 const gauth = require('gawati-auth-middleware');
 const authJSON = require('./auth');
-
+const packageJSON = require('./package.json');
 var bodyParser = require('body-parser')
 var multer = require('multer');
 
@@ -64,7 +64,19 @@ function terminal(req, res) {
     res.json({msg:"Completed !", auth: res.locals.gawati_auth});
 }
 
-
+/*
+Shows keep alive status
+*/
+router.get(
+    '/about',
+    (req, res, next) => {
+      const pkgName = packageJSON.name ; 
+      const pkgVersion = packageJSON.version;
+      const aboutInfo = `package=${pkgName};version=${pkgVersion};date=` ;
+      res.status(200).send(aboutInfo);
+    }
+  )
+  
 
 module.exports = router;
 
