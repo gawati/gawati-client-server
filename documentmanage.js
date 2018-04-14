@@ -8,7 +8,7 @@ const generalhelper = require('./utils/generalhelper');
 const path = require('path');
 const mkdirp = require('mkdirp');
 const constants = require('./constants');
-const winston = require('winston');
+const logr = require('./logging');
 const fs = require('fs');
 const wf = require('./utils/workflow');
 /*
@@ -74,15 +74,19 @@ ROUTEHANDLER_DOCUMENT_ADD
 const convertFormObjectToAknObject = (req, res, next) => {
     console.log(" IN: convertFormObjectToAknObject");    
     let formObj = res.locals.formObject;
+    console.log("debug: formobj = ", formObj);
     // convert the submitted form to an akn object
     let aknDoc = aknobject.formObject2AknTemplateObject(formObj);
     // validates the Akoma Ntoso Object using the Yup json schema
     aknobject.validateAknObject(aknDoc)
         .then( (value) => {
+            console.log(" Validation success ", aknDoc);
             res.locals.aknObject = aknDoc ;
             next();
         })
         .catch( (err) => {
+            console.log(" Validation Error ", aknDoc);
+            console.log(" Validation Error ", err);
             res.locals.aknObject = err;
             next();
         })
@@ -244,7 +248,9 @@ const getAknRootDocType = (aknDoc)  => {
             return AKN_DOC_TYPES[i];
         }
     }
-    winston.log("ERROR", "AKOMA NTOSO DOC TYPE could not be determined, falling back to doc as the doc type ");
+    logr.error(
+        generalhelper.serverMsg("AKOMA NTOSO DOC TYPE could not be determined, falling back to doc as the doc type ")
+    );
     return "doc";
 };
 
@@ -465,7 +471,10 @@ const writeSubmittedFiletoFS = (req, res, next) => {
     mkdirp(newPath, function(err) {
         if (err) {
             //console.log(" ERROR while creating folder ", err) ;
-            winston.log(" ERROR while creating folder ", err) ;
+            logr.error(
+                generalhelper.serverMsg(" ERROR while creating folder "), 
+                err
+            ) ;
             responseMsg.step_1.status = "failure";
             responseMsg.step_1.msg.push(
                 {
@@ -499,7 +508,10 @@ const writeSubmittedFiletoFS = (req, res, next) => {
                         fs.writeFile(path.join(newPath, newFileName), buffer,  function(err) {
                             if (err) {
                                 //console.log(" ERROR while writing to file ", err);
-                                winston.error("ERROR while writing to file ", err) ;
+                                logr.error(
+                                    apputils.serverMsg("ERROR while writing to file "), 
+                                    err
+                                ) ;
                                 responseMsg.step_1.status = "failure";
                                 responseMsg.step_1.msg.push(
                                     {
@@ -510,7 +522,9 @@ const writeSubmittedFiletoFS = (req, res, next) => {
                                 reject(err);
                             } else {
                                 //console.log(" File was written to file system ");
-                                winston.log(" File was written to file system ");
+                                logr.info(
+                                    generalhelper.serverMsg(" File was written to file system ")
+                                );
                                 responseMsg.step_1.msg.push(
                                     {
                                         'index': index + 1,
@@ -531,7 +545,6 @@ const writeSubmittedFiletoFS = (req, res, next) => {
                 }
             ))
             .then( (results) => {
-                console.log(" RESPONSE MSG = ", JSON.stringify(responseMsg));
                 res.locals.binaryFilesWriteResponse = responseMsg;
                 next();
             })
