@@ -1,6 +1,6 @@
 const express = require('express');
 const path = require('path');
-const winston = require('winston');
+const logr = require('./logging');
 const aknobject = require('./aknobject');
 const docmanage = require ('./documentmanage');
 const gauth = require('gawati-auth-middleware');
@@ -11,10 +11,6 @@ var multer = require('multer');
 
 var upload = multer();
 
-/**
- * Log level
- */
-winston.level = process.env.LOG_LEVEL || 'error' ;
 
 var router = express.Router();
 
