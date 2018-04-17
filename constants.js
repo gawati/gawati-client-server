@@ -6,7 +6,7 @@ const API_PORT = process.env.API_PORT || '8080' ;
 const CONFIG_FOLDER = 'configs' ;
 
 const AKN_ATTACHMENTS = () => 
-    "d:/develop/github/gawati/akn_data_test" ;
+    "./akn_data_test" ;
 
 const API_SERVER_BASE = () =>
     API_PROTOCOL + '://' + API_HOST + ":" + API_PORT + '/exist/restxq';
