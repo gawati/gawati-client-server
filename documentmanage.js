@@ -104,7 +104,7 @@ const convertFormObjectToAknObject = (req, res, next) => {
  */
 const convertAknObjectToXml = (req, res, next) => {
     // convert the akn object to XML document applying the handlebars template
-    console.log(" IN: convertAknObjectToXml");    
+    console.log(" IN: convertAknObjectToXml");
     let xml = aknobject.aknTemplateToAknXML(res.locals.aknObject);
     let iriThis = res.locals.aknObject.exprIRIthis;
     // set update = true to ensure the document gets overwritten
@@ -273,7 +273,8 @@ const formStateFromAknDocument = (aknDoc) => {
         docOfficialDate: {value: undefined, error: null },
         docNumber: {value: '', error: null },
         docPart: {value: '', error: null },
-        docIri : {value: '', error: null }
+        docIri : {value: '', error: null },
+        docComponents : {value: '', error: null },
     };
     const aknTypeValue = getAknRootDocType(aknDoc);
     const docAknType = aknTypeValue;
@@ -296,8 +297,8 @@ const formStateFromAknDocument = (aknDoc) => {
     uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
 
     const embeddedContents = xmlDoc.meta.proprietary.gawati.embeddedContents;
-    const compRefs = xmlDoc.body.book.componentRef
-    uiData.components = componentsHelper.getComponents(embeddedContents, compRefs);
+    const compRefs = generalhelper.coerceIntoArray(xmlDoc.body.book.componentRef);
+    uiData.docComponents.value = componentsHelper.getComponents(embeddedContents, compRefs);
     return uiData;
     /*
     {
@@ -377,7 +378,6 @@ const getOnlineDocumentFromAknObject = (aknObject) => {
     //Get all workflow state info
     var curWFState = aknObject.workflow.state.status;
     var workflow = Object.assign({}, aknObject.workflow, wf.getWFStateInfo(uiData.docAknType.value, uiData.docType.value, curWFState, wf.wf));
-
     return {
         created: aknObject.created,
         modified: aknObject.modified,
@@ -393,7 +393,6 @@ const convertAknXmlToObject = (req, res, next) => {
         res.locals.returnResponse = res.locals.aknObject;
     } else {
         let uiData = getOnlineDocumentFromAknObject(res.locals.aknObject);
-        res.locals.uiData = uiData;
         res.locals.returnResponse = uiData;
     }
     next();
@@ -644,9 +643,10 @@ const writeFile = (fileParams, responseMsg, res) => {
  * @param {*} next
  */
 const writeSubmittedFiletoFS1 = (req, res, next) => {
-    console.log(" IN: writeSubmittedFiletoFS1", res.locals.formFiles.length, res.locals.uiData.akomaNtoso['docIri'].value);
-    let iri = res.locals.uiData.akomaNtoso['docIri'].value;
-    let formFile = res.locals.formFiles[0] ;
+    console.log(" IN: writeSubmittedFiletoFS1", res.locals.formFiles.length, 
+    res.locals.formObject['docIri'].value);
+    let iri = res.locals.formObject['docIri'].value;
+    let formFile = res.locals.formFiles[0];
 
     let arrIri = iri.split('/');
     let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
@@ -679,7 +679,7 @@ const writeSubmittedFiletoFS1 = (req, res, next) => {
                 filePrefix: urihelper.fileNamePrefixFromIRI(iri),
                 newPath: newPath
             }
-            let ind = getFileIndexDB(res.locals.uiData.akomaNtoso.components);
+            let ind = getFileIndexDB(res.locals.formObject['docComponents'].value);
             getFileIndexFS(fileParams)
             .then(index => {
                 fileParams.index = index;
@@ -734,15 +734,14 @@ const addAttInfoToAknObject = (req, res, next) => {
         )
         ;
         */
-        var existingComponents = res.locals.uiData.akomaNtoso.components;
-
+        var existingComponents = res.locals.aknObject['docComponents'];
+        tmplObject.components = existingComponents || [];
        writeInfo.forEach( (item, index) => {
             if (! tmplObject.components) { 
                 tmplObject.components = [] ;
             }
             tmplObject.components.push(item);
        });
-       console.log("NEW", tmplObject.components);
     }
     res.locals.aknObject = tmplObject;
     res.locals.returnResponse = {success: "finished"};
@@ -756,14 +755,10 @@ const addAttInfoToAknObject = (req, res, next) => {
 */
 documentManageAPIs["/document/upload"] = [
     receiveFilesSubmitData,
-    loadXmlForIri,
-
-    //Need to store the akn object properly(not in returnResponse)
-    convertAknXmlToObject,
-    // convertFormObjectToAknObject,
+    convertFormObjectToAknObject,
     writeSubmittedFiletoFS1,
     addAttInfoToAknObject,
-    // convertAknObjectToXml,
+    convertAknObjectToXml,
     // saveToXmlDb,
     // returnResponse
 ];
