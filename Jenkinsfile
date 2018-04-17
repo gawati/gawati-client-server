@@ -27,6 +27,7 @@ pipeline {
                     sh '''
 wget -qO- http://dl.gawati.org/dev/jenkinslib-latest.tbz | tar -xvjf -
 . ./jenkinslib.sh
+echo -n "${JenkinsJson}" >jenkins.json
 makebuild
 '''
                 }
