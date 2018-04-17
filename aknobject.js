@@ -1,5 +1,6 @@
 var Handlebars = require('handlebars/runtime');
 const moment = require('moment');
+const datehelper = require("./utils/datehelper");
 const yup  = require('yup');
 /** 
  * Generated templates
@@ -108,9 +109,26 @@ const aknTmplSchema = yup.object().shape({
         }
 */
 const formObject2AknTemplateObject = (form) => {
-    const {docAknType, docType, docNumber, docTitle, docOfficialDate, docPart, docIri, docCountry, docLang} = form ;
+    const {
+        docAknType, 
+        docType, 
+        docNumber, 
+        docTitle, 
+        docOfficialDate, 
+        docPublicationDate,
+        docEntryIntoForceDate,
+        docPart, 
+        docIri, 
+        docCountry, 
+        docLang
+    } = form ;
     let aknTmpl = {} ;
-    const aknDate = moment(docOfficialDate.value, "YYYY-MM-DD").format("YYYY-MM-DD");
+    // official date is sent as a full serialized dateTime with timezone information
+    // for AKN official date we need only the date part as an ISO date
+    const aknDate = datehelper.parseDateISODatePart(docOfficialDate.value);
+    const aknPublicationDate = datehelper.parseDateISODatePart(docPublicationDate.value);
+    const aknEntryIntoForceDate = datehelper.parseDateISODatePart(docEntryIntoForceDate.value);
+    console.log(" aknDate == ", aknDate);
     aknTmpl.aknType = docAknType.value ;
     aknTmpl.localTypeNormalized = docType.value; 
     aknTmpl.subType = aknTmpl.aknType.value === aknTmpl.localTypeNormalized ? false: true ; 
@@ -119,7 +137,7 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.docTitle = docTitle.value;
     aknTmpl.docAuthoritative = "true";
     aknTmpl.docPrescriptive = "true";
-    aknTmpl.publicationDate = docOfficialDate.value;
+    aknTmpl.docPublicationDate = docOfficialDate.value;
     aknTmpl.docPart = docPart.value;
 
     aknTmpl.workIRI = urihelper.aknWorkIri(
