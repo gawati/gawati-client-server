@@ -4,6 +4,7 @@ const aknobject = require('./aknobject');
 const urihelper = require('./utils/urihelper');
 const servicehelper = require('./utils/servicehelper');
 const langhelper = require('./utils/langhelper');
+const componentsHelper = require('./utils/componentsHelper');
 const generalhelper = require('./utils/generalhelper');
 const path = require('path');
 const mkdirp = require('mkdirp');
@@ -11,6 +12,9 @@ const constants = require('./constants');
 const logr = require('./logging');
 const fs = require('fs');
 const wf = require('./utils/workflow');
+const glob = require('glob');
+
+const MAX_ATTACHMENTS = 10;
 /*
 Generic Middleware ROute handlers 
 */
@@ -206,7 +210,7 @@ ROUTEHANDLER_DOCUMENT_LOAD
  * @param {*} next 
  */
 const loadXmlForIri = (req, res, next) => {
-    console.log(" IN: loadXmlForIri");  
+    console.log(" IN: loadXmlForIri");
     const loadXmlApi = servicehelper.getApi('xmlServer', 'getXml');
     axios({
         method: 'post',
@@ -290,6 +294,10 @@ const formStateFromAknDocument = (aknDoc) => {
     uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
     uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
     uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
+
+    const embeddedContents = xmlDoc.meta.proprietary.gawati.embeddedContents;
+    const compRefs = xmlDoc.body.book.componentRef
+    uiData.components = componentsHelper.getComponents(embeddedContents, compRefs);
     return uiData;
     /*
     {
@@ -385,6 +393,7 @@ const convertAknXmlToObject = (req, res, next) => {
         res.locals.returnResponse = res.locals.aknObject;
     } else {
         let uiData = getOnlineDocumentFromAknObject(res.locals.aknObject);
+        res.locals.uiData = uiData;
         res.locals.returnResponse = uiData;
     }
     next();
@@ -553,6 +562,141 @@ const writeSubmittedFiletoFS = (req, res, next) => {
     });
 };
 
+
+const getFileIndexFS = (fileParams) => {
+    const {newPath, filePrefix, fileExt} = fileParams;
+    return new Promise((resolve, reject) => {
+        let ind = 1;
+        glob(`${newPath}/${filePrefix}*${fileExt}`, function (er, files) {
+            if(files.length) {
+                let indices = files.map(fname => {
+                    return parseInt(fname.split('_').pop().split('.')[0]);
+                });
+                while (ind <= MAX_ATTACHMENTS) {
+                    if (indices.includes(ind)) {
+                        ind += 1;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            ind > MAX_ATTACHMENTS ? reject("Max attachments reached") : resolve(ind);
+        });
+    });
+}
+
+const getFileIndexDB = (components) => {
+    let ind = 1;
+    let indices = components.map(comp => comp.index)
+    while (ind <= MAX_ATTACHMENTS) {
+        if (indices.includes(ind)) {
+            ind += 1;
+        } else {
+            break;
+        }
+    }
+    return ind;
+}
+
+const writeFile = (fileParams, responseMsg, res) => {
+    const {index, newPath, newFileName, buffer, attTitle, embeddedIri, origName, fileExt} = fileParams;
+    return new Promise(function(resolve, reject) {
+        fs.writeFile(path.join(newPath, newFileName), buffer,  function(err) {
+            if (err) {
+                winston.error("ERROR while writing to file ", err) ;
+                responseMsg.step_1.status = "failure";
+                responseMsg.step_1.msg.push(
+                    {
+                        'originalname': origName,
+                        'err': err
+                    }
+                );
+                res.locals.binaryFilesWriteResponse = responseMsg;
+                reject(err);
+            } else {
+                winston.log(" File was written to file system ");
+                responseMsg.step_1.msg.push(
+                    {
+                        'index': index,
+                        'showAs': attTitle,
+                        'iriThis': embeddedIri,
+                        'origFileName': origName,
+                        'fileName': newFileName,
+                        'fileType': fileExt,
+                        'type': 'embedded'
+                    }
+                );
+                responseMsg.step_1.status = "write_to_fs_success";
+                res.locals.binaryFilesWriteResponse = responseMsg;
+                resolve(responseMsg);
+            }
+        });
+    });
+}
+
+/**
+ * Writes a binary file to file system.
+ * Single uploads only, they are processed from the file
+ * provided by multer
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+const writeSubmittedFiletoFS1 = (req, res, next) => {
+    console.log(" IN: writeSubmittedFiletoFS1", res.locals.formFiles.length, res.locals.uiData.akomaNtoso['docIri'].value);
+    let iri = res.locals.uiData.akomaNtoso['docIri'].value;
+    let formFile = res.locals.formFiles[0] ;
+
+    let arrIri = iri.split('/');
+    let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
+    let newPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
+    // to fix
+    //let aknFileName = urihelper.fileNameFromIRI(iri, "doc");
+    var responseMsg = {
+            "step_1": {"status": "", "msg": [] },
+            "step_2": {"status": "", "msg": [] }
+        };
+    mkdirp(newPath, function(err) {
+        if (err) {
+            winston.log(" ERROR while creating folder ", err) ;
+            responseMsg.step_1.status = "failure";
+            responseMsg.step_1.msg.push(
+                {
+                    'originalname': origName,
+                    'err': err
+                }
+            );
+            res.locals.binaryFilesWriteResponse = responseMsg;
+            next();
+        } else {
+            const fileParams = {
+                attTitle: res.locals.formObject['title'],
+                origName: formFile.originalname,
+                mimeType: formFile.mimetype,
+                buffer: formFile.buffer,
+                fileExt: path.extname(formFile.originalname),
+                filePrefix: urihelper.fileNamePrefixFromIRI(iri),
+                newPath: newPath
+            }
+            let ind = getFileIndexDB(res.locals.uiData.akomaNtoso.components);
+            getFileIndexFS(fileParams)
+            .then(index => {
+                fileParams.index = index;
+                fileParams.embeddedIri = `${iri}_${index}`;
+                fileParams.newFileName = `${fileParams.filePrefix}_${index}${fileParams.fileExt}`;
+                //res context is not available when writeFile resolves.
+                return writeFile(fileParams, responseMsg, res);
+            })
+            .then(result => {
+                console.log(" RESPONSE MSG = ", JSON.stringify(result));
+                next();
+            })
+            .catch(err => console.log(err));
+        }
+    });
+};
+
 /**
  * Restructures the formObject to a standard form that `convertFormObjectToAknObject` expects.
  * @param {object} req.body object 
@@ -571,7 +715,7 @@ const constructFormObject = (bodyObject) => {
 
 
 const addAttInfoToAknObject = (req, res, next) => {
-    console.log(" IN: addAttInfoToAknObject");  
+    console.log(" IN: addAttInfoToAknObject");
     const writeResponse = res.locals.binaryFilesWriteResponse;
     if (writeResponse.step_1.status === 'write_to_fs_success') {
         // see msg object shape below in comment 
@@ -590,12 +734,15 @@ const addAttInfoToAknObject = (req, res, next) => {
         )
         ;
         */
+        var existingComponents = res.locals.uiData.akomaNtoso.components;
+
        writeInfo.forEach( (item, index) => {
             if (! tmplObject.components) { 
                 tmplObject.components = [] ;
             }
             tmplObject.components.push(item);
        });
+       console.log("NEW", tmplObject.components);
     }
     res.locals.aknObject = tmplObject;
     res.locals.returnResponse = {success: "finished"};
@@ -609,12 +756,16 @@ const addAttInfoToAknObject = (req, res, next) => {
 */
 documentManageAPIs["/document/upload"] = [
     receiveFilesSubmitData,
-    convertFormObjectToAknObject,
-    writeSubmittedFiletoFS,
+    loadXmlForIri,
+
+    //Need to store the akn object properly(not in returnResponse)
+    convertAknXmlToObject,
+    // convertFormObjectToAknObject,
+    writeSubmittedFiletoFS1,
     addAttInfoToAknObject,
-    convertAknObjectToXml,
-    saveToXmlDb,
-    returnResponse
+    // convertAknObjectToXml,
+    // saveToXmlDb,
+    // returnResponse
 ];
 
 
