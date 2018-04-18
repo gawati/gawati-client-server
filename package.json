@@ -18,6 +18,7 @@
     "express-bearer-token": "^2.1.1",
     "gawati-auth-middleware": "^1.0.0",
     "gawati-workflow": "^1.0.1",
+    "glob": "^7.1.2",
     "handlebars": "^4.0.11",
     "hbs": "~4.0.1",
     "mkdirp": "^0.5.1",

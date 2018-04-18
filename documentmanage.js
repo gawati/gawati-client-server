@@ -4,6 +4,7 @@ const aknobject = require('./aknobject');
 const urihelper = require('./utils/urihelper');
 const servicehelper = require('./utils/servicehelper');
 const langhelper = require('./utils/langhelper');
+const componentsHelper = require('./utils/componentsHelper');
 const generalhelper = require('./utils/generalhelper');
 const path = require('path');
 const mkdirp = require('mkdirp');
@@ -11,6 +12,7 @@ const constants = require('./constants');
 const logr = require('./logging');
 const fs = require('fs');
 const wf = require('./utils/workflow');
+const glob = require('glob');
 /*
 Generic Middleware ROute handlers 
 */
@@ -100,7 +102,7 @@ const convertFormObjectToAknObject = (req, res, next) => {
  */
 const convertAknObjectToXml = (req, res, next) => {
     // convert the akn object to XML document applying the handlebars template
-    console.log(" IN: convertAknObjectToXml");    
+    console.log(" IN: convertAknObjectToXml");
     let xml = aknobject.aknTemplateToAknXML(res.locals.aknObject);
     let iriThis = res.locals.aknObject.exprIRIthis;
     // set update = true to ensure the document gets overwritten
@@ -206,7 +208,7 @@ ROUTEHANDLER_DOCUMENT_LOAD
  * @param {*} next 
  */
 const loadXmlForIri = (req, res, next) => {
-    console.log(" IN: loadXmlForIri");  
+    console.log(" IN: loadXmlForIri");
     const loadXmlApi = servicehelper.getApi('xmlServer', 'getXml');
     axios({
         method: 'post',
@@ -269,7 +271,8 @@ const formStateFromAknDocument = (aknDoc) => {
         docOfficialDate: {value: undefined, error: null },
         docNumber: {value: '', error: null },
         docPart: {value: '', error: null },
-        docIri : {value: '', error: null }
+        docIri : {value: '', error: null },
+        docComponents : {value: '', error: null },
     };
     const aknTypeValue = getAknRootDocType(aknDoc);
     const docAknType = aknTypeValue;
@@ -290,6 +293,10 @@ const formStateFromAknDocument = (aknDoc) => {
     uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
     uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
     uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
+
+    const embeddedContents = xmlDoc.meta.proprietary.gawati.embeddedContents;
+    const compRefs = generalhelper.coerceIntoArray(xmlDoc.body.book.componentRef);
+    uiData.docComponents.value = componentsHelper.getComponents(embeddedContents, compRefs);
     return uiData;
     /*
     {
@@ -369,7 +376,6 @@ const getOnlineDocumentFromAknObject = (aknObject) => {
     //Get all workflow state info
     var curWFState = aknObject.workflow.state.status;
     var workflow = Object.assign({}, aknObject.workflow, wf.getWFStateInfo(uiData.docAknType.value, uiData.docType.value, curWFState, wf.wf));
-
     return {
         created: aknObject.created,
         modified: aknObject.modified,
@@ -444,20 +450,79 @@ documentManageAPIs["/documents"] = [
     returnResponse
 ];
 
+/**
+ * Get the next file index available for embeddedContents
+ * Checks components stored in eXist, not in the filesystem.
+ *
+ * @param {*} existing components
+ */
+const getFileIndexDB = (components) => {
+    let ind = 1;
+    let indices = components.map(comp => comp.index)
+    while (ind <= constants.MAX_ATTACHMENTS) {
+        if (indices.includes(ind)) {
+            ind += 1;
+        } else {
+            break;
+        }
+    }
+    return ind;
+}
 
 /**
- * Writes binary files to file system.
- * Multiple uploads are supported, they are processed from the files 
- * array provided by multer 
- * 
- * @param {*} req 
- * @param {*} res 
- * @param {*} next 
+ * Writes the uploaded attachment to the filesystem.
+ *
+ * @param {*} file parameters
+ * @param {*} response message
+ */
+const writeFile = (fileParams, responseMsg, res) => {
+    const {index, newPath, newFileName, buffer, attTitle, embeddedIri, origName, fileExt} = fileParams;
+    return new Promise(function(resolve, reject) {
+        fs.writeFile(path.join(newPath, newFileName), buffer,  function(err) {
+            if (err) {
+                winston.error("ERROR while writing to file ", err) ;
+                responseMsg.step_1.status = "failure";
+                responseMsg.step_1.msg.push(
+                    {
+                        'originalname': origName,
+                        'err': err
+                    }
+                );
+                reject(err);
+            } else {
+                winston.log(" File was written to file system ");
+                responseMsg.step_1.msg.push(
+                    {
+                        'index': index,
+                        'showAs': attTitle,
+                        'iriThis': embeddedIri,
+                        'origFileName': origName,
+                        'fileName': newFileName,
+                        'fileType': fileExt,
+                        'type': 'embedded'
+                    }
+                );
+                responseMsg.step_1.status = "write_to_fs_success";
+                resolve(responseMsg);
+            }
+        });
+    });
+}
+
+/**
+ * Writes a binary file to file system.
+ * Single uploads only, they are processed from the file
+ * provided by multer
+ *
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
  */
 const writeSubmittedFiletoFS = (req, res, next) => {
-    console.log(" IN: writeSubmittedFiletoFS", res.locals.formFiles.length, res.locals.formObject['docIri'].value);  
+    console.log(" IN: writeSubmittedFiletoFS", res.locals.formFiles.length, 
+    res.locals.formObject['docIri'].value);
     let iri = res.locals.formObject['docIri'].value;
-    let formFiles = res.locals.formFiles ;
+    let formFile = res.locals.formFiles[0];
 
     let arrIri = iri.split('/');
     let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
@@ -470,85 +535,41 @@ const writeSubmittedFiletoFS = (req, res, next) => {
         };
     mkdirp(newPath, function(err) {
         if (err) {
-            //console.log(" ERROR while creating folder ", err) ;
-            logr.error(
-                generalhelper.serverMsg(" ERROR while creating folder "), 
-                err
-            ) ;
+            winston.log(" ERROR while creating folder ", err) ;
             responseMsg.step_1.status = "failure";
             responseMsg.step_1.msg.push(
                 {
-                    'originalname': origName, 
-                    'err': err 
+                    'originalname': origName,
+                    'err': err
                 }
             );
             res.locals.binaryFilesWriteResponse = responseMsg;
             next();
         } else {
-            //console.log(" formFiles = ", formFiles);
-            // iterate through each submitted file 
-            // within a promise.all - we aggregate the promises, 
-            // the then is called only after all the promises within
-            // promise.all have resolved.
-            // see https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html for an explanation
-            // of the promise.all mechanism
-            return Promise.all(formFiles.map(
-                (file, index) => {
-                    console.log(" CALLING PROMISE ", index);
-                    const attTitle = res.locals.formObject[`title_${index}`]; 
-                    const origName = file.originalname;
-                    const mimeType = file.mimetype ; 
-                    const buffer = file.buffer ; 
-                    const fileExt = path.extname(origName); 
-                    const filePrefix = urihelper.fileNamePrefixFromIRI(iri);
-                    const embeddedIri = `${iri}_${index + 1}`;
-                    //console.log(" EMBEDDED URU ", embeddedIri);
-                    const newFileName = `${filePrefix}_${ index + 1 }${fileExt}` ;
-                    return new Promise(function(resolve, reject) {
-                        fs.writeFile(path.join(newPath, newFileName), buffer,  function(err) {
-                            if (err) {
-                                //console.log(" ERROR while writing to file ", err);
-                                logr.error(
-                                    apputils.serverMsg("ERROR while writing to file "), 
-                                    err
-                                ) ;
-                                responseMsg.step_1.status = "failure";
-                                responseMsg.step_1.msg.push(
-                                    {
-                                        'originalname': origName, 
-                                        'err': err 
-                                    }
-                                );
-                                reject(err);
-                            } else {
-                                //console.log(" File was written to file system ");
-                                logr.info(
-                                    generalhelper.serverMsg(" File was written to file system ")
-                                );
-                                responseMsg.step_1.msg.push(
-                                    {
-                                        'index': index + 1,
-                                        'showAs': attTitle,
-                                        'iriThis': embeddedIri,
-                                        'origFileName': origName, 
-                                        'fileName': newFileName,
-                                        'fileType': fileExt,
-                                        'type': 'embedded'
-                                    }
-                                );
-                                responseMsg.step_1.status = "write_to_fs_success";
-                                //console.log(" RESPONSE MSG in PROMISE ", JSON.stringify(responseMsg));
-                                resolve(responseMsg);
-                            }
-                        });
-                    });
-                }
-            ))
-            .then( (results) => {
+            const fileParams = {
+                attTitle: res.locals.formObject['title'],
+                origName: formFile.originalname,
+                mimeType: formFile.mimetype,
+                buffer: formFile.buffer,
+                fileExt: path.extname(formFile.originalname),
+                filePrefix: urihelper.fileNamePrefixFromIRI(iri),
+                newPath: newPath,
+            }
+            let index = getFileIndexDB(res.locals.formObject['docComponents'].value);
+            fileParams.index = index;
+            fileParams.embeddedIri = `${iri}_${index}`;
+            fileParams.newFileName = `${fileParams.filePrefix}_${index}${fileParams.fileExt}`;
+
+            writeFile(fileParams, responseMsg)
+            .then(result => {
+                console.log(" RESPONSE MSG = ", JSON.stringify(result));
                 res.locals.binaryFilesWriteResponse = responseMsg;
                 next();
             })
-            .catch(console.log.bind(console));
+            .catch(err => {
+                res.locals.binaryFilesWriteResponse = responseMsg;
+                console.log(err)
+            });
         }
     });
 };
@@ -571,7 +592,7 @@ const constructFormObject = (bodyObject) => {
 
 
 const addAttInfoToAknObject = (req, res, next) => {
-    console.log(" IN: addAttInfoToAknObject");  
+    console.log(" IN: addAttInfoToAknObject");
     const writeResponse = res.locals.binaryFilesWriteResponse;
     if (writeResponse.step_1.status === 'write_to_fs_success') {
         // see msg object shape below in comment 
@@ -590,6 +611,8 @@ const addAttInfoToAknObject = (req, res, next) => {
         )
         ;
         */
+        var existingComponents = res.locals.aknObject['docComponents'];
+        tmplObject.components = existingComponents || [];
        writeInfo.forEach( (item, index) => {
             if (! tmplObject.components) { 
                 tmplObject.components = [] ;

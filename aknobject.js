@@ -120,7 +120,8 @@ const formObject2AknTemplateObject = (form) => {
         docPart, 
         docIri, 
         docCountry, 
-        docLang
+        docLang,
+        docComponents
     } = form ;
     let aknTmpl = {} ;
     // official date is sent as a full serialized dateTime with timezone information
@@ -174,6 +175,7 @@ const formObject2AknTemplateObject = (form) => {
 
     aknTmpl.createdDate = moment().format('YYYY-MM-DDTHH:mm:ssZ');
     aknTmpl.modifiedDate = aknTmpl.createdDate ;
+    aknTmpl.docComponents = docComponents.value;
 
     return aknTmpl;
 };

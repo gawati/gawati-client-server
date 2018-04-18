@@ -6,10 +6,10 @@ const wf = require("./utils/workflow");
 const routes = require("./apiroutes");
 var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
-var multer = require("multer");
+//var multer = require("multer");
 
 
-var upload = multer();
+// var upload = multer();
 
 var index = require("./routes/index");
 
@@ -43,7 +43,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // for parsing multipart/form-data
-app.use(upload.array()); 
+// app.use(upload.array()); 
 
 // for parsing cookies
 app.use(cookieParser());
