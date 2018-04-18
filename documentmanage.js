@@ -450,138 +450,12 @@ documentManageAPIs["/documents"] = [
     returnResponse
 ];
 
-
 /**
- * Writes binary files to file system.
- * Multiple uploads are supported, they are processed from the files 
- * array provided by multer 
- * 
- * @param {*} req 
- * @param {*} res 
- * @param {*} next 
+ * Get the next file index available for embeddedContents
+ * Checks components stored in eXist, not in the filesystem.
+ *
+ * @param {*} existing components
  */
-const writeSubmittedFiletoFS = (req, res, next) => {
-    console.log(" IN: writeSubmittedFiletoFS", res.locals.formFiles.length, res.locals.formObject['docIri'].value);  
-    let iri = res.locals.formObject['docIri'].value;
-    let formFiles = res.locals.formFiles ;
-
-    let arrIri = iri.split('/');
-    let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
-    let newPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
-    // to fix
-    //let aknFileName = urihelper.fileNameFromIRI(iri, "doc");
-    var responseMsg = {
-            "step_1": {"status": "", "msg": [] },
-            "step_2": {"status": "", "msg": [] }
-        };
-    mkdirp(newPath, function(err) {
-        if (err) {
-            //console.log(" ERROR while creating folder ", err) ;
-            logr.error(
-                generalhelper.serverMsg(" ERROR while creating folder "), 
-                err
-            ) ;
-            responseMsg.step_1.status = "failure";
-            responseMsg.step_1.msg.push(
-                {
-                    'originalname': origName, 
-                    'err': err 
-                }
-            );
-            res.locals.binaryFilesWriteResponse = responseMsg;
-            next();
-        } else {
-            //console.log(" formFiles = ", formFiles);
-            // iterate through each submitted file 
-            // within a promise.all - we aggregate the promises, 
-            // the then is called only after all the promises within
-            // promise.all have resolved.
-            // see https://pouchdb.com/2015/05/18/we-have-a-problem-with-promises.html for an explanation
-            // of the promise.all mechanism
-            return Promise.all(formFiles.map(
-                (file, index) => {
-                    console.log(" CALLING PROMISE ", index);
-                    const attTitle = res.locals.formObject[`title_${index}`]; 
-                    const origName = file.originalname;
-                    const mimeType = file.mimetype ; 
-                    const buffer = file.buffer ; 
-                    const fileExt = path.extname(origName); 
-                    const filePrefix = urihelper.fileNamePrefixFromIRI(iri);
-                    const embeddedIri = `${iri}_${index + 1}`;
-                    //console.log(" EMBEDDED URU ", embeddedIri);
-                    const newFileName = `${filePrefix}_${ index + 1 }${fileExt}` ;
-                    return new Promise(function(resolve, reject) {
-                        fs.writeFile(path.join(newPath, newFileName), buffer,  function(err) {
-                            if (err) {
-                                //console.log(" ERROR while writing to file ", err);
-                                logr.error(
-                                    apputils.serverMsg("ERROR while writing to file "), 
-                                    err
-                                ) ;
-                                responseMsg.step_1.status = "failure";
-                                responseMsg.step_1.msg.push(
-                                    {
-                                        'originalname': origName, 
-                                        'err': err 
-                                    }
-                                );
-                                reject(err);
-                            } else {
-                                //console.log(" File was written to file system ");
-                                logr.info(
-                                    generalhelper.serverMsg(" File was written to file system ")
-                                );
-                                responseMsg.step_1.msg.push(
-                                    {
-                                        'index': index + 1,
-                                        'showAs': attTitle,
-                                        'iriThis': embeddedIri,
-                                        'origFileName': origName, 
-                                        'fileName': newFileName,
-                                        'fileType': fileExt,
-                                        'type': 'embedded'
-                                    }
-                                );
-                                responseMsg.step_1.status = "write_to_fs_success";
-                                //console.log(" RESPONSE MSG in PROMISE ", JSON.stringify(responseMsg));
-                                resolve(responseMsg);
-                            }
-                        });
-                    });
-                }
-            ))
-            .then( (results) => {
-                res.locals.binaryFilesWriteResponse = responseMsg;
-                next();
-            })
-            .catch(console.log.bind(console));
-        }
-    });
-};
-
-
-const getFileIndexFS = (fileParams) => {
-    const {newPath, filePrefix, fileExt} = fileParams;
-    return new Promise((resolve, reject) => {
-        let ind = 1;
-        glob(`${newPath}/${filePrefix}*${fileExt}`, function (er, files) {
-            if(files.length) {
-                let indices = files.map(fname => {
-                    return parseInt(fname.split('_').pop().split('.')[0]);
-                });
-                while (ind <= constants.MAX_ATTACHMENTS) {
-                    if (indices.includes(ind)) {
-                        ind += 1;
-                    } else {
-                        break;
-                    }
-                }
-            }
-            ind > constants.MAX_ATTACHMENTS ? reject("Max attachments reached") : resolve(ind);
-        });
-    });
-}
-
 const getFileIndexDB = (components) => {
     let ind = 1;
     let indices = components.map(comp => comp.index)
@@ -595,6 +469,12 @@ const getFileIndexDB = (components) => {
     return ind;
 }
 
+/**
+ * Writes the uploaded attachment to the filesystem.
+ *
+ * @param {*} file parameters
+ * @param {*} response message
+ */
 const writeFile = (fileParams, responseMsg, res) => {
     const {index, newPath, newFileName, buffer, attTitle, embeddedIri, origName, fileExt} = fileParams;
     return new Promise(function(resolve, reject) {
@@ -608,7 +488,6 @@ const writeFile = (fileParams, responseMsg, res) => {
                         'err': err
                     }
                 );
-                res.locals.binaryFilesWriteResponse = responseMsg;
                 reject(err);
             } else {
                 winston.log(" File was written to file system ");
@@ -624,7 +503,6 @@ const writeFile = (fileParams, responseMsg, res) => {
                     }
                 );
                 responseMsg.step_1.status = "write_to_fs_success";
-                res.locals.binaryFilesWriteResponse = responseMsg;
                 resolve(responseMsg);
             }
         });
@@ -640,8 +518,8 @@ const writeFile = (fileParams, responseMsg, res) => {
  * @param {*} res
  * @param {*} next
  */
-const writeSubmittedFiletoFS1 = (req, res, next) => {
-    console.log(" IN: writeSubmittedFiletoFS1", res.locals.formFiles.length, 
+const writeSubmittedFiletoFS = (req, res, next) => {
+    console.log(" IN: writeSubmittedFiletoFS", res.locals.formFiles.length, 
     res.locals.formObject['docIri'].value);
     let iri = res.locals.formObject['docIri'].value;
     let formFile = res.locals.formFiles[0];
@@ -682,26 +560,16 @@ const writeSubmittedFiletoFS1 = (req, res, next) => {
             fileParams.embeddedIri = `${iri}_${index}`;
             fileParams.newFileName = `${fileParams.filePrefix}_${index}${fileParams.fileExt}`;
 
-            writeFile(fileParams, responseMsg, res)
+            writeFile(fileParams, responseMsg)
             .then(result => {
                 console.log(" RESPONSE MSG = ", JSON.stringify(result));
+                res.locals.binaryFilesWriteResponse = responseMsg;
                 next();
             })
-            .catch(err => console.log(err));
-
-            // getFileIndexFS(fileParams)
-            // .then(index => {
-            //     fileParams.index = index;
-            //     fileParams.embeddedIri = `${iri}_${index}`;
-            //     fileParams.newFileName = `${fileParams.filePrefix}_${index}${fileParams.fileExt}`;
-            //     //res context is not available when writeFile resolves.
-            //     return writeFile(fileParams, responseMsg, res);
-            // })
-            // .then(result => {
-            //     console.log(" RESPONSE MSG = ", JSON.stringify(result));
-            //     next();
-            // })
-            // .catch(err => console.log(err));
+            .catch(err => {
+                res.locals.binaryFilesWriteResponse = responseMsg;
+                console.log(err)
+            });
         }
     });
 };
@@ -765,7 +633,7 @@ const addAttInfoToAknObject = (req, res, next) => {
 documentManageAPIs["/document/upload"] = [
     receiveFilesSubmitData,
     convertFormObjectToAknObject,
-    writeSubmittedFiletoFS1,
+    writeSubmittedFiletoFS,
     addAttInfoToAknObject,
     convertAknObjectToXml,
     saveToXmlDb,
