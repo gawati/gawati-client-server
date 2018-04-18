@@ -1,8 +1,9 @@
 const express = require("express");
 const bearerToken = require("express-bearer-token");
 const path = require("path");
+const logr = require("./logging.js");
 // this loads the workflow
-const wf = require("./utils/workflow");
+const wf = require("./utils/Workflow");
 const routes = require("./apiroutes");
 var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
@@ -12,14 +13,6 @@ var bodyParser = require("body-parser");
 // var upload = multer();
 
 var index = require("./routes/index");
-
-const winston = require("winston");
-
-/**
- * Log level
- */
-winston.level = process.env.LOG_LEVEL || "error" ;
-
 
 var app = express();
 

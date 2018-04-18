@@ -1,6 +1,6 @@
 const languageCodes = require('../configs/shortLanguageCodes');
 
-const generalhelper = require('./generalhelper');
+const generalhelper = require('./GeneralHelper');
 
 const getLangCodeAlpha3b = (alpha3b) => {
     return languageCodes.langs.lang.find(lingo => lingo['alpha3b'] === alpha3b ) ;
