@@ -13,8 +13,6 @@ const logr = require('./logging');
 const fs = require('fs');
 const wf = require('./utils/workflow');
 const glob = require('glob');
-
-const MAX_ATTACHMENTS = 10;
 /*
 Generic Middleware ROute handlers 
 */
@@ -571,7 +569,7 @@ const getFileIndexFS = (fileParams) => {
                 let indices = files.map(fname => {
                     return parseInt(fname.split('_').pop().split('.')[0]);
                 });
-                while (ind <= MAX_ATTACHMENTS) {
+                while (ind <= constants.MAX_ATTACHMENTS) {
                     if (indices.includes(ind)) {
                         ind += 1;
                     } else {
@@ -579,7 +577,7 @@ const getFileIndexFS = (fileParams) => {
                     }
                 }
             }
-            ind > MAX_ATTACHMENTS ? reject("Max attachments reached") : resolve(ind);
+            ind > constants.MAX_ATTACHMENTS ? reject("Max attachments reached") : resolve(ind);
         });
     });
 }
@@ -587,7 +585,7 @@ const getFileIndexFS = (fileParams) => {
 const getFileIndexDB = (components) => {
     let ind = 1;
     let indices = components.map(comp => comp.index)
-    while (ind <= MAX_ATTACHMENTS) {
+    while (ind <= constants.MAX_ATTACHMENTS) {
         if (indices.includes(ind)) {
             ind += 1;
         } else {
