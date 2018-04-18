@@ -83,7 +83,7 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + "\"/>\r\n                    <an:FRBRdate name=\"Manifestation Date\" date=\""
     + alias4(((helper = (helper = helpers.manVersionDate || (depth0 != null ? depth0.manVersionDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"manVersionDate","hash":{},"data":data}) : helper)))
     + "\"/>\r\n                    <an:FRBRauthor href=\"#author\"/>\r\n                    <an:FRBRformat value=\"xml\"/>\r\n                </an:FRBRManifestation>\r\n            </an:identification>\r\n            <an:publication date=\""
-    + alias4(((helper = (helper = helpers.publicationDate || (depth0 != null ? depth0.publicationDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"publicationDate","hash":{},"data":data}) : helper)))
+    + alias4(((helper = (helper = helpers.docPublicationDate || (depth0 != null ? depth0.docPublicationDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docPublicationDate","hash":{},"data":data}) : helper)))
     + "\" showAs=\""
     + alias4(((helper = (helper = helpers.docTitle || (depth0 != null ? depth0.docTitle : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docTitle","hash":{},"data":data}) : helper)))
     + "\" name=\""
@@ -108,7 +108,11 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + alias4(((helper = (helper = helpers.createdDate || (depth0 != null ? depth0.createdDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"createdDate","hash":{},"data":data}) : helper)))
     + "\"/>\r\n                    <gw:dateTime refersTo=\"#dtModified\" datetime=\""
     + alias4(((helper = (helper = helpers.modifiedDate || (depth0 != null ? depth0.modifiedDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"modifiedDate","hash":{},"data":data}) : helper)))
-    + "\"/>\r\n                    <gw:themes source=\"#legacy\">\r\n                    </gw:themes>\r\n                </gw:gawati>\r\n            </an:proprietary>\r\n        </an:meta>\r\n        <an:body>\r\n            <an:book refersTo=\"#mainDocument\">  \r\n"
+    + "\"/>\r\n                    <gw:date refersTo=\"#dtPublicationDate\" date=\""
+    + alias4(((helper = (helper = helpers.docPublicationDate || (depth0 != null ? depth0.docPublicationDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docPublicationDate","hash":{},"data":data}) : helper)))
+    + "\" />\r\n                    <gw:date refersTo=\"#dtEntryIntoForceDate\" date=\""
+    + alias4(((helper = (helper = helpers.docEntryIntoForceDate || (depth0 != null ? depth0.docEntryIntoForceDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docEntryIntoForceDate","hash":{},"data":data}) : helper)))
+    + "\" />\r\n                    <gw:themes source=\"#legacy\">\r\n                    </gw:themes>\r\n                </gw:gawati>\r\n            </an:proprietary>\r\n        </an:meta>\r\n        <an:body>\r\n            <an:book refersTo=\"#mainDocument\">  \r\n"
     + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(6, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "            </an:book>\r\n        </an:body>\r\n    </an:"
     + alias4(((helper = (helper = helpers.aknType || (depth0 != null ? depth0.aknType : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"aknType","hash":{},"data":data}) : helper)))

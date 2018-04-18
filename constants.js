@@ -14,10 +14,28 @@ const API_SERVER_BASE = () =>
 
 const PROCESS_NAME = "GAWATI-CLIENT-SERVER";
 
+// see http://schema.akomantoso.com/index.html?type=element&item=akomaNtoso
+const AKN_DOC_TYPES = [
+    "amendmentList",
+    "officialGazette", 
+    "documentCollection", 
+    "act", 
+    "bill", 
+    "debateReport", 
+    "debate",
+    "statement",
+    "amendment",
+    "judgment",
+    "portion",
+    "doc" 
+];
+
+
 module.exports = {
     CONFIG_FOLDER: CONFIG_FOLDER,
     API_SERVER_BASE: API_SERVER_BASE,
     AKN_ATTACHMENTS: AKN_ATTACHMENTS,
     PROCESS_NAME: PROCESS_NAME,
-    MAX_ATTACHMENTS: MAX_ATTACHMENTS
+    MAX_ATTACHMENTS: MAX_ATTACHMENTS,
+    AKN_DOC_TYPES: AKN_DOC_TYPES
 };

@@ -61,7 +61,7 @@
                     <an:FRBRformat value="xml"/>
                 </an:FRBRManifestation>
             </an:identification>
-            <an:publication date="{{ publicationDate }}" showAs="{{ docTitle }}" name="{{ localTypeNormalized }}" number="{{ docNumber }}"/>
+            <an:publication date="{{ docPublicationDate }}" showAs="{{ docTitle }}" name="{{ localTypeNormalized }}" number="{{ docNumber }}"/>
             <an:classification source="#gawati">
             </an:classification>
             <an:lifecycle source="#all">
@@ -88,6 +88,8 @@
                     {{/if}}
                     <gw:dateTime refersTo="#dtCreated" datetime="{{ createdDate }}"/>
                     <gw:dateTime refersTo="#dtModified" datetime="{{ modifiedDate }}"/>
+                    <gw:date refersTo="#dtPublicationDate" date="{{ docPublicationDate }}" />
+                    <gw:date refersTo="#dtEntryIntoForceDate" date="{{ docEntryIntoForceDate }}" />
                     <gw:themes source="#legacy">
                     </gw:themes>
                 </gw:gawati>

@@ -1,18 +1,17 @@
-const axios = require('axios');
-const moment = require('moment');
-const aknobject = require('./aknobject');
-const urihelper = require('./utils/urihelper');
-const servicehelper = require('./utils/servicehelper');
-const langhelper = require('./utils/langhelper');
-const componentsHelper = require('./utils/componentsHelper');
-const generalhelper = require('./utils/generalhelper');
-const path = require('path');
-const mkdirp = require('mkdirp');
-const constants = require('./constants');
-const logr = require('./logging');
-const fs = require('fs');
-const wf = require('./utils/workflow');
-const glob = require('glob');
+const axios = require("axios");
+const aknobject = require("./aknobject");
+const aknhelper = require("./utils/AknHelper");
+const urihelper = require("./utils/UriHelper");
+const servicehelper = require("./utils/ServiceHelper");
+const langhelper = require("./utils/LangHelper");
+const componentsHelper = require("./utils/ComponentsHelper");
+const generalhelper = require("./utils/GeneralHelper");
+const path = require("path");
+const mkdirp = require("mkdirp");
+const constants = require("./constants");
+const logr = require("./logging");
+const fs = require("fs");
+const wf = require("./utils/Workflow");
 /*
 Generic Middleware ROute handlers 
 */
@@ -54,7 +53,7 @@ const receiveFilesSubmitData = (req, res, next) => {
  * @param {*} res 
  * @param {*} next 
  */
-const returnResponse = (req, res, next) => {
+const returnResponse = (req, res) => {
     console.log(" IN: returnResponse");    
     res.json(res.locals.returnResponse);
 };
@@ -81,7 +80,7 @@ const convertFormObjectToAknObject = (req, res, next) => {
     let aknDoc = aknobject.formObject2AknTemplateObject(formObj);
     // validates the Akoma Ntoso Object using the Yup json schema
     aknobject.validateAknObject(aknDoc)
-        .then( (value) => {
+        .then( () => {
             console.log(" Validation success ", aknDoc);
             res.locals.aknObject = aknDoc ;
             next();
@@ -91,7 +90,7 @@ const convertFormObjectToAknObject = (req, res, next) => {
             console.log(" Validation Error ", err);
             res.locals.aknObject = err;
             next();
-        })
+        });
 };
 
 /**
@@ -124,9 +123,9 @@ const convertAknObjectToXml = (req, res, next) => {
  */
 const saveToXmlDb = (req, res, next) => {
     console.log(" IN: saveToXmlDb");    
-    const saveXmlApi = servicehelper.getApi('xmlServer', 'saveXml');
+    const saveXmlApi = servicehelper.getApi("xmlServer", "saveXml");
     axios({
-        method: 'post',
+        method: "post",
         url: saveXmlApi,
         data: res.locals.xmlPackage
     }).then(
@@ -160,7 +159,7 @@ documentManageAPIs["/document/add"] = [
  */
 const updateAknField = (req, res, next) => {
     console.log(" IN: updateAknField");  
-    const updateXmlApi = servicehelper.getApi('xmlServer', 'updateXml');
+    const updateXmlApi = servicehelper.getApi("xmlServer", "updateXml");
     const {docTitle, docIri} = res.locals.formObject ;
     const postData = {
         "iri": docIri.value,
@@ -170,7 +169,7 @@ const updateAknField = (req, res, next) => {
         }]
     };
     axios({
-        method: 'post',
+        method: "post",
         url: updateXmlApi,
         data: postData
     }).then(
@@ -209,9 +208,9 @@ ROUTEHANDLER_DOCUMENT_LOAD
  */
 const loadXmlForIri = (req, res, next) => {
     console.log(" IN: loadXmlForIri");
-    const loadXmlApi = servicehelper.getApi('xmlServer', 'getXml');
+    const loadXmlApi = servicehelper.getApi("xmlServer", "getXml");
     axios({
-        method: 'post',
+        method: "post",
         url: loadXmlApi,
         data: res.locals.formObject
     }).then(
@@ -228,34 +227,6 @@ const loadXmlForIri = (req, res, next) => {
 };
 
 
-// see http://schema.akomantoso.com/index.html?type=element&item=akomaNtoso
-const AKN_DOC_TYPES = [
-    "amendmentList",
-    "officialGazette", 
-    "documentCollection", 
-    "act", 
-    "bill", 
-    "debateReport", 
-    "debate",
-    "statement",
-    "amendment",
-    "judgment",
-    "portion",
-    "doc" 
-];
-
-const getAknRootDocType = (aknDoc)  => {
-    for (var i=0 ; i < AKN_DOC_TYPES.length; i++ ) {
-        if (aknDoc.hasOwnProperty(AKN_DOC_TYPES[i])) {
-            return AKN_DOC_TYPES[i];
-        }
-    }
-    logr.error(
-        generalhelper.serverMsg("AKOMA NTOSO DOC TYPE could not be determined, falling back to doc as the doc type ")
-    );
-    return "doc";
-};
-
 /**
  * Given an aknDoc from the database convert it to the format that the
  * form expects
@@ -264,25 +235,25 @@ const getAknRootDocType = (aknDoc)  => {
 const formStateFromAknDocument = (aknDoc) => {
     var uiData = {
         docLang: {value: {} , error: null },
-        docType: {value: '', error: null },
-        docAknType: {value: '', error: null },
-        docCountry: {value: '', error: null },
-        docTitle: {value: '', error: null},
+        docType: {value: "", error: null },
+        docAknType: {value: "", error: null },
+        docCountry: {value: "", error: null },
+        docTitle: {value: "", error: null},
         docOfficialDate: {value: undefined, error: null },
-        docNumber: {value: '', error: null },
-        docPart: {value: '', error: null },
-        docIri : {value: '', error: null },
-        docComponents : {value: '', error: null },
+        docNumber: {value: "", error: null },
+        docPart: {value: "", error: null },
+        docIri : {value: "", error: null },
+        docComponents : {value: "", error: null },
     };
-    const aknTypeValue = getAknRootDocType(aknDoc);
+    const aknTypeValue = aknhelper.getAknRootDocType(aknDoc);
     const docAknType = aknTypeValue;
     uiData.docAknType.value = docAknType ;
     const xmlDoc = aknDoc[aknTypeValue];
     uiData.docType.value = xmlDoc.name ;
     const langValue = xmlDoc.meta.identification.FRBRExpression.FRBRlanguage.language;
     uiData.docLang.value = { 
-      value: langValue, 
-      label: langhelper.getLangDesc(langValue).content
+        value: langValue, 
+        label: langhelper.getLangDesc(langValue).content
     };
     const countryValue = xmlDoc.meta.identification.FRBRWork.FRBRcountry.value;
     uiData.docCountry.value = countryValue;
@@ -311,67 +282,16 @@ const formStateFromAknDocument = (aknDoc) => {
       docIri : {value: '', error: null }
     }
     */      
-  }
+};
+
 
 
 /**
- * Given an aknDoc from the database convert it to the format that the
- * form expects
- * @param {object} aknDoc 
- */
-const formStateFromAknDocument2 = (aknDoc) => {
-    var uiData = {
-        docLang: {value: {} , error: null },
-        docType: {value: '', error: null },
-        docAknType: {value: '', error: null },
-        docCountry: {value: '', error: null },
-        docTitle: {value: '', error: null},
-        docOfficialDate: {value: undefined, error: null },
-        docNumber: {value: '', error: null },
-        docPart: {value: '', error: null },
-        docIri : {value: '', error: null }
-    };
-    const aknTypeValue = getAknRootDocType(aknDoc);
-    const docAknType = aknTypeValue;
-    uiData.docAknType.value = docAknType ;
-    const xmlDoc = aknDoc[aknTypeValue];
-    uiData.docType.value = xmlDoc.name ;
-    const langValue = xmlDoc.meta.identification.FRBRExpression.FRBRlanguage.language;
-    uiData.docLang.value = { 
-      value: langValue, 
-      label: langhelper.getLangDesc(langValue).content
-    };
-    const countryValue = xmlDoc.meta.identification.FRBRWork.FRBRcountry.value;
-    uiData.docCountry.value = countryValue;
-    uiData.docTitle.value = xmlDoc.meta.publication.showAs;
-    uiData.docOfficialDate.value = 
-          xmlDoc.meta.identification.FRBRExpression.FRBRdate.date, 
-    
-    uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
-    uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
-    uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
-    return uiData;
-    /*
-    {
-      docLang: {value: {value:       } , error: null },
-      docType: {value: '', error: null },
-      docAknType: {value: '', error: null },
-      docCountry: {value: '', error: null },
-      docTitle: {value: '', error: null},
-      docOfficialDate: {value: '', error: null },
-      docNumber: {value: '', error: null },
-      docPart: {value: '', error: null },
-      docIri : {value: '', error: null }
-    }
-    */      
-  }
-
-  /**
    * Takes an akn document and converts it to an online document
    * @param {object} aknObject 
    */
 const getOnlineDocumentFromAknObject = (aknObject) => {
-    var uiData = formStateFromAknDocument(aknObject.akomaNtoso)
+    var uiData = formStateFromAknDocument(aknObject.akomaNtoso);
 
     //Get all workflow state info
     var curWFState = aknObject.workflow.state.status;
@@ -383,7 +303,7 @@ const getOnlineDocumentFromAknObject = (aknObject) => {
         permissions: aknObject.permissions,
         akomaNtoso: uiData
     } ;
-}
+};
 
 const convertAknXmlToObject = (req, res, next) => {
     console.log(" IN: convertAknXmlToObject");
@@ -415,19 +335,19 @@ const convertAknXmlToObjects = (req, res, next) => {
         (aknObject) => getOnlineDocumentFromAknObject(aknObject)
     );
     res.locals.returnResponse = { 
-            timestamp: res.locals.aknObjects.timestamp,
-            start: parseInt(res.locals.aknObjects.itemsFrom),
-            total: parseInt(res.locals.aknObjects.records),
-            documents: aknObjects
+        timestamp: res.locals.aknObjects.timestamp,
+        start: parseInt(res.locals.aknObjects.itemsFrom),
+        total: parseInt(res.locals.aknObjects.records),
+        documents: aknObjects
     };
     next();
 };
 
 
 const loadListing = (req, res, next) => {
-    const loadDocumentsApi = servicehelper.getApi('xmlServer', 'getDocuments');
+    const loadDocumentsApi = servicehelper.getApi("xmlServer", "getDocuments");
     axios({
-        method: 'post',
+        method: "post",
         url: loadDocumentsApi,
         data: res.locals.formObject
     }).then(
@@ -453,12 +373,13 @@ documentManageAPIs["/documents"] = [
 /**
  * Get the next file index available for embeddedContents
  * Checks components stored in eXist, not in the filesystem.
+ * We allow only upto MAX_ATTACHMENTS (Default = 10)
  *
  * @param {*} existing components
  */
 const getFileIndexDB = (components) => {
     let ind = 1;
-    let indices = components.map(comp => comp.index)
+    let indices = components.map(comp => comp.index);
     while (ind <= constants.MAX_ATTACHMENTS) {
         if (indices.includes(ind)) {
             ind += 1;
@@ -467,7 +388,7 @@ const getFileIndexDB = (components) => {
         }
     }
     return ind;
-}
+};
 
 /**
  * Writes the uploaded attachment to the filesystem.
@@ -475,31 +396,31 @@ const getFileIndexDB = (components) => {
  * @param {*} file parameters
  * @param {*} response message
  */
-const writeFile = (fileParams, responseMsg, res) => {
+const writeFile = (fileParams, responseMsg) => {
     const {index, newPath, newFileName, buffer, attTitle, embeddedIri, origName, fileExt} = fileParams;
     return new Promise(function(resolve, reject) {
         fs.writeFile(path.join(newPath, newFileName), buffer,  function(err) {
             if (err) {
-                winston.error("ERROR while writing to file ", err) ;
+                logr.error(generalhelper.serverMsg("ERROR while writing to file "), err) ;
                 responseMsg.step_1.status = "failure";
                 responseMsg.step_1.msg.push(
                     {
-                        'originalname': origName,
-                        'err': err
+                        "originalname": origName,
+                        "err": err
                     }
                 );
                 reject(err);
             } else {
-                winston.log(" File was written to file system ");
+                logr.info(generalhelper.serverMsg(" File was written to file system "));
                 responseMsg.step_1.msg.push(
                     {
-                        'index': index,
-                        'showAs': attTitle,
-                        'iriThis': embeddedIri,
-                        'origFileName': origName,
-                        'fileName': newFileName,
-                        'fileType': fileExt,
-                        'type': 'embedded'
+                        "index": index,
+                        "showAs": attTitle,
+                        "iriThis": embeddedIri,
+                        "origFileName": origName,
+                        "fileName": newFileName,
+                        "fileType": fileExt,
+                        "type": "embedded"
                     }
                 );
                 responseMsg.step_1.status = "write_to_fs_success";
@@ -507,7 +428,7 @@ const writeFile = (fileParams, responseMsg, res) => {
             }
         });
     });
-}
+};
 
 /**
  * Writes a binary file to file system.
@@ -520,56 +441,56 @@ const writeFile = (fileParams, responseMsg, res) => {
  */
 const writeSubmittedFiletoFS = (req, res, next) => {
     console.log(" IN: writeSubmittedFiletoFS", res.locals.formFiles.length, 
-    res.locals.formObject['docIri'].value);
-    let iri = res.locals.formObject['docIri'].value;
+        res.locals.formObject["docIri"].value);
+    let iri = res.locals.formObject["docIri"].value;
     let formFile = res.locals.formFiles[0];
 
-    let arrIri = iri.split('/');
+    let arrIri = iri.split("/");
     let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
     let newPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
     // to fix
     //let aknFileName = urihelper.fileNameFromIRI(iri, "doc");
     var responseMsg = {
-            "step_1": {"status": "", "msg": [] },
-            "step_2": {"status": "", "msg": [] }
-        };
+        "step_1": {"status": "", "msg": [] },
+        "step_2": {"status": "", "msg": [] }
+    };
     mkdirp(newPath, function(err) {
         if (err) {
-            winston.log(" ERROR while creating folder ", err) ;
+            logr.error(generalhelper.serverMsg(" ERROR while creating folder "), err) ;
             responseMsg.step_1.status = "failure";
             responseMsg.step_1.msg.push(
                 {
-                    'originalname': origName,
-                    'err': err
+                    "originalname":  formFile.originalname,
+                    "err": err
                 }
             );
             res.locals.binaryFilesWriteResponse = responseMsg;
             next();
         } else {
             const fileParams = {
-                attTitle: res.locals.formObject['title'],
+                attTitle: res.locals.formObject["title"],
                 origName: formFile.originalname,
                 mimeType: formFile.mimetype,
                 buffer: formFile.buffer,
                 fileExt: path.extname(formFile.originalname),
                 filePrefix: urihelper.fileNamePrefixFromIRI(iri),
                 newPath: newPath,
-            }
-            let index = getFileIndexDB(res.locals.formObject['docComponents'].value);
+            };
+            let index = getFileIndexDB(res.locals.formObject["docComponents"].value);
             fileParams.index = index;
             fileParams.embeddedIri = `${iri}_${index}`;
             fileParams.newFileName = `${fileParams.filePrefix}_${index}${fileParams.fileExt}`;
 
             writeFile(fileParams, responseMsg)
-            .then(result => {
-                console.log(" RESPONSE MSG = ", JSON.stringify(result));
-                res.locals.binaryFilesWriteResponse = responseMsg;
-                next();
-            })
-            .catch(err => {
-                res.locals.binaryFilesWriteResponse = responseMsg;
-                console.log(err)
-            });
+                .then(result => {
+                    console.log(" RESPONSE MSG = ", JSON.stringify(result));
+                    res.locals.binaryFilesWriteResponse = responseMsg;
+                    next();
+                })
+                .catch(err => {
+                    res.locals.binaryFilesWriteResponse = responseMsg;
+                    console.log(err);
+                });
         }
     });
 };
@@ -582,7 +503,7 @@ const constructFormObject = (bodyObject) => {
     var formObject = bodyObject; 
     var newObj = Object.assign({}, formObject);
     for (const key in formObject) {
-        if (key.startsWith('doc')) {
+        if (key.startsWith("doc")) {
             newObj[key] = JSON.parse(formObject[key]);
         }
     }
@@ -594,7 +515,7 @@ const constructFormObject = (bodyObject) => {
 const addAttInfoToAknObject = (req, res, next) => {
     console.log(" IN: addAttInfoToAknObject");
     const writeResponse = res.locals.binaryFilesWriteResponse;
-    if (writeResponse.step_1.status === 'write_to_fs_success') {
+    if (writeResponse.step_1.status === "write_to_fs_success") {
         // see msg object shape below in comment 
         const writeInfo = writeResponse.step_1.msg ; 
         var tmplObject = Object.assign({}, res.locals.aknObject) ;
@@ -611,19 +532,19 @@ const addAttInfoToAknObject = (req, res, next) => {
         )
         ;
         */
-        var existingComponents = res.locals.aknObject['docComponents'];
+        var existingComponents = res.locals.aknObject["docComponents"];
         tmplObject.components = existingComponents || [];
-       writeInfo.forEach( (item, index) => {
+        writeInfo.forEach( (item, index) => {
             if (! tmplObject.components) { 
                 tmplObject.components = [] ;
             }
             tmplObject.components.push(item);
-       });
+        });
     }
     res.locals.aknObject = tmplObject;
     res.locals.returnResponse = {success: "finished"};
     next();
-}
+};
 
 /* 
 * Receive the JSON containing the file info and the document info. 

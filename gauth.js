@@ -1,7 +1,7 @@
-const axios = require('axios');
-const winston = require('winston');
-const querystring = require('querystring');
-const serializeError = require('serialize-error');
+const axios = require("axios");
+const winston = require("winston");
+const querystring = require("querystring");
+const serializeError = require("serialize-error");
 
 const AUTH_EXCEPTION = "auth_exception";
 const AUTH_TOKEN_INACTIVE = "auth_token_inactive";
@@ -28,7 +28,7 @@ const introspectUrl = (authObject) => {
 const authorization = (authObject) => {
     const user = authObject["clientId"] ;
     const pass = authObject["credentials"]["secret"] ; 
-    const base64cred =  Buffer.from(`${user}:${pass}`).toString('base64');
+    const base64cred =  Buffer.from(`${user}:${pass}`).toString("base64");
     return base64cred;
 };
 
@@ -39,8 +39,8 @@ const authorization = (authObject) => {
 const introspectHeader = (authObject) => {
     const authz = authorization(authObject);
     return {
-        'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Basic ${authz}`
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": `Basic ${authz}`
     };
 };
 
@@ -55,14 +55,14 @@ const introspect = async (authObject, token) => {
     const authz = authorization(authObject);
     const headers = introspectHeader(authObject);
     const data = {
-        'token': token
+        "token": token
     };
     try {
         const response = await axios.post(
-                url, 
-                querystring.stringify(data),
-                {headers: headers}
-            );
+            url, 
+            querystring.stringify(data),
+            {headers: headers}
+        );
         return response.data ? response.data : response;
     } catch (err) {
         return err;

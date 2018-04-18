@@ -20,13 +20,15 @@ var jsonParser = bodyParser.json();
 const EXCLUDE_FROM_AUTO_ROUTE = ['/document/upload', '/document/auth'];
 
 /*
-Map all the routes 
+Map all the routes form docmanage automatically
+except for indicated ones which need special treatement. 
 */
 Object.keys(docmanage.documentManage).forEach( 
     (routePath) => {
         console.log(" ROUTE PATH ", routePath);
-        // map all the paths except /document/upload
+        // map all the paths except /document/upload, /document/auth
         if (EXCLUDE_FROM_AUTO_ROUTE.indexOf(routePath) < 0) {
+            // only paths NOT IN  EXCLUDE_FROM_AUTO_ROUTE
             router.post(
                 routePath,
                 jsonParser,

@@ -1,6 +1,6 @@
 var Handlebars = require('handlebars/runtime');
 const moment = require('moment');
-const datehelper = require("./utils/datehelper");
+const datehelper = require("./utils/DateHelper");
 const yup  = require('yup');
 /** 
  * Generated templates
@@ -13,14 +13,12 @@ const tmplEmbeddedContent = require('./xml_templates/akntemplate.embeddedContent
 yup.addMethod(yup.date, 'format', function(formats, parseStrict) {
     let invalidDate = new Date('');
     return this.transform(function(value, originalValue){
-      //console.log(" ov, form, parset ", value, originalValue, formats, parseStrict);
       let date = moment(originalValue, formats, parseStrict)
-
       return date.isValid() ? date.toDate() : invalidDate
     })
   });
 
-const urihelper = require('./utils/urihelper');
+const urihelper = require('./utils/UriHelper');
 
 /**
  * Takes an AKN Object and converts it to XML 
@@ -55,6 +53,12 @@ const templateToAknXML = (aknTmpl, tmplName) => {
     return aknXml;
 };
 
+
+/**
+ * This defines a JSON schema (using Yup)
+ * The object that is applied onto the handlebars template to generate the XML
+ * is based on this schema. This schema is used to validate the object. 
+ */
 const aknTmplSchema = yup.object().shape({
     "aknType": yup.string().required(),
     "localTypeNormalized":  yup.string().required(),
@@ -62,7 +66,9 @@ const aknTmplSchema = yup.object().shape({
     "docNumber": yup.string().required(),
     "docNumberNormalized": yup.string().required(),        
     "docTitle": yup.string().required(),
-    "publicationDate": yup.date().format('YYYY-MM-DD', true).required(),
+    "docOfficialDate": yup.date().format('YYYY-MM-DD', true).required(),
+    "docPublicationDate": yup.date().format('YYYY-MM-DD', true).required(),
+    "docEntryIntoForceDate": yup.date().format('YYYY-MM-DD', true).required(),
     "docAuthoritative": yup.boolean().required(),      
     "docPrescriptive": yup.boolean().required(),
     "workIRIthis":  yup.string().required(),
@@ -94,21 +100,15 @@ const aknTmplSchema = yup.object().shape({
 
 
 
-/*
-    Populates an aknTemplate object
-        {
-          docLang: {value: {} , error: null },
-          docType: {value: '', error: null },
-          docAknType: {value: '', error: null },
-          docCountry: {value: '', error: null },
-          docTitle: {value: '', error: null},
-          docOfficialDate: {value: '', error: null },
-          docNumber: {value: '', error: null },
-          docPart: {value: 'main', error: null },
-          docIri : {value: '', error: null }
-        }
-*/
+/**
+ *  Accepts a form object submitted by the gawati-client
+ *  Translates that into an aknTemplate object
+ *  This object is subsequently validate against an object schema
+ *  
+ * @param {*} form 
+ */
 const formObject2AknTemplateObject = (form) => {
+
     const {
         docAknType, 
         docType, 
@@ -123,13 +123,16 @@ const formObject2AknTemplateObject = (form) => {
         docLang,
         docComponents
     } = form ;
+    
+    // this aknTmpl object is applied on the handlebars schema to generate the XML 
     let aknTmpl = {} ;
+    
     // official date is sent as a full serialized dateTime with timezone information
     // for AKN official date we need only the date part as an ISO date
     const aknDate = datehelper.parseDateISODatePart(docOfficialDate.value);
     const aknPublicationDate = datehelper.parseDateISODatePart(docPublicationDate.value);
     const aknEntryIntoForceDate = datehelper.parseDateISODatePart(docEntryIntoForceDate.value);
-    console.log(" aknDate == ", aknDate);
+    
     aknTmpl.aknType = docAknType.value ;
     aknTmpl.localTypeNormalized = docType.value; 
     aknTmpl.subType = aknTmpl.aknType.value === aknTmpl.localTypeNormalized ? false: true ; 
@@ -138,9 +141,9 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.docTitle = docTitle.value;
     aknTmpl.docAuthoritative = "true";
     aknTmpl.docPrescriptive = "true";
-    aknTmpl.docPublicationDate = docOfficialDate.value;
+    aknTmpl.docPublicationDate = docPublicationDate.value;
+    aknTmpl.docEntryIntoForceDate = docEntryIntoForceDate.value; 
     aknTmpl.docPart = docPart.value;
-
     aknTmpl.workIRI = urihelper.aknWorkIri(
         docCountry.value, 
         aknTmpl.aknType, 
@@ -185,55 +188,6 @@ const validateAknObject = (aknObject) => {
     return valid;
 };
 
-/**
- * Returns an empty aknTemplate Object
- */
-
- /*
-const aknTemplateObject = () => {
-    return {
-        "aknType": "",
-        "localTypeNormalized": "",
-        "subType": false,
-        "docNumber": "",
-        "docNumberNormalized": "",        
-        "docTitle": "",
-        "publicationDate": "",
-        "docAuthoritative": "",      
-        "docPrescriptive": "",
-        "publicationDate": "",
-        
-        "workIRIthis": "",
-        "workIRI": "",
-        "workDate" : "",
-        "workCountryCode": "",
-        "workCountryCodeShowAs": "",
-
-        "exprIRIthis": "",
-        "exprIRI": "",
-        "exprVersionDate": "",
-        "exprLangCode": "",
-
-        "manIRIthis": "",
-        "manIRI": "",
-        "manVersionDate": "",
-
-
-
-        "createdDate": "",
-        "modifiedDate": "",
-
-        "components": [
-            {
-                "type":"embedded",
-                "origFileType": "",
-                "origFileName": "",
-                "origFileNameNormalized": ""
-            }
-        ]
-    };    
-};
-*/
 
 module.exports.validateAknObject = validateAknObject ; 
 module.exports.aknTemplateToAknXML = aknTemplateToAknXML ;
