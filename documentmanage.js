@@ -675,22 +675,33 @@ const writeSubmittedFiletoFS1 = (req, res, next) => {
                 buffer: formFile.buffer,
                 fileExt: path.extname(formFile.originalname),
                 filePrefix: urihelper.fileNamePrefixFromIRI(iri),
-                newPath: newPath
+                newPath: newPath,
             }
-            let ind = getFileIndexDB(res.locals.formObject['docComponents'].value);
-            getFileIndexFS(fileParams)
-            .then(index => {
-                fileParams.index = index;
-                fileParams.embeddedIri = `${iri}_${index}`;
-                fileParams.newFileName = `${fileParams.filePrefix}_${index}${fileParams.fileExt}`;
-                //res context is not available when writeFile resolves.
-                return writeFile(fileParams, responseMsg, res);
-            })
+            let index = getFileIndexDB(res.locals.formObject['docComponents'].value);
+            fileParams.index = index;
+            fileParams.embeddedIri = `${iri}_${index}`;
+            fileParams.newFileName = `${fileParams.filePrefix}_${index}${fileParams.fileExt}`;
+
+            writeFile(fileParams, responseMsg, res)
             .then(result => {
                 console.log(" RESPONSE MSG = ", JSON.stringify(result));
                 next();
             })
             .catch(err => console.log(err));
+
+            // getFileIndexFS(fileParams)
+            // .then(index => {
+            //     fileParams.index = index;
+            //     fileParams.embeddedIri = `${iri}_${index}`;
+            //     fileParams.newFileName = `${fileParams.filePrefix}_${index}${fileParams.fileExt}`;
+            //     //res context is not available when writeFile resolves.
+            //     return writeFile(fileParams, responseMsg, res);
+            // })
+            // .then(result => {
+            //     console.log(" RESPONSE MSG = ", JSON.stringify(result));
+            //     next();
+            // })
+            // .catch(err => console.log(err));
         }
     });
 };
