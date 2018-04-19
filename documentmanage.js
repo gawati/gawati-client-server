@@ -233,18 +233,9 @@ const loadXmlForIri = (req, res, next) => {
  * @param {object} aknDoc 
  */
 const formStateFromAknDocument = (aknDoc) => {
-    var uiData = {
-        docLang: {value: {} , error: null },
-        docType: {value: "", error: null },
-        docAknType: {value: "", error: null },
-        docCountry: {value: "", error: null },
-        docTitle: {value: "", error: null},
-        docOfficialDate: {value: undefined, error: null },
-        docNumber: {value: "", error: null },
-        docPart: {value: "", error: null },
-        docIri : {value: "", error: null },
-        docComponents : {value: "", error: null },
-    };
+    
+    var uiData = aknobject.identityFormTemplate();
+
     const aknTypeValue = aknhelper.getAknRootDocType(aknDoc);
     const docAknType = aknTypeValue;
     uiData.docAknType.value = docAknType ;
@@ -260,7 +251,8 @@ const formStateFromAknDocument = (aknDoc) => {
     uiData.docTitle.value = xmlDoc.meta.publication.showAs;
     uiData.docOfficialDate.value = 
           xmlDoc.meta.identification.FRBRExpression.FRBRdate.date, 
-    
+    uiData.docPublicationDate.value = aknhelper.getGawatiNamedDate(xmlDoc, 'docPublicationDate');
+    uiData.docEntryIntoForceDate.value = aknhelper.getGawatiNamedDate(xmlDoc, 'docEntryIntoForceDate');
     uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
     uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
     uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
@@ -283,8 +275,6 @@ const formStateFromAknDocument = (aknDoc) => {
     }
     */      
 };
-
-
 
 /**
    * Takes an akn document and converts it to an online document

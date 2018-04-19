@@ -98,7 +98,22 @@ const aknTmplSchema = yup.object().shape({
     )
 });
 
-
+const identityFormTemplate = () => {
+    return {
+        docLang: {value: {} , error: null },
+        docType: {value: "", error: null },
+        docAknType: {value: "", error: null },
+        docCountry: {value: "", error: null },
+        docTitle: {value: "", error: null},
+        docOfficialDate: {value: undefined, error: null },
+        docPublicationDate: {value: undefined, error: null },
+        docEntryIntoForceDate: {value: undefined, error: null },
+        docNumber: {value: "", error: null },
+        docPart: {value: "", error: null },
+        docIri : {value: "", error: null },
+        docComponents : {value: "", error: null }
+    };
+};
 
 /**
  *  Accepts a form object submitted by the gawati-client
@@ -195,3 +210,4 @@ module.exports.aknTemplateToEmbeddedContentFragment = aknTemplateToEmbeddedConte
 module.exports.aknTemplateToComponentRef = aknTemplateToComponentRef ; 
 module.exports.templateToAknXML = templateToAknXML ; 
 module.exports.formObject2AknTemplateObject = formObject2AknTemplateObject;
+module.exports.identityFormTemplate = identityFormTemplate;

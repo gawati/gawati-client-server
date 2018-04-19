@@ -13,6 +13,20 @@ const getAknRootDocType = (aknDoc)  => {
     return "doc";
 };
 
+const getGawatiNamedDate = (aknDoc, dateName) => {
+    const gawatiDates = generalhelper.coerceIntoArray(aknDoc.meta.proprietary.gawati.date);
+    const foundDate = gawatiDates.find ( 
+        (theDate) => theDate.refersTo === `#${dateName}`
+    );
+    if (foundDate) {
+        return foundDate.date;
+    } else {
+        return undefined;
+    }
+};
+
+
 module.exports = {
-    getAknRootDocType: getAknRootDocType
+    getAknRootDocType: getAknRootDocType,
+    getGawatiNamedDate: getGawatiNamedDate
 };
