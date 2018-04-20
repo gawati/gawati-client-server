@@ -1,24 +1,24 @@
-var Handlebars = require('handlebars/runtime');
-const moment = require('moment');
+var Handlebars = require("handlebars/runtime");
+const moment = require("moment");
 const datehelper = require("./utils/DateHelper");
-const yup  = require('yup');
+const yup  = require("yup");
 /** 
  * Generated templates
  * These are required only to be imported.
  **/
-const tmplAkn = require('./xml_templates/akntemplate');
-const tmplComponentRef = require('./xml_templates/akntemplate.componentRef');
-const tmplEmbeddedContent = require('./xml_templates/akntemplate.embeddedContent');
+const tmplAkn = require("./xml_templates/akntemplate");
+const tmplComponentRef = require("./xml_templates/akntemplate.componentRef");
+const tmplEmbeddedContent = require("./xml_templates/akntemplate.embeddedContent");
 /**Yup custom validator */
-yup.addMethod(yup.date, 'format', function(formats, parseStrict) {
-    let invalidDate = new Date('');
+yup.addMethod(yup.date, "format", function(formats, parseStrict) {
+    let invalidDate = new Date("");
     return this.transform(function(value, originalValue){
-      let date = moment(originalValue, formats, parseStrict)
-      return date.isValid() ? date.toDate() : invalidDate
-    })
-  });
+        let date = moment(originalValue, formats, parseStrict);
+        return date.isValid() ? date.toDate() : invalidDate;
+    });
+});
 
-const urihelper = require('./utils/UriHelper');
+const urihelper = require("./utils/UriHelper");
 
 /**
  * Takes an AKN Object and converts it to XML 
@@ -27,14 +27,14 @@ const urihelper = require('./utils/UriHelper');
 const aknTemplateToAknXML = (aknTmpl) => {
     return templateToAknXML(
         aknTmpl, 
-        'akntemplate.hbs'
+        "akntemplate.hbs"
     ) ;
 };
 
 const aknTemplateToEmbeddedContentFragment = (aknTmpl) => {
     return templateToAknXML(
         aknTmpl, 
-        'akntemplate.embeddedContent.hbs'
+        "akntemplate.embeddedContent.hbs"
     );
 };
 
@@ -42,7 +42,7 @@ const aknTemplateToEmbeddedContentFragment = (aknTmpl) => {
 const aknTemplateToComponentRef= (aknTmpl) => {
     return templateToAknXML(
         aknTmpl, 
-        'akntemplate.componentRef.hbs'
+        "akntemplate.componentRef.hbs"
     );
 };
 
@@ -66,9 +66,9 @@ const aknTmplSchema = yup.object().shape({
     "docNumber": yup.string().required(),
     "docNumberNormalized": yup.string().required(),        
     "docTitle": yup.string().required(),
-    "docOfficialDate": yup.date().format('YYYY-MM-DD', true).required(),
-    "docPublicationDate": yup.date().format('YYYY-MM-DD', true).required(),
-    "docEntryIntoForceDate": yup.date().format('YYYY-MM-DD', true).required(),
+    "docOfficialDate": yup.date().format("YYYY-MM-DD", true).required(),
+    "docPublicationDate": yup.date().format("YYYY-MM-DD", true).required(),
+    "docEntryIntoForceDate": yup.date().format("YYYY-MM-DD", true).required(),
     "docAuthoritative": yup.boolean().required(),      
     "docPrescriptive": yup.boolean().required(),
     "workIRIthis":  yup.string().required(),
@@ -88,7 +88,7 @@ const aknTmplSchema = yup.object().shape({
     "components": yup.array().of(
         yup.object().shape({
             index: yup.number().required(), 
-            type: yup.string().oneOf(['embedded', 'content']).required(),
+            type: yup.string().oneOf(["embedded", "content"]).required(),
             iriThis: yup.string().required(),
             showAs: yup.string().required(),
             fileType: yup.string().required(),
@@ -192,7 +192,7 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.manIRIthis = urihelper.aknManIriThis(aknTmpl.exprIRIthis);
     aknTmpl.manVersionDate = aknDate;
 
-    aknTmpl.createdDate = moment().format('YYYY-MM-DDTHH:mm:ssZ');
+    aknTmpl.createdDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
     aknTmpl.modifiedDate = aknTmpl.createdDate ;
     // temporarily commented during migration - 20-04-2018
     //aknTmpl.docComponents = docComponents.value;

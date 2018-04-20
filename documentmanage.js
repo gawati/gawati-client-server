@@ -251,8 +251,8 @@ const formStateFromAknDocument = (aknDoc) => {
     uiData.docTitle.value = xmlDoc.meta.publication.showAs;
     uiData.docOfficialDate.value = 
           xmlDoc.meta.identification.FRBRExpression.FRBRdate.date, 
-    uiData.docPublicationDate.value = aknhelper.getGawatiNamedDate(xmlDoc, 'docPublicationDate');
-    uiData.docEntryIntoForceDate.value = aknhelper.getGawatiNamedDate(xmlDoc, 'docEntryIntoForceDate');
+    uiData.docPublicationDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docPublicationDate");
+    uiData.docEntryIntoForceDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docEntryIntoForceDate");
     uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
     uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
     uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
