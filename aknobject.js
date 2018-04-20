@@ -194,8 +194,7 @@ const formObject2AknTemplateObject = (form) => {
 
     aknTmpl.createdDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
     aknTmpl.modifiedDate = aknTmpl.createdDate ;
-    // temporarily commented during migration - 20-04-2018
-    //aknTmpl.docComponents = docComponents.value;
+    aknTmpl.docComponents = docComponents.value;
 
     return aknTmpl;
 };
