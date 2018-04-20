@@ -137,7 +137,7 @@ const formObject2AknTemplateObject = (form) => {
         docCountry, 
         docLang,
         docComponents
-    } = form ;
+    } = form.pkgIdentity ;
     
     // this aknTmpl object is applied on the handlebars schema to generate the XML 
     let aknTmpl = {} ;
@@ -156,8 +156,9 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.docTitle = docTitle.value;
     aknTmpl.docAuthoritative = "true";
     aknTmpl.docPrescriptive = "true";
-    aknTmpl.docPublicationDate = docPublicationDate.value;
-    aknTmpl.docEntryIntoForceDate = docEntryIntoForceDate.value; 
+    aknTmpl.docOfficialDate = datehelper.ISOStringDateToDate(aknDate);
+    aknTmpl.docPublicationDate = datehelper.ISOStringDateToDate(aknPublicationDate);
+    aknTmpl.docEntryIntoForceDate = datehelper.ISOStringDateToDate(aknEntryIntoForceDate); 
     aknTmpl.docPart = docPart.value;
     aknTmpl.workIRI = urihelper.aknWorkIri(
         docCountry.value, 
@@ -193,7 +194,8 @@ const formObject2AknTemplateObject = (form) => {
 
     aknTmpl.createdDate = moment().format('YYYY-MM-DDTHH:mm:ssZ');
     aknTmpl.modifiedDate = aknTmpl.createdDate ;
-    aknTmpl.docComponents = docComponents.value;
+    // temporarily commented during migration - 20-04-2018
+    //aknTmpl.docComponents = docComponents.value;
 
     return aknTmpl;
 };
