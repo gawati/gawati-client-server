@@ -41,7 +41,7 @@ const receiveSubmitData = (req, res, next) =>  {
 const receiveFilesSubmitData = (req, res, next) => {
     // convert the formdata multipart object to use the json object form expected in formObject.
     console.log(" IN: receiveFilesSubmitData");
-    res.locals.formObject = constructFormObject(req.body) ; 
+    res.locals.formObject = constructFormObject(req.body) ;
     res.locals.formFiles = req.files ; 
     next();
 };
@@ -431,8 +431,9 @@ const writeFile = (fileParams, responseMsg) => {
  */
 const writeSubmittedFiletoFS = (req, res, next) => {
     console.log(" IN: writeSubmittedFiletoFS", res.locals.formFiles.length, 
-        res.locals.formObject["docIri"].value);
-    let iri = res.locals.formObject["docIri"].value;
+        res.locals.formObject.pkgIdentity["docIri"].value);
+    let aknObj = res.locals.formObject.pkgIdentity;
+    let iri = aknObj["docIri"].value;
     let formFile = res.locals.formFiles[0];
 
     let arrIri = iri.split("/");
@@ -458,7 +459,8 @@ const writeSubmittedFiletoFS = (req, res, next) => {
             next();
         } else {
             const fileParams = {
-                attTitle: res.locals.formObject["title"],
+                index: aknObj["index"],
+                attTitle: aknObj["title"],
                 origName: formFile.originalname,
                 mimeType: formFile.mimetype,
                 buffer: formFile.buffer,
@@ -466,10 +468,12 @@ const writeSubmittedFiletoFS = (req, res, next) => {
                 filePrefix: urihelper.fileNamePrefixFromIRI(iri),
                 newPath: newPath,
             };
-            let index = getFileIndexDB(res.locals.formObject["docComponents"].value);
-            fileParams.index = index;
-            fileParams.embeddedIri = `${iri}_${index}`;
-            fileParams.newFileName = `${fileParams.filePrefix}_${index}${fileParams.fileExt}`;
+            //Generate index for new uploads.
+            if (!fileParams.index) {
+                fileParams.index = getFileIndexDB(aknObj["docComponents"].value);
+            }
+            fileParams.embeddedIri = `${iri}_${fileParams.index}`;
+            fileParams.newFileName = `${fileParams.filePrefix}_${fileParams.index}${fileParams.fileExt}`;
 
             writeFile(fileParams, responseMsg)
                 .then(result => {
@@ -490,14 +494,16 @@ const writeSubmittedFiletoFS = (req, res, next) => {
  * @param {object} req.body object 
  */
 const constructFormObject = (bodyObject) => {
-    var formObject = bodyObject; 
+    var formObject = bodyObject;
     var newObj = Object.assign({}, formObject);
     for (const key in formObject) {
         if (key.startsWith("doc")) {
             newObj[key] = JSON.parse(formObject[key]);
         }
     }
-    return newObj;
+    return formObject = {
+        pkgIdentity: newObj
+    };
 };
 
 
@@ -545,10 +551,10 @@ documentManageAPIs["/document/upload"] = [
     receiveFilesSubmitData,
     convertFormObjectToAknObject,
     writeSubmittedFiletoFS,
-    addAttInfoToAknObject,
-    convertAknObjectToXml,
-    saveToXmlDb,
-    returnResponse
+    // addAttInfoToAknObject,
+    // convertAknObjectToXml,
+    // saveToXmlDb,
+    // returnResponse
 ];
 
 
