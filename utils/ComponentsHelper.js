@@ -25,6 +25,20 @@ const getComponents = (embeddedContents, compRefs) => {
     return newComponents;
 };
 
+/**
+ * Checks if an existing component with the same attachment `index` exists.
+ * Returns the position of the matched component.
+ */
+const posOfComp = (index, components) => {
+    for (var i = 0; i < components.length; i++) {
+        if (components[i].index == index) {
+            return i;
+        }
+    }
+    return -1;
+}
+
 module.exports = {
-    getComponents: getComponents
+    getComponents: getComponents,
+    posOfComp: posOfComp
 };
