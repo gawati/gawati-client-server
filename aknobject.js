@@ -110,10 +110,15 @@ const identityFormTemplate = () => {
         docEntryIntoForceDate: {value: undefined, error: null },
         docNumber: {value: "", error: null },
         docPart: {value: "", error: null },
-        docIri : {value: "", error: null },
-        docComponents : {value: "", error: null }
+        docIri : {value: "", error: null }
     };
 };
+
+const attachmentsFormTemplate = () => {
+    return {
+        attachments : {value: "", error: null }
+    }
+}
 
 /**
  *  Accepts a form object submitted by the gawati-client
@@ -135,8 +140,7 @@ const formObject2AknTemplateObject = (form) => {
         docPart, 
         docIri, 
         docCountry, 
-        docLang,
-        docComponents
+        docLang
     } = form.pkgIdentity ;
     
     // this aknTmpl object is applied on the handlebars schema to generate the XML 
@@ -194,7 +198,7 @@ const formObject2AknTemplateObject = (form) => {
 
     aknTmpl.createdDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
     aknTmpl.modifiedDate = aknTmpl.createdDate ;
-    aknTmpl.docComponents = docComponents.value;
+    aknTmpl.attachments = form.pkgAttachments.value;
 
     return aknTmpl;
 };
@@ -212,3 +216,4 @@ module.exports.aknTemplateToComponentRef = aknTemplateToComponentRef ;
 module.exports.templateToAknXML = templateToAknXML ; 
 module.exports.formObject2AknTemplateObject = formObject2AknTemplateObject;
 module.exports.identityFormTemplate = identityFormTemplate;
+module.exports.attachmentsFormTemplate = attachmentsFormTemplate;

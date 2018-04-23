@@ -234,7 +234,7 @@ const loadXmlForIri = (req, res, next) => {
  */
 const formStateFromAknDocument = (aknDoc) => {
     
-    var uiData = aknobject.identityFormTemplate();
+    var uiData = Object.assign({}, aknobject.identityFormTemplate(), aknobject.attachmentsFormTemplate());
 
     const aknTypeValue = aknhelper.getAknRootDocType(aknDoc);
     const docAknType = aknTypeValue;
@@ -259,7 +259,7 @@ const formStateFromAknDocument = (aknDoc) => {
 
     const embeddedContents = xmlDoc.meta.proprietary.gawati.embeddedContents;
     const compRefs = generalhelper.coerceIntoArray(xmlDoc.body.book.componentRef);
-    uiData.docComponents.value = componentsHelper.getComponents(embeddedContents, compRefs);
+    uiData.attachments.value = componentsHelper.getComponents(embeddedContents, compRefs);
     return uiData;
     /*
     {
@@ -470,7 +470,7 @@ const writeSubmittedFiletoFS = (req, res, next) => {
             };
             //Generate index for new uploads.
             if (!fileParams.index) {
-                fileParams.index = getFileIndexDB(aknObj["docComponents"].value);
+                fileParams.index = getFileIndexDB(aknObj["attachments"].value);
             }
             fileParams.embeddedIri = `${iri}_${fileParams.index}`;
             fileParams.newFileName = `${fileParams.filePrefix}_${fileParams.index}${fileParams.fileExt}`;
@@ -502,7 +502,8 @@ const constructFormObject = (bodyObject) => {
         }
     }
     return formObject = {
-        pkgIdentity: newObj
+        pkgIdentity: newObj,
+        pkgAttachments: JSON.parse(formObject['attachments'])
     };
 };
 
@@ -528,7 +529,7 @@ const addAttInfoToAknObject = (req, res, next) => {
         )
         ;
         */
-        var existingComponents = res.locals.aknObject["docComponents"];
+        var existingComponents = res.locals.aknObject["attachments"];
         tmplObject.components = existingComponents || [];
 
         var pos = componentsHelper.posOfComp(writeInfo.index, tmplObject.components);
