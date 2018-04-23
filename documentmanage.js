@@ -555,8 +555,8 @@ documentManageAPIs["/document/upload"] = [
     writeSubmittedFiletoFS,
     addAttInfoToAknObject,
     convertAknObjectToXml,
-    // saveToXmlDb,
-    // returnResponse
+    saveToXmlDb,
+    returnResponse
 ];
 
 
