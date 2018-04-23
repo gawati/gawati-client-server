@@ -433,6 +433,7 @@ const writeSubmittedFiletoFS = (req, res, next) => {
     console.log(" IN: writeSubmittedFiletoFS", res.locals.formFiles.length, 
         res.locals.formObject.pkgIdentity["docIri"].value);
     let aknObj = res.locals.formObject.pkgIdentity;
+    let attachments = res.locals.formObject.pkgAttachments.value;
     let iri = aknObj["docIri"].value;
     let formFile = res.locals.formFiles[0];
 
@@ -470,7 +471,7 @@ const writeSubmittedFiletoFS = (req, res, next) => {
             };
             //Generate index for new uploads.
             if (!fileParams.index) {
-                fileParams.index = getFileIndexDB(aknObj["attachments"].value);
+                fileParams.index = getFileIndexDB(attachments);
             }
             fileParams.embeddedIri = `${iri}_${fileParams.index}`;
             fileParams.newFileName = `${fileParams.filePrefix}_${fileParams.index}${fileParams.fileExt}`;
