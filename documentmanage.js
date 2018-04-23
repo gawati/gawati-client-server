@@ -512,8 +512,8 @@ const addAttInfoToAknObject = (req, res, next) => {
     console.log(" IN: addAttInfoToAknObject");
     const writeResponse = res.locals.binaryFilesWriteResponse;
     if (writeResponse.step_1.status === "write_to_fs_success") {
-        // see msg object shape below in comment 
-        const writeInfo = writeResponse.step_1.msg ; 
+        // see msg object shape below in comment.
+        const writeInfo = writeResponse.step_1.msg[0];
         var tmplObject = Object.assign({}, res.locals.aknObject) ;
 
         /*
@@ -530,12 +530,14 @@ const addAttInfoToAknObject = (req, res, next) => {
         */
         var existingComponents = res.locals.aknObject["docComponents"];
         tmplObject.components = existingComponents || [];
-        writeInfo.forEach( (item, index) => {
-            if (! tmplObject.components) { 
-                tmplObject.components = [] ;
-            }
-            tmplObject.components.push(item);
-        });
+
+        var pos = componentsHelper.posOfComp(writeInfo.index, tmplObject.components);
+
+        //Case Update: Remove the old item before pushing the new one.
+        if (pos > -1) {
+            tmplObject.components.splice(pos, 1);
+        }
+        tmplObject.components.push(writeInfo);
     }
     res.locals.aknObject = tmplObject;
     res.locals.returnResponse = {success: "finished"};
@@ -551,8 +553,8 @@ documentManageAPIs["/document/upload"] = [
     receiveFilesSubmitData,
     convertFormObjectToAknObject,
     writeSubmittedFiletoFS,
-    // addAttInfoToAknObject,
-    // convertAknObjectToXml,
+    addAttInfoToAknObject,
+    convertAknObjectToXml,
     // saveToXmlDb,
     // returnResponse
 ];
