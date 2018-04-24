@@ -46,6 +46,12 @@ const receiveFilesSubmitData = (req, res, next) => {
     next();
 };
 
+const receiveAttSubmitData = (req, res, next) => {
+    console.log(" IN: receiveAttSubmitData");
+    res.locals.emDoc = req.body.data.emDoc;
+    res.locals.formObject = req.body.data.pkg;
+    next();
+}
 
 /**
  * 
@@ -504,20 +510,18 @@ const constructFormObject = (bodyObject) => {
     }
     return formObject = {
         pkgIdentity: newObj,
-        pkgAttachments: JSON.parse(formObject['attachments'])
+        pkgAttachments: JSON.parse(formObject['pkgAttachments'])
     };
 };
-
-
 
 const addAttInfoToAknObject = (req, res, next) => {
     console.log(" IN: addAttInfoToAknObject");
     const writeResponse = res.locals.binaryFilesWriteResponse;
+    var tmplObject = Object.assign({}, res.locals.aknObject);
+
     if (writeResponse.step_1.status === "write_to_fs_success") {
         // see msg object shape below in comment.
         const writeInfo = writeResponse.step_1.msg[0];
-        var tmplObject = Object.assign({}, res.locals.aknObject) ;
-
         /*
         responseMsg.step_1.msg.push (
             {
@@ -541,10 +545,105 @@ const addAttInfoToAknObject = (req, res, next) => {
         }
         tmplObject.components.push(writeInfo);
     }
+
     res.locals.aknObject = tmplObject;
     res.locals.returnResponse = {success: "finished"};
     next();
 };
+
+/**
+ * Removes the given file from the filesystem.
+ *
+ * @param {*} full path
+ * @param {*} response message
+ */
+const removeFile = (fullPath, responseMsg) => {
+    return new Promise(function(resolve, reject) {
+        fs.unlink(fullPath, (err) => {
+            if (err) {
+                logr.error(generalhelper.serverMsg("ERROR while removing file "), err);
+                responseMsg.step_1.status = "failure";
+                responseMsg.step_1.msg.push(
+                    {
+                        "File": fullPath,
+                        "err": err
+                    }
+                );
+                reject(err);
+            } else {
+                logr.info(generalhelper.serverMsg(" File was written to file system "));
+                responseMsg.step_1.msg.push(
+                    {
+                        "File": fullPath
+                    }
+                );
+                responseMsg.step_1.status = "remove_from_fs_success";
+                resolve(responseMsg);
+            }
+        });
+    });
+};
+
+/**
+ * Remove attachment from FS.
+ */
+const removeAttFromFS = (req, res, next) => {
+    console.log("IN: removeAttFromFS");
+    let emDoc = res.locals.emDoc;
+    let aknObj = res.locals.formObject.pkgIdentity;
+    let iri = aknObj["docIri"].value;
+
+    let arrIri = iri.split("/");
+    let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
+    let attPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
+
+    let fileExt = path.extname(emDoc.origFileName);
+    let filePrefix = urihelper.fileNamePrefixFromIRI(iri);
+    let attFileName = `${filePrefix}_${emDoc.index}${fileExt}`;
+
+    let fullPath = path.join(attPath, attFileName);
+
+    var responseMsg = {
+        "step_1": {"status": "", "msg": [] }
+    };
+
+    removeFile(fullPath, responseMsg)
+    .then(result => {
+        console.log(" RESPONSE MSG = ", JSON.stringify(result));
+        res.locals.binaryFileRemoveResponse = responseMsg;
+        next();
+    })
+    .catch(err => {
+        res.locals.binaryFileRemoveResponse = responseMsg;
+        console.log(err);
+    });
+}
+
+/**
+ * Remove attachment from attachments list.
+ */
+const removeAttInfoFromAknObject = (req, res, next) => {
+    console.log("IN: removeAttInfoFromAknObject");
+    const removeResponse = res.locals.binaryFileRemoveResponse;
+    var tmplObject = Object.assign({}, res.locals.aknObject);
+
+    if (removeResponse.step_1.status === "remove_from_fs_success") {
+        const fileInfo = res.locals.emDoc;
+
+        var existingComponents = res.locals.aknObject["attachments"];
+        tmplObject.components = existingComponents || [];
+
+        var pos = componentsHelper.posOfComp(fileInfo.index, tmplObject.components);
+
+        //Case Remove: Remove the attachment.
+        if (pos > -1) {
+            tmplObject.components.splice(pos, 1);
+        }
+    }
+    res.locals.aknObject = tmplObject;
+    res.locals.returnResponse = {success: "finished"};
+    next();
+}
 
 /* 
 * Receive the JSON containing the file info and the document info. 
@@ -556,6 +655,22 @@ documentManageAPIs["/document/upload"] = [
     convertFormObjectToAknObject,
     writeSubmittedFiletoFS,
     addAttInfoToAknObject,
+    convertAknObjectToXml,
+    saveToXmlDb,
+    returnResponse
+];
+
+/*
+* Receive the JSON containing the attachment info and the document info.
+* Remove attachment from the FS
+* Remove attachment from attachments list.
+* Reconstruct the parent XML document and save in the Database.
+*/
+documentManageAPIs["/document/remove"] = [
+    receiveAttSubmitData,
+    convertFormObjectToAknObject,
+    removeAttFromFS,
+    removeAttInfoFromAknObject,
     convertAknObjectToXml,
     saveToXmlDb,
     returnResponse
