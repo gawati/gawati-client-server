@@ -1,12 +1,14 @@
 const express = require("express");
+var bodyParser = require("body-parser");
+var multer = require("multer");
+const gauth = require("gawati-auth-middleware");
+
 const logr = require("./logging");
 const aknobject = require("./aknobject");
 const docmanage = require ("./documentmanage");
-const gauth = require("gawati-auth-middleware");
 const authJSON = require("./auth");
 const packageJSON = require("./package.json");
-var bodyParser = require("body-parser");
-var multer = require("multer");
+const wfapis = require("./wfapis");
 
 var upload = multer();
 
@@ -36,11 +38,24 @@ Object.keys(docmanage.documentManage).forEach(
         }
     });
 
+
 // handle /document/upload here because it is special as it has attachments
 var cpUpload = upload.fields(); //[{ name: 'file_0', maxCount: 1 }]
 router.post("/document/upload",
     upload.any(),
     docmanage.documentManage["/document/upload"]
+);
+
+/** adding workflow apis */
+Object.keys(wfapis.wfAPIs).forEach( 
+    (routePath) => {
+        console.log(" ROUTE PATH = ", routePath);
+        router.get(
+            routePath, 
+            jsonParser,
+            wfapis.wfAPIs[routePath]
+        );
+    }
 );
 
 
