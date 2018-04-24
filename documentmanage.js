@@ -504,7 +504,7 @@ const constructFormObject = (bodyObject) => {
     }
     return formObject = {
         pkgIdentity: newObj,
-        pkgAttachments: JSON.parse(formObject['attachments'])
+        pkgAttachments: JSON.parse(formObject['pkgAttachments'])
     };
 };
 
