@@ -6,6 +6,7 @@ const getCompRef = (eId, compRefs) => {
 }
 
 const getComponents = (embeddedContents, compRefs) => {
+    console.log(" EMBEDDED CONTENTS ", embeddedContents, compRefs);
     let compKeys = Object.keys(embeddedContents).filter(key => key == 'embeddedContent');
     let components = compKeys.reduce((r, k) => r.concat(embeddedContents[k]), []);
     
