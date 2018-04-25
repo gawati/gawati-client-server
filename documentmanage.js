@@ -265,7 +265,12 @@ const formStateFromAknDocument = (aknDoc) => {
 
     const embeddedContents = xmlDoc.meta.proprietary.gawati.embeddedContents;
     const compRefs = generalhelper.coerceIntoArray(xmlDoc.body.book.componentRef);
-    uiData.attachments.value = componentsHelper.getComponents(embeddedContents, compRefs);
+    // if there are no attachments embeddedContents is undefined
+    if (embeddedContents == null) {
+        uiData.attachments.value = {};
+    } else {
+        uiData.attachments.value = componentsHelper.getComponents(embeddedContents, compRefs);
+    }
     return uiData;
     /*
     {
