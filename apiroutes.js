@@ -56,7 +56,6 @@ router.post("/document/auth",
     ]
 );
 
-
 function terminal(req, res) {
     res.json({msg:"Completed !", auth: res.locals.gawati_auth});
 }
@@ -73,6 +72,11 @@ router.get(
         res.status(200).send(aboutInfo);
     }
 );
+
+// Send the keycloak config file
+router.get('/auth/config', function (req, res) {
+  res.send(authJSON);
+})
   
 
 module.exports = router;
