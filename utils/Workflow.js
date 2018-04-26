@@ -28,7 +28,8 @@ const getWFStateInfo = (docAknType, subtype, curWFState, wfArr) => {
 
     return {
         nextStates: relevantWF[0].object.getNextStateNames(curWFState),
-        allStates: relevantWF[0].object.getStates()
+        allStates: relevantWF[0].object.getStates(),
+        transitionsFromState: relevantWF[0].object.getTransitionsForFromState(curWFState)
     }
 }
 

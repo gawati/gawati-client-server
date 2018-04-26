@@ -8,7 +8,7 @@ const aknobject = require("./aknobject");
 const docmanage = require ("./documentmanage");
 const authJSON = require("./auth");
 const packageJSON = require("./package.json");
-const wfapis = require("./wfapis");
+const wfapis = require("./wfapis.routes");
 
 var upload = multer();
 
@@ -49,12 +49,28 @@ router.post("/document/upload",
 /** adding workflow apis */
 Object.keys(wfapis.wfAPIs).forEach( 
     (routePath) => {
-        console.log(" ROUTE PATH = ", routePath);
-        router.get(
-            routePath, 
-            jsonParser,
-            wfapis.wfAPIs[routePath]
-        );
+        const wfRoute = wfapis.wfAPIs[routePath];
+        console.log(` ROUTE PATH = ${routePath} with ${wfRoute.method}`);
+        switch(wfRoute.method) {
+            case "get":
+                console.log()
+                router.get(
+                    routePath, 
+                    jsonParser,
+                    wfRoute.stack
+                ); 
+            break;
+            case "post":
+                router.post(
+                    routePath, 
+                    jsonParser,
+                    wfRoute.stack
+                ); 
+            break;
+            default:
+                logr.error(`Unknown method provide ${wfRoute.method} only "get" and "post" are supported` );
+            break; 
+        }
     }
 );
 

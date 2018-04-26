@@ -37,23 +37,23 @@
             "permission": [
                 {
                     "name": "view",
-                    "roles": "admin submitter"
+                    "roles": "client.Admin client.Submitter"
                 },
                 {
                     "name": "list",
-                    "roles": "admin submitter"
+                    "roles": "client.Admin client.Submitter"
                 },
                 {
                     "name": "edit",
-                    "roles": "admin submitter"
+                    "roles": "client.Admin client.Submitter"
                 },
                 {
                     "name": "delete",
-                    "roles": "admin submitter"
+                    "roles": "client.Admin client.Submitter"
                 },
                 {
                     "name": "transit",
-                    "roles": "admin submitter"
+                    "roles": "client.Admin client.Submitter"
                 }
             ]
         },
@@ -65,23 +65,23 @@
             "permission": [
                 {
                     "name": "view",
-                    "roles": "admin editor"
+                    "roles": "client.Admin client.Editor"
                 },
                 {
                     "name": "list",
-                    "roles": "admin editor submitter"
+                    "roles": "client.Admin client.Editor client.Submitter"
                 },
                 {
                     "name": "delete",
-                    "roles": "admin editor"
+                    "roles": "client.Admin client.Editor"
                 },
                 {
                     "name": "edit",
-                    "roles": "admin editor"
+                    "roles": "client.Admin client.Editor"
                 },
                 {
                     "name": "transit",
-                    "roles": "admin editor"
+                    "roles": "client.Admin client.Editor"
                 }
             ]
         },
@@ -93,15 +93,15 @@
             "permission": [
                 {
                     "name": "view",
-                    "roles": "admin public"
+                    "roles": "client.Admin client.Public"
                 },
                 {
                     "name": "list",
-                    "roles": "admin publisher"
+                    "roles": "client.Admin client.Publisher"
                 },
                 {
                     "name": "transit",
-                    "roles": "admin publisher editor"
+                    "roles": "client.Admin client.Publisher client.Editor"
                 }
             ]
         }

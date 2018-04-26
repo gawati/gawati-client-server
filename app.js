@@ -12,7 +12,8 @@ var bodyParser = require("body-parser");
 
 // var upload = multer();
 
-var index = require("./routes/index");
+// INDEX_DEL
+// var index = require("./routes/index");
 
 var app = express();
 
@@ -42,7 +43,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", index);
+// INDEX_DEL
+//app.use("/", index);
+
 app.use("/gwc", routes);
 
 
