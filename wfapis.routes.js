@@ -10,10 +10,11 @@ wfAPIs[`${BASE_URI}/meta`] = {
     ]
 };
 
-wfAPIs[`${BASE_URI}/canTransit`] = {
+wfAPIs[`${BASE_URI}/transit`] = {
     method: "post",
     stack: [
-        wfapis.canRolesTransit
+        wfapis.receiveSubmitData,
+        wfapis.doTransit
     ]
 };
 
