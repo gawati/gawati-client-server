@@ -3,7 +3,6 @@ const constants = require("./constants");
 const logr = require("./logging");
 const wf = require("./utils/Workflow");
 
-var wfAPIs  = {};
 
 
 /**
@@ -19,9 +18,18 @@ const getAvailableWorkflowMetadata = (req, res) =>  {
     );
 };
 
-wfAPIs['/workflows/meta'] = [
-    getAvailableWorkflowMetadata
-];
 
+const canRolesTransit = (req, res) => {
+    const workflow = wf.wf ; 
+    const rolesTransitMap = req.body.data ; 
+    
+    console.log(" req.body.data ", req.body.data);
+    res.send (
+        rolesTransitMap
+    );
+}
 
-module.exports.wfAPIs = wfAPIs;
+module.exports = {
+    getAvailableWorkflowMetadata: getAvailableWorkflowMetadata,
+    canRolesTransit: canRolesTransit
+};
