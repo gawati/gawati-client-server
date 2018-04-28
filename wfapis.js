@@ -1,6 +1,9 @@
+const axios = require("axios");
+const gen = require('./utils/GeneralHelper');
 const logr = require("./logging");
 const wf = require("./utils/Workflow");
-
+const servicehelper = require("./utils/ServiceHelper");
+const serializeError = require("serialize-error");
 /**
  * Receives the Form posting, not suitable for multipart form data
  * @param {*} req 
@@ -28,16 +31,80 @@ const getAvailableWorkflowMetadata = (req, res) =>  {
     );
 };
 
+const stateXml = (name, title, level, initial, permissions) => 
+    `<state name="${name}" title="${title}" level="${level}" color="${initial}">
+        ${permissions}
+     </state>
+    `;
 
-const doTransit = (req, res) => {
+const permissionXml = (name, roles) =>
+    `<permission name="${name}" roles="${roles}" />`
+    ;
+
+const workflowStateToXML = (stateObj) => {
+    let {name, title, level, initial} = stateObj;
+    const permissionsArr = stateObj.permission.map( (eachPerm) => {
+        const {name, roles} = eachPerm;
+        return permissionXml(name, roles);
+    });
+    const permissions = permissionsArr.join("\n");
+    const stateXmlString  = stateXml(name, title, level, initial, permissions);
+    console.log("workflowStateToXML ", stateXmlString);
+    return stateXmlString;
+};
+
+const stateRefactorPermissionsForStorage = (state) => {
+    let newState = {...state};
+    newState.permission = state.permission.map( (aPerm) => {
+        const rolesArr = aPerm.roles.split(/\s+/);
+        return {
+            name: aPerm.name,
+            roles: rolesArr
+        };
+    });
+    return newState;
+}
+
+const getTransitToStateInformation = (req, res) => {
     //{from: from, to: to, name: name};
     let wfData = res.locals.formObject;
     const {transitionName, stateTo, docIri, aknType, aknSubType} = wfData;
     // find the workflow for the type and subtype
+    console.log( " WF DATA IRI == ", docIri);
     const workflow = wf.getWorkflowforTypeAndSubType(aknType, aknSubType);
+  
     if (workflow !== null) {
         // now get the required state
-        res.json(workflow.getState(stateTo));
+        const stateToObj = workflow.getState(stateTo);
+        console.log(" STATE TO OBJ ", stateToObj);
+        if (stateToObj == null) {
+            const msg = `ERROR: Invalid state ${stateTo}; Not defined in workflow for ${aknType} - ${aknSubType}` ;
+            logr.error(msg);
+            res.json(gen.error(msg));
+        } else {
+            const apiObj = servicehelper.getApi("xmlServer", "transit");
+
+            const data = {
+                docIri: docIri,
+                aknType: aknType,
+                aknSubType: aknSubType,
+                state: stateRefactorPermissionsForStorage(stateToObj)
+            };
+            axios({
+                method: apiObj.method,
+                url: apiObj.url,
+                data: data
+            }).then(
+                (response) => {
+                    res.json(response.data);
+                }
+            ).catch(
+                (err) => {
+                    const {message, stack} = serializeError(err);
+                    res.json({error: {code: "EXCEPTION", value: message + " \n " + stack}});
+                }
+            );
+        }
     } else {
         res.json({error: "No matching workflow"});
     }
@@ -57,5 +124,5 @@ module.exports = {
     receiveSubmitData: receiveSubmitData,
     getAvailableWorkflowMetadata: getAvailableWorkflowMetadata,
     canRolesTransit: canRolesTransit,
-    doTransit: doTransit
+    getTransitToStateInformation: getTransitToStateInformation
 };

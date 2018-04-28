@@ -14,7 +14,7 @@ wfAPIs[`${BASE_URI}/transit`] = {
     method: "post",
     stack: [
         wfapis.receiveSubmitData,
-        wfapis.doTransit
+        wfapis.getTransitToStateInformation
     ]
 };
 

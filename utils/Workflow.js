@@ -52,6 +52,7 @@ const getWorkflows = () => {
 const getWorkflowforTypeAndSubType = (aknType, aknSubType) => {
     const matchedWf = getWorkflows().filter( (wflow) => {
         const {doctype, subtype, status} = wflow.getWorkflowTypeInfo();
+        console.log(" getWorkflowForTypeAndSubType ", doctype, aknType, subtype,  aknSubType, status);
         if ((aknType === doctype ) && (aknSubType ===  subtype) && (status === "valid")) {
             return true;
         }

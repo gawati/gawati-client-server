@@ -130,9 +130,10 @@ const convertAknObjectToXml = (req, res, next) => {
 const saveToXmlDb = (req, res, next) => {
     console.log(" IN: saveToXmlDb");    
     const saveXmlApi = servicehelper.getApi("xmlServer", "saveXml");
+    const {url, method} = saveXmlApi;
     axios({
-        method: "post",
-        url: saveXmlApi,
+        method: method,
+        url: url,
         data: res.locals.xmlPackage
     }).then(
         (response) => {
@@ -166,6 +167,7 @@ documentManageAPIs["/document/add"] = [
 const updateAknField = (req, res, next) => {
     console.log(" IN: updateAknField");  
     const updateXmlApi = servicehelper.getApi("xmlServer", "updateXml");
+    const {url, method} = updateXmlApi;
     const {docTitle, docIri} = res.locals.formObject ;
     const postData = {
         "iri": docIri.value,
@@ -175,8 +177,8 @@ const updateAknField = (req, res, next) => {
         }]
     };
     axios({
-        method: "post",
-        url: updateXmlApi,
+        method: method,
+        url: url,
         data: postData
     }).then(
         (response) => {
@@ -215,9 +217,10 @@ ROUTEHANDLER_DOCUMENT_LOAD
 const loadXmlForIri = (req, res, next) => {
     console.log(" IN: loadXmlForIri");
     const loadXmlApi = servicehelper.getApi("xmlServer", "getXml");
+    const {url, method} = loadXmlApi;
     axios({
-        method: "post",
-        url: loadXmlApi,
+        method: method,
+        url: url,
         data: res.locals.formObject
     }).then(
         (response) => {
@@ -347,9 +350,10 @@ const convertAknXmlToObjects = (req, res, next) => {
 
 const loadListing = (req, res, next) => {
     const loadDocumentsApi = servicehelper.getApi("xmlServer", "getDocuments");
+    const {url, method} = loadDocumentsApi;
     axios({
-        method: "post",
-        url: loadDocumentsApi,
+        method: method,
+        url: url,
         data: res.locals.formObject
     }).then(
         (response) => {
