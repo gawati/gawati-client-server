@@ -3,6 +3,7 @@ const gen = require('./utils/GeneralHelper');
 const logr = require("./logging");
 const wf = require("./utils/Workflow");
 const servicehelper = require("./utils/ServiceHelper");
+const urihelper = require("./utils/UriHelper");
 const serializeError = require("serialize-error");
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -53,6 +54,10 @@ const workflowStateToXML = (stateObj) => {
     return stateXmlString;
 };
 
+/**
+ * The roles are split by spaces, we convert that into an array
+ * @param {object} state 
+ */
 const stateRefactorPermissionsForStorage = (state) => {
     let newState = {...state};
     newState.permission = state.permission.map( (aPerm) => {
@@ -65,45 +70,60 @@ const stateRefactorPermissionsForStorage = (state) => {
     return newState;
 }
 
-const getTransitToStateInformation = (req, res) => {
+/**
+ * Calls the eXist-db api that does the transit
+ * @param {*} req 
+ * @param {*} res 
+ */
+const doTransit = (req, res) => {
+    const apiObj = servicehelper.getApi("xmlServer", "transit");
+    const data = res.locals.transitObject;
+    axios({
+        method: apiObj.method,
+        url: apiObj.url,
+        data: data
+    }).then(
+        (response) => {
+            res.json(response.data);
+        }
+    ).catch(
+        (err) => {
+            const {message, stack} = serializeError(err);
+            res.json({error: {code: "EXCEPTION", value: message + " \n " + stack}});
+        }
+    );
+}
+
+/**
+ * Builds the object that is passed to the eXist-db api
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const getTransitToStateInformation = (req, res, next) => {
     //{from: from, to: to, name: name};
     let wfData = res.locals.formObject;
     const {transitionName, stateTo, docIri, aknType, aknSubType} = wfData;
     // find the workflow for the type and subtype
-    console.log( " WF DATA IRI == ", docIri);
     const workflow = wf.getWorkflowforTypeAndSubType(aknType, aknSubType);
-  
     if (workflow !== null) {
         // now get the required state
         const stateToObj = workflow.getState(stateTo);
-        console.log(" STATE TO OBJ ", stateToObj);
         if (stateToObj == null) {
             const msg = `ERROR: Invalid state ${stateTo}; Not defined in workflow for ${aknType} - ${aknSubType}` ;
             logr.error(msg);
             res.json(gen.error(msg));
         } else {
-            const apiObj = servicehelper.getApi("xmlServer", "transit");
-
+            const refactoredState = stateRefactorPermissionsForStorage(stateToObj);
             const data = {
                 docIri: docIri,
+                fileName: urihelper.fileNameFromIRI(docIri, "xml"),
                 aknType: aknType,
                 aknSubType: aknSubType,
-                state: stateRefactorPermissionsForStorage(stateToObj)
+                state: refactoredState
             };
-            axios({
-                method: apiObj.method,
-                url: apiObj.url,
-                data: data
-            }).then(
-                (response) => {
-                    res.json(response.data);
-                }
-            ).catch(
-                (err) => {
-                    const {message, stack} = serializeError(err);
-                    res.json({error: {code: "EXCEPTION", value: message + " \n " + stack}});
-                }
-            );
+            res.locals.transitObject = data;
+            next();
         }
     } else {
         res.json({error: "No matching workflow"});
@@ -124,5 +144,6 @@ module.exports = {
     receiveSubmitData: receiveSubmitData,
     getAvailableWorkflowMetadata: getAvailableWorkflowMetadata,
     canRolesTransit: canRolesTransit,
-    getTransitToStateInformation: getTransitToStateInformation
+    getTransitToStateInformation: getTransitToStateInformation,
+    doTransit: doTransit
 };
