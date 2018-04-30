@@ -12,7 +12,12 @@ const serverMsg = (message) => {
     return `${appconstants.PROCESS_NAME}: ${message}`;
 };
 
+const error = (message,code = "general") => {
+    return {"error": {"code": code, "value": message}};
+}
+
 module.exports = {
     coerceIntoArray: coerceIntoArray,
-    serverMsg: serverMsg
+    serverMsg: serverMsg,
+    error: error
 };

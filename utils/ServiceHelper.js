@@ -7,7 +7,7 @@ const getServer = (name) => {
 const getApi = (serverName, apiName) => {
     const server = getServer(serverName);
     const apiCall = server.api[apiName];
-    return `${server.serviceEndPoint}${apiCall}`;
+    return {method: apiCall.method, url: `${server.serviceEndPoint}${apiCall.url}` };
 }
 
 module.exports = {

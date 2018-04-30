@@ -2,10 +2,26 @@
     "xmlServer" : {
         "serviceEndPoint" : "http://localhost:8080/exist/restxq",
         "api": {
-            "saveXml": "/gwdc/document/add",
-            "getXml" : "/gwdc/document/load",
-            "updateXml" : "/gwdc/document/edit",
-            "getDocuments": "/gwdc/documents"
+            "saveXml": { 
+                "url": "/gwdc/document/add",
+                "method": "post"
+            },
+            "getXml" : {
+                "url": "/gwdc/document/load",
+                "method": "post"
+            },
+            "updateXml" : {
+                "url": "/gwdc/document/edit",
+                "method": "post"
+            },
+            "getDocuments": {
+                "url": "/gwdc/documents",
+                "method": "post"
+            },
+            "transit" : {
+                "url": "/gwdc/document/transit",
+                "method": "post"
+            }
         }
     }
 }
