@@ -174,6 +174,7 @@ const writeSubmittedFiletoFS = (req, res, next) => {
 const addAttInfoToAknObject = (req, res, next) => {
     console.log(" IN: addAttInfoToAknObject");
     const writeResponse = res.locals.binaryFilesWriteResponse;
+    var attachments = res.locals.formObject.pkgAttachments.value || [];
 
     if (writeResponse.step_1.status === "write_to_fs_success") {
         // see msg object shape below in comment.
@@ -190,9 +191,6 @@ const addAttInfoToAknObject = (req, res, next) => {
         )
         ;
         */
-        var existingComponents = res.locals.formObject.pkgAttachments.value;
-        attachments = existingComponents || [];
-
         var pos = componentsHelper.posOfComp(writeInfo.index, attachments);
 
         //Case Update: Remove the old item before pushing the new one.
@@ -301,13 +299,10 @@ const removeAttFromFS = (req, res, next) => {
 const removeAttInfoFromAknObject = (req, res, next) => {
     console.log("IN: removeAttInfoFromAknObject");
     const removeResponse = res.locals.binaryFileRemoveResponse;
+    var attachments = res.locals.formObject.pkgAttachments.value || [];
 
     if (removeResponse.step_1.status === "remove_from_fs_success") {
         const fileInfo = res.locals.emDoc;
-
-        var existingComponents = res.locals.formObject.pkgAttachments.value;
-        var attachments = existingComponents || [];
-
         var pos = componentsHelper.posOfComp(fileInfo.index, attachments);
 
         //Case Remove: Remove the attachment.
@@ -320,7 +315,7 @@ const removeAttInfoFromAknObject = (req, res, next) => {
         "docIri": res.locals.formObject.pkgIdentity["docIri"].value,
         "attachments": attachments
     }
-    
+
     res.locals.returnResponse = {success: "finished"};
     next();
 }
