@@ -21,6 +21,10 @@
             "transit" : {
                 "url": "/gwdc/document/transit",
                 "method": "post"
+            },
+            "saveAttachments": {
+                "url": "/gwdc/document/attachments",
+                "method": "post"
             }
         }
     }

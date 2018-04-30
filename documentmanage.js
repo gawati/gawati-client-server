@@ -526,7 +526,6 @@ const constructFormObject = (bodyObject) => {
 const addAttInfoToAknObject = (req, res, next) => {
     console.log(" IN: addAttInfoToAknObject");
     const writeResponse = res.locals.binaryFilesWriteResponse;
-    var tmplObject = Object.assign({}, res.locals.aknObject);
 
     if (writeResponse.step_1.status === "write_to_fs_success") {
         // see msg object shape below in comment.
@@ -544,18 +543,22 @@ const addAttInfoToAknObject = (req, res, next) => {
         ;
         */
         var existingComponents = res.locals.aknObject["attachments"];
-        tmplObject.components = existingComponents || [];
+        attachments = existingComponents || [];
 
-        var pos = componentsHelper.posOfComp(writeInfo.index, tmplObject.components);
+        var pos = componentsHelper.posOfComp(writeInfo.index, attachments);
 
         //Case Update: Remove the old item before pushing the new one.
         if (pos > -1) {
-            tmplObject.components.splice(pos, 1);
+            attachments.splice(pos, 1);
         }
-        tmplObject.components.push(writeInfo);
+        attachments.push(writeInfo);
     }
 
-    res.locals.aknObject = tmplObject;
+    res.locals.attPackage = {
+        "docIri": res.locals.formObject.pkgIdentity["docIri"].value,
+        "attachments": attachments
+    }
+
     res.locals.returnResponse = {success: "finished"};
     next();
 };
@@ -634,25 +637,56 @@ const removeAttFromFS = (req, res, next) => {
 const removeAttInfoFromAknObject = (req, res, next) => {
     console.log("IN: removeAttInfoFromAknObject");
     const removeResponse = res.locals.binaryFileRemoveResponse;
-    var tmplObject = Object.assign({}, res.locals.aknObject);
 
     if (removeResponse.step_1.status === "remove_from_fs_success") {
         const fileInfo = res.locals.emDoc;
 
         var existingComponents = res.locals.aknObject["attachments"];
-        tmplObject.components = existingComponents || [];
+        var attachments = existingComponents || [];
 
-        var pos = componentsHelper.posOfComp(fileInfo.index, tmplObject.components);
+        var pos = componentsHelper.posOfComp(fileInfo.index, attachments);
 
         //Case Remove: Remove the attachment.
         if (pos > -1) {
-            tmplObject.components.splice(pos, 1);
+            attachments.splice(pos, 1);
         }
     }
-    res.locals.aknObject = tmplObject;
+
+    res.locals.attPackage = {
+        "docIri": res.locals.formObject.pkgIdentity["docIri"].value,
+        "attachments": attachments
+    }
+
     res.locals.returnResponse = {success: "finished"};
     next();
 }
+
+/**
+ * Saves the attachments for a particular document to the database
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+const saveAttToXmlDb = (req, res, next) => {
+    console.log(" IN: saveAttToXmlDb");
+    const saveAttApi = servicehelper.getApi("xmlServer", "saveAttachments");
+    const {url, method} = saveAttApi;
+    axios({
+        method: method,
+        url: url,
+        data: res.locals.attPackage
+    }).then(
+        (response) => {
+            res.locals.returnResponse = response.data;
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.returnResponse = err;
+            next();
+        }
+    );
+};
 
 /* 
 * Receive the JSON containing the file info and the document info. 
@@ -664,8 +698,7 @@ documentManageAPIs["/document/upload"] = [
     convertFormObjectToAknObject,
     writeSubmittedFiletoFS,
     addAttInfoToAknObject,
-    convertAknObjectToXml,
-    saveToXmlDb,
+    saveAttToXmlDb,
     returnResponse
 ];
 
@@ -680,8 +713,7 @@ documentManageAPIs["/document/remove"] = [
     convertFormObjectToAknObject,
     removeAttFromFS,
     removeAttInfoFromAknObject,
-    convertAknObjectToXml,
-    saveToXmlDb,
+    saveAttToXmlDb,
     returnResponse
 ];
 
