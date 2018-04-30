@@ -30,7 +30,6 @@ attAPIs[`${BASE_URI}/upload`] = {
 * Remove attachment from the FS
 * Remove attachment from attachments list.
 * Save the new attachment list to the Database.
-*/
 Input json object submitted to the API:
 {
     "data": {
