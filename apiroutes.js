@@ -9,6 +9,7 @@ const docmanage = require ("./documentmanage");
 const authJSON = require("./auth");
 const packageJSON = require("./package.json");
 const wfapis = require("./wfapis.routes");
+const attapis = require("./attapis.routes");
 
 var upload = multer();
 
@@ -18,7 +19,7 @@ var router = express.Router();
 
 var jsonParser = bodyParser.json();
 
-const EXCLUDE_FROM_AUTO_ROUTE = ["/document/upload", "/document/auth"];
+const EXCLUDE_FROM_AUTO_ROUTE = ["/attachments/upload", "/document/auth"];
 
 /*
 Map all the routes form docmanage automatically
@@ -39,11 +40,42 @@ Object.keys(docmanage.documentManage).forEach(
     });
 
 
-// handle /document/upload here because it is special as it has attachments
+// handle /attachments/upload here because it is special as it has attachments
 var cpUpload = upload.fields(); //[{ name: 'file_0', maxCount: 1 }]
-router.post("/document/upload",
+router.post("/attachments/upload",
     upload.any(),
-    docmanage.documentManage["/document/upload"]
+    attapis.attAPIs["/attachments/upload"].stack
+);
+
+/** adding attachment apis */
+Object.keys(attapis.attAPIs).forEach(
+    (routePath) => {
+        const attRoute = attapis.attAPIs[routePath];
+        console.log(` ROUTE PATH = ${routePath} with ${attRoute.method}`);
+        switch(attRoute.method) {
+            case "get":
+                console.log()
+                router.get(
+                    routePath,
+                    jsonParser,
+                    attRoute.stack
+                );
+            break;
+            case "post":
+                if (EXCLUDE_FROM_AUTO_ROUTE.indexOf(routePath) < 0) {
+                    // only paths NOT IN  EXCLUDE_FROM_AUTO_ROUTE
+                    router.post(
+                        routePath,
+                        jsonParser,
+                        attRoute.stack
+                    );
+                }
+            break;
+            default:
+                logr.error(`Unknown method provide ${attRoute.method} only "get" and "post" are supported` );
+            break;
+        }
+    }
 );
 
 /** adding workflow apis */
