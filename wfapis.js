@@ -3,7 +3,6 @@ const gen = require('./utils/GeneralHelper');
 const logr = require("./logging");
 const wf = require("./utils/Workflow");
 const servicehelper = require("./utils/ServiceHelper");
-const urihelper = require("./utils/UriHelper");
 const serializeError = require("serialize-error");
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -117,7 +116,6 @@ const getTransitToStateInformation = (req, res, next) => {
             const refactoredState = stateRefactorPermissionsForStorage(stateToObj);
             const data = {
                 docIri: docIri,
-                fileName: urihelper.fileNameFromIRI(docIri, "xml"),
                 aknType: aknType,
                 aknSubType: aknSubType,
                 state: refactoredState
