@@ -6,7 +6,7 @@
  * which is an es6 construct not supported on node yet. Instead we use the more 
  * verbose module.exports mechanism
  */
-const moment = require('moment');
+const moment = require("moment");
 
 /**
  * Generates a normalized file name from a FRBRExpression/FRBRthis/@value iri
@@ -33,7 +33,7 @@ const fileNamePrefixFromIRI = (iri) => {
         }
     ).join("_");
     return filePrefix;
-}
+};
 
 const collectionRelativePathFromIri = (iri) => {
     let iriParts = iri.split("/");
@@ -90,10 +90,10 @@ const aknManIri = (exprIri) => {
 const normalizeDocNumber = (docNumber) => {
     return docNumber
         .trim()
-        .replace(/\s+/g, '_')
-        .replace(/[.;,?]/g, '')
-        .replace(/[\\/]/g, '-')
-        .replace(/[+!@#$%^&*()]/g, '') ;
+        .replace(/\s+/g, "_")
+        .replace(/[.;,?]/g, "")
+        .replace(/[\\/]/g, "-")
+        .replace(/[+!@#$%^&*()]/g, "") ;
 };
 
 

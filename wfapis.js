@@ -1,5 +1,5 @@
 const axios = require("axios");
-const gen = require('./utils/GeneralHelper');
+const gen = require("./utils/GeneralHelper");
 const logr = require("./logging");
 const wf = require("./utils/Workflow");
 const servicehelper = require("./utils/ServiceHelper");
@@ -67,7 +67,7 @@ const stateRefactorPermissionsForStorage = (state) => {
         };
     });
     return newState;
-}
+};
 
 /**
  * Calls the eXist-db api that does the transit
@@ -91,7 +91,7 @@ const doTransit = (req, res) => {
             res.json({error: {code: "EXCEPTION", value: message + " \n " + stack}});
         }
     );
-}
+};
 
 /**
  * Builds the object that is passed to the eXist-db api
@@ -128,20 +128,10 @@ const getTransitToStateInformation = (req, res, next) => {
     }
 };
 
-const canRolesTransit = (req, res) => {
-    const workflow = wf.wf ; 
-    const rolesTransitMap = req.body.data ; 
-    
-    console.log(" req.body.data ", req.body.data);
-    res.send (
-        rolesTransitMap
-    );
-};
 
 module.exports = {
     receiveSubmitData: receiveSubmitData,
     getAvailableWorkflowMetadata: getAvailableWorkflowMetadata,
-    canRolesTransit: canRolesTransit,
     getTransitToStateInformation: getTransitToStateInformation,
     doTransit: doTransit
 };
