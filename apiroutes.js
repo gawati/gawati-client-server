@@ -4,7 +4,7 @@ var multer = require("multer");
 const gauth = require("gawati-auth-middleware");
 
 const logr = require("./logging");
-const aknobject = require("./aknobject");
+//const aknobject = require("./aknobject");
 const docmanage = require ("./documentmanage");
 const authJSON = require("./auth");
 const packageJSON = require("./package.json");
@@ -53,26 +53,26 @@ Object.keys(attapis.attAPIs).forEach(
         const attRoute = attapis.attAPIs[routePath];
         console.log(` ROUTE PATH = ${routePath} with ${attRoute.method}`);
         switch(attRoute.method) {
-            case "get":
-                console.log()
-                router.get(
+        case "get":
+            console.log();
+            router.get(
+                routePath,
+                jsonParser,
+                attRoute.stack
+            );
+            break;
+        case "post":
+            if (EXCLUDE_FROM_AUTO_ROUTE.indexOf(routePath) < 0) {
+                // only paths NOT IN  EXCLUDE_FROM_AUTO_ROUTE
+                router.post(
                     routePath,
                     jsonParser,
                     attRoute.stack
                 );
+            }
             break;
-            case "post":
-                if (EXCLUDE_FROM_AUTO_ROUTE.indexOf(routePath) < 0) {
-                    // only paths NOT IN  EXCLUDE_FROM_AUTO_ROUTE
-                    router.post(
-                        routePath,
-                        jsonParser,
-                        attRoute.stack
-                    );
-                }
-            break;
-            default:
-                logr.error(`Unknown method provide ${attRoute.method} only "get" and "post" are supported` );
+        default:
+            logr.error(`Unknown method provide ${attRoute.method} only "get" and "post" are supported` );
             break;
         }
     }
@@ -84,23 +84,23 @@ Object.keys(wfapis.wfAPIs).forEach(
         const wfRoute = wfapis.wfAPIs[routePath];
         console.log(` ROUTE PATH = ${routePath} with ${wfRoute.method}`);
         switch(wfRoute.method) {
-            case "get":
-                console.log()
-                router.get(
-                    routePath, 
-                    jsonParser,
-                    wfRoute.stack
-                ); 
+        case "get":
+            console.log();
+            router.get(
+                routePath, 
+                jsonParser,
+                wfRoute.stack
+            ); 
             break;
-            case "post":
-                router.post(
-                    routePath, 
-                    jsonParser,
-                    wfRoute.stack
-                ); 
+        case "post":
+            router.post(
+                routePath, 
+                jsonParser,
+                wfRoute.stack
+            ); 
             break;
-            default:
-                logr.error(`Unknown method provide ${wfRoute.method} only "get" and "post" are supported` );
+        default:
+            logr.error(`Unknown method provide ${wfRoute.method} only "get" and "post" are supported` );
             break; 
         }
     }
@@ -137,9 +137,9 @@ router.get(
 );
 
 // Send the keycloak config file
-router.get('/auth/config', function (req, res) {
-  res.send(authJSON);
-})
+router.get("/auth/config", function (req, res) {
+    res.send(authJSON);
+});
   
 
 module.exports = router;

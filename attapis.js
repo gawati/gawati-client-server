@@ -5,7 +5,7 @@ const path = require("path");
 const mkdirp = require("mkdirp");
 
 const urihelper = require("./utils/UriHelper");
-const generalhelper = require('./utils/GeneralHelper');
+const generalhelper = require("./utils/GeneralHelper");
 const componentsHelper = require("./utils/ComponentsHelper");
 const servicehelper = require("./utils/ServiceHelper");
 const constants = require("./constants");
@@ -23,7 +23,7 @@ const constructFormObject = (bodyObject) => {
     }
     return formObject = {
         pkgIdentity: newObj,
-        pkgAttachments: JSON.parse(formObject['pkgAttachments'])
+        pkgAttachments: JSON.parse(formObject["pkgAttachments"])
     };
 };
 
@@ -203,7 +203,7 @@ const addAttInfoToAknObject = (req, res, next) => {
     res.locals.attPackage = {
         "docIri": res.locals.formObject.pkgIdentity["docIri"].value,
         "attachments": attachments
-    }
+    };
 
     res.locals.returnResponse = {success: "finished"};
     next();
@@ -223,7 +223,7 @@ const receiveAttSubmitData = (req, res, next) => {
     res.locals.emDoc = req.body.data.emDoc;
     res.locals.formObject = req.body.data.pkg;
     next();
-}
+};
 
 /**
  * Removes the given file from the filesystem.
@@ -282,16 +282,16 @@ const removeAttFromFS = (req, res, next) => {
     };
 
     removeFile(fullPath, responseMsg)
-    .then(result => {
-        console.log(" RESPONSE MSG = ", JSON.stringify(result));
-        res.locals.binaryFileRemoveResponse = responseMsg;
-        next();
-    })
-    .catch(err => {
-        res.locals.binaryFileRemoveResponse = responseMsg;
-        console.log(err);
-    });
-}
+        .then(result => {
+            console.log(" RESPONSE MSG = ", JSON.stringify(result));
+            res.locals.binaryFileRemoveResponse = responseMsg;
+            next();
+        })
+        .catch(err => {
+            res.locals.binaryFileRemoveResponse = responseMsg;
+            console.log(err);
+        });
+};
 
 /**
  * Remove attachment from attachments list.
@@ -314,11 +314,11 @@ const removeAttInfoFromAknObject = (req, res, next) => {
     res.locals.attPackage = {
         "docIri": res.locals.formObject.pkgIdentity["docIri"].value,
         "attachments": attachments
-    }
+    };
 
     res.locals.returnResponse = {success: "finished"};
     next();
-}
+};
 
 /**
  * Saves the attachments for a particular document to the database

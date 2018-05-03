@@ -5,9 +5,9 @@ const parseDateISODatePart = (dateStr) => {
 };
 
 const ISOStringDateToDate = (dateStr) => 
-     moment(dateStr).toDate();
+    moment(dateStr).toDate();
 
 module.exports = {
     parseDateISODatePart: parseDateISODatePart,
     ISOStringDateToDate: ISOStringDateToDate
-}
+};

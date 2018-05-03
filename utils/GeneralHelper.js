@@ -14,7 +14,7 @@ const serverMsg = (message) => {
 
 const error = (message,code = "general") => {
     return {"error": {"code": code, "value": message}};
-}
+};
 
 module.exports = {
     coerceIntoArray: coerceIntoArray,

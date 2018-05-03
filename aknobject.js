@@ -117,8 +117,8 @@ const identityFormTemplate = () => {
 const attachmentsFormTemplate = () => {
     return {
         attachments : {value: "", error: null }
-    }
-}
+    };
+};
 
 /**
  *  Accepts a form object submitted by the gawati-client
