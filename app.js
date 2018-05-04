@@ -7,6 +7,8 @@ const wf = require("./utils/Workflow");
 const routes = require("./apiroutes");
 var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
+const cors = require('cors');
+
 //var multer = require("multer");
 
 
@@ -16,6 +18,13 @@ var bodyParser = require("body-parser");
 // var index = require("./routes/index");
 
 var app = express();
+
+// To avoid this error:
+// Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://localhost:3000' is therefore not allowed access.
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 
 // enable bearer token extraction
 app.use(bearerToken());
