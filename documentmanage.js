@@ -330,13 +330,12 @@ const convertAknXmlToObjects = (req, res, next) => {
 const loadListing = (req, res, next) => {
     const roles = authHelper.getRolesForClient(res.locals.gawati_auth);
     const data = Object.assign({}, res.locals.formObject, {roles})
-    
     const loadDocumentsApi = servicehelper.getApi("xmlServer", "getDocuments");
     const {url, method} = loadDocumentsApi;
     axios({
         method: method,
         url: url,
-        data: res.locals.formObject
+        data: data
     }).then(
         (response) => {
             res.locals.aknObjects = response.data;
@@ -351,6 +350,7 @@ const loadListing = (req, res, next) => {
 };
 
 const authenticate = (req, res, next) => {
+    console.log(" IN: authenticate");
     const AUTH_OPTIONS = {"authJSON": authJSON};
     return gauth.authTokenValidate(req, res, next, AUTH_OPTIONS);
 }
