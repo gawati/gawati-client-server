@@ -11,7 +11,6 @@ const cors = require('cors');
 
 //var multer = require("multer");
 
-
 // var upload = multer();
 
 // INDEX_DEL
@@ -19,12 +18,19 @@ const cors = require('cors');
 
 var app = express();
 
+const env = process.env.NODE_ENV || "development" ;
+
+console.log(" ENVIRONMENT  = ", env);
+
 // To avoid this error:
 // Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://localhost:3000' is therefore not allowed access.
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
+
+if (env === "development") {
+    app.use(cors({
+        origin: 'http://localhost:3000',
+        credentials: true
+      }));
+}
 
 // enable bearer token extraction
 app.use(bearerToken());
