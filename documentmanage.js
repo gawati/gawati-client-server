@@ -147,7 +147,7 @@ const updateAknField = (req, res, next) => {
     console.log(" IN: updateAknField");  
     const updateXmlApi = servicehelper.getApi("xmlServer", "updateXml");
     const {url, method} = updateXmlApi;
-    const {docTitle, docIri} = res.locals.formObject ;
+    const {docTitle, docIri} = res.locals.formObject.pkgIdentity ;
     const postData = {
         "iri": docIri.value,
         "data": [{
