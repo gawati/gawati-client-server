@@ -18,6 +18,10 @@
                 "url": "/gwdc/documents",
                 "method": "post"
             },
+            "docExists": {
+                "url": "/gwdc/document/exists",
+                "method": "post"
+            },
             "transit" : {
                 "url": "/gwdc/document/transit",
                 "method": "post"

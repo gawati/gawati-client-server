@@ -364,6 +364,40 @@ documentManageAPIs["/documents"] = [
 ];
 
 /**
+ * Checks if a document with the given iri already exists in
+ * the client data server.
+ */
+const docExists = (req, res, next) => {
+    console.log(" IN: docExists");
+    const docExistsApi = servicehelper.getApi("xmlServer", "docExists");
+    const {url, method} = docExistsApi;
+    axios({
+        method: method,
+        url: url,
+        data: res.locals.formObject
+    }).then(
+        (response) => {
+            const {error, success} = response.data;
+            error 
+            ? res.locals.returnResponse = error.code 
+            : res.locals.returnResponse = success.code;
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.returnResponse = err;
+            next();
+        }
+    );
+}
+
+documentManageAPIs["/document/exists"] = [
+    receiveSubmitData,
+    docExists,
+    returnResponse
+];
+
+/**
  * API stack for each Request end point. 
  * THey are called one after the other in the order of the array
  * YOu need to call next() at the end to ensure the next api in the chain
