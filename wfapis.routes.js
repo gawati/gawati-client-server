@@ -4,6 +4,17 @@ var wfAPIs  = {};
 const BASE_URI = "/workflows"
 
 /*
+Returns default Workflow and Permissions for state 'draft'.
+No input parameters
+*/
+wfAPIs[`${BASE_URI}/defaults`] = {
+    method: "get",
+    stack: [
+        wfapis.getDefaults
+    ]
+};
+
+/*
 Returns metadata about configured workflows in the server. 
 No input parameters
 */

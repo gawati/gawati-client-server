@@ -17,6 +17,29 @@ const receiveSubmitData = (req, res, next) =>  {
     next();
 };
 
+/**
+ * Receives the Form posting, not suitable for multipart form data
+ * Default Workflow and Permissions:
+ * - state: 'draft'
+ * - doctype, subtype: from the first workflow object in the array
+ * - wfStateInfo: Get state info for the above doctype and subtype
+ * - permissions: Get default permissions for 'draft' state
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+const getDefaults = (req, res) =>  {
+    const wfArr = wf.wf;
+    const wfDefault = {state: {status: 'draft', 'label': 'Draft'}};
+    const {doctype, subtype} = wfArr[0].object.getWorkflowTypeInfo();
+    const wfStateInfo = Object.assign({}, wfDefault, wf.getWFStateInfo(doctype, subtype, 'draft', wfArr));
+    const draftObj = wfStateInfo.allStates.find(state => state.name == 'draft');
+
+    permissions = {
+        permission: draftObj.permission
+    }
+    res.send({workflow: wfStateInfo, permissions})
+};
 
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -133,5 +156,6 @@ module.exports = {
     receiveSubmitData: receiveSubmitData,
     getAvailableWorkflowMetadata: getAvailableWorkflowMetadata,
     getTransitToStateInformation: getTransitToStateInformation,
-    doTransit: doTransit
+    doTransit: doTransit,
+    getDefaults: getDefaults
 };
