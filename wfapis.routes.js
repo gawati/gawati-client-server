@@ -4,11 +4,17 @@ var wfAPIs  = {};
 const BASE_URI = "/workflows"
 
 /*
-Returns default Workflow and Permissions for state 'draft'.
-No input parameters
+Returns default Workflow and Permissions for state 'draft' and doc type.
+Input json object submitted to the API:
+{
+    "data": {
+        "aknType": "act",
+        "aknSubType": "legge"
+    }
+}
 */
 wfAPIs[`${BASE_URI}/defaults`] = {
-    method: "get",
+    method: "post",
     stack: [
         wfapis.getDefaults
     ]

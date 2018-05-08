@@ -29,10 +29,10 @@ const receiveSubmitData = (req, res, next) =>  {
  * @param {*} next
  */
 const getDefaults = (req, res) =>  {
+    const {aknType, aknSubType} = req.body.data;
     const wfArr = wf.wf;
     const wfDefault = {state: {status: 'draft', 'label': 'Draft'}};
-    const {doctype, subtype} = wfArr[0].object.getWorkflowTypeInfo();
-    const wfStateInfo = Object.assign({}, wfDefault, wf.getWFStateInfo(doctype, subtype, 'draft', wfArr));
+    const wfStateInfo = Object.assign({}, wfDefault, wf.getWFStateInfo(aknType, aknSubType, 'draft', wfArr));
     const draftObj = wfStateInfo.allStates.find(state => state.name == 'draft');
 
     permissions = {
