@@ -127,9 +127,46 @@ const saveToXmlDb = (req, res, next) => {
     );
 };
 
+/**
+ * Checks if a document with the given iri already exists in
+ * the portal data server.
+ */
+const doesExistOnPortal = (req, res, next) => {
+    console.log(" IN: doesExistOnPortal");
+    const {docIri, docPart} = res.locals.formObject.pkgIdentity;
+    const iri = urihelper.aknWorkIriThis(docIri.value, docPart.value);
+    const doesExistApi = servicehelper.getApi("portalData", "docExists");
+    const {url, method} = doesExistApi;
+    axios({
+        method: method,
+        url: url,
+        data: {iri}
+    }).then(
+        (response) => {
+            const {error, success} = response.data;
+            error 
+            ? res.locals.returnResponse = error.code
+            : res.locals.returnResponse = success.code;
+
+            const canSave = (res.locals.returnResponse === 'doc_not_found');
+            if (canSave) {
+                next();
+            } else {
+                res.locals.returnResponse = 'doc_exists_on_portal';
+                res.json(res.locals.returnResponse);
+            }
+        }
+    ).catch(
+        (err) => {
+            res.locals.returnResponse = err;
+            res.json(res.locals.returnResponse);
+        }
+    );
+}
 
 documentManageAPIs["/document/add"] = [
     receiveSubmitData,
+    doesExistOnPortal,
     convertFormObjectToAknObject,
     convertAknObjectToXml,
     saveToXmlDb,
