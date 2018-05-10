@@ -60,7 +60,6 @@ ROUTEHANDLER_DOCUMENT_ADD
 const convertFormObjectToAknObject = (req, res, next) => {
     console.log(" IN: convertFormObjectToAknObject");    
     let formObj = res.locals.formObject;
-    console.log("debug: formobj = ", formObj);
     // convert the submitted form to an akn object
     let aknDoc = aknobject.formObject2AknTemplateObject(formObj);
     // validates the Akoma Ntoso Object using the Yup json schema

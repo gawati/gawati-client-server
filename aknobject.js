@@ -1,6 +1,7 @@
 var Handlebars = require("handlebars/runtime");
 const moment = require("moment");
 const datehelper = require("./utils/DateHelper");
+const generalhelper = require("./utils/GeneralHelper");
 const yup  = require("yup");
 /** 
  * Generated templates
@@ -85,6 +86,14 @@ const aknTmplSchema = yup.object().shape({
     "manVersionDate": yup.string().required(),
     "createdDate":  yup.date().required(),
     "modifiedDate":  yup.date().required(),
+    "permissions": yup.array().of(
+        yup.object().shape({
+            name: yup.string().required(),
+            roles: yup.array().of(
+                yup.string().required()
+            )
+        })
+    ),
     "components": yup.array().of(
         yup.object().shape({
             index: yup.number().required(), 
@@ -128,7 +137,6 @@ const attachmentsFormTemplate = () => {
  * @param {*} form 
  */
 const formObject2AknTemplateObject = (form) => {
-
     const {
         docAknType, 
         docType, 
@@ -199,9 +207,40 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.createdDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
     aknTmpl.modifiedDate = aknTmpl.createdDate ;
     aknTmpl.attachments = form.pkgAttachments.value;
-
+    aknTmpl.permissions = formObject2AknPermissions(form.permissions);
+    aknTmpl.workflow = {...form.workflow.state}; // @label @status
+    console.log( " formObject2AknTemplateObject obj ", JSON.stringify(aknTmpl.permissions));
     return aknTmpl;
 };
+/**
+ * 
+ * 
+ * @param {any} permissions 
+ */
+const formObject2AknPermissions = (permissions) => {
+   /*
+    <gwd:permissions>
+        <gwd:permission name="view">
+            <gwd:roles>
+                <gwd:role name="client.Admin"/>
+                <gwd:role name="client.Submitter"/>
+            </gwd:roles>
+        </gwd:permission>
+        ....
+    </gwd:permissions>
+   */
+    const listOfPermissions = permissions.permission;
+    return listOfPermissions.map( (permission) => {
+        const {name, roles} = permission;
+        const arrRoles = generalhelper.stringWhitespaceTrim(roles).split(" ");
+        return {
+            "name": name,
+            "roles": arrRoles
+        };
+    });
+};
+
+    
 
 const validateAknObject = (aknObject) => {
     const valid = aknTmplSchema.validate(aknObject);
