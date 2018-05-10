@@ -1,17 +1,37 @@
 var Handlebars = require("handlebars/runtime");  var template = Handlebars.template, templates = Handlebars.templates = Handlebars.templates || {};
 templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,partials,data) {
+    var stack1, alias1=container.lambda, alias2=container.escapeExpression;
+
+  return "    <gwd:workflow>\r\n        <gwd:state status=\""
+    + alias2(alias1(((stack1 = (depth0 != null ? depth0.workflow : depth0)) != null ? stack1.status : stack1), depth0))
+    + "\" label=\""
+    + alias2(alias1(((stack1 = (depth0 != null ? depth0.workflow : depth0)) != null ? stack1.label : stack1), depth0))
+    + "\" />\r\n    </gwd:workflow>\r\n";
+},"3":function(container,depth0,helpers,partials,data) {
+    var stack1, helper, alias1=depth0 != null ? depth0 : (container.nullContext || {});
+
+  return "        <gwd:permission name=\""
+    + container.escapeExpression(((helper = (helper = helpers.name || (depth0 != null ? depth0.name : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(alias1,{"name":"name","hash":{},"data":data}) : helper)))
+    + "\">\r\n            <gwd:roles>\r\n"
+    + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.roles : depth0),{"name":"each","hash":{},"fn":container.program(4, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + "            </gwd:roles>\r\n        </gwd:permission>\r\n";
+},"4":function(container,depth0,helpers,partials,data) {
+    return "                <gwd:role name=\""
+    + container.escapeExpression(container.lambda(depth0, depth0))
+    + "\" />\r\n";
+},"6":function(container,depth0,helpers,partials,data) {
     var helper;
 
   return "                    <an:FRBRsubtype value=\""
     + container.escapeExpression(((helper = (helper = helpers.localTypeNormalized || (depth0 != null ? depth0.localTypeNormalized : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"localTypeNormalized","hash":{},"data":data}) : helper)))
     + "\"/>\r\n";
-},"3":function(container,depth0,helpers,partials,data) {
+},"8":function(container,depth0,helpers,partials,data) {
     var stack1;
 
   return "                    <gw:embeddedContents>\r\n"
-    + ((stack1 = helpers.each.call(depth0 != null ? depth0 : (container.nullContext || {}),(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(4, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers.each.call(depth0 != null ? depth0 : (container.nullContext || {}),(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(9, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "                    </gw:embeddedContents>\r\n";
-},"4":function(container,depth0,helpers,partials,data) {
+},"9":function(container,depth0,helpers,partials,data) {
     var helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;
 
   return "                        <gw:embeddedContent eId=\"embedded-doc-"
@@ -25,7 +45,7 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + "\" \r\n                            origFileName=\""
     + alias4(((helper = (helper = helpers.origFileName || (depth0 != null ? depth0.origFileName : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"origFileName","hash":{},"data":data}) : helper)))
     + "\" state=\"true\"/>\r\n";
-},"6":function(container,depth0,helpers,partials,data) {
+},"11":function(container,depth0,helpers,partials,data) {
     var helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;
 
   return "                <an:componentRef src=\""
@@ -44,7 +64,11 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + alias4(((helper = (helper = helpers.createdDate || (depth0 != null ? depth0.createdDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"createdDate","hash":{},"data":data}) : helper)))
     + "\"  \r\n    modified=\""
     + alias4(((helper = (helper = helpers.modifiedDate || (depth0 != null ? depth0.modifiedDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"modifiedDate","hash":{},"data":data}) : helper)))
-    + "\"\r\n    >\r\n    <gwd:workflow>\r\n        <gwd:state status=\"draft\" label=\"Draft\" />\r\n    </gwd:workflow>\r\n    <gwd:permissions>\r\n        <!-- role based permissions -->\r\n        <gwd:read>\r\n            <gwd:role name=\"reader\" />\r\n        </gwd:read>\r\n        <gwd:edit>\r\n            <gwd:role name=\"editor\" />\r\n        </gwd:edit>\r\n        <gwd:delete>\r\n            <gwd:role name=\"deletor\" />\r\n        </gwd:delete>\r\n        <gwd:view>\r\n            <gwd:role name=\"viewer\" />\r\n        </gwd:view>\r\n        <!-- user specific permissions -->\r\n        <gwd:users>\r\n            <gwd:user name=\"xuser\">\r\n                <gwd:edit />\r\n            </gwd:user>\r\n        </gwd:users>\r\n    </gwd:permissions>\r\n<an:akomaNtoso \r\n    xmlns:gw=\"http://gawati.org/ns/1.0\" \r\n    xmlns:an=\"http://docs.oasis-open.org/legaldocml/ns/akn/3.0\">\r\n    <an:"
+    + "\"\r\n    >\r\n"
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.workflow : depth0),{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + "    <gwd:permissions>\r\n        <!-- role based permissions -->\r\n"
+    + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.permissions : depth0),{"name":"each","hash":{},"fn":container.program(3, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + "    </gwd:permissions>\r\n<an:akomaNtoso \r\n    xmlns:gw=\"http://gawati.org/ns/1.0\" \r\n    xmlns:an=\"http://docs.oasis-open.org/legaldocml/ns/akn/3.0\">\r\n    <an:"
     + alias4(((helper = (helper = helpers.aknType || (depth0 != null ? depth0.aknType : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"aknType","hash":{},"data":data}) : helper)))
     + " name=\""
     + alias4(((helper = (helper = helpers.localTypeNormalized || (depth0 != null ? depth0.localTypeNormalized : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"localTypeNormalized","hash":{},"data":data}) : helper)))
@@ -59,7 +83,7 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + "\" showAs=\""
     + alias4(((helper = (helper = helpers.workCountryShowAs || (depth0 != null ? depth0.workCountryShowAs : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"workCountryShowAs","hash":{},"data":data}) : helper)))
     + "\"/>\r\n"
-    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.subType : depth0),{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.subType : depth0),{"name":"if","hash":{},"fn":container.program(6, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "                    <an:FRBRnumber value=\""
     + alias4(((helper = (helper = helpers.docNumberNormalized || (depth0 != null ? depth0.docNumberNormalized : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docNumberNormalized","hash":{},"data":data}) : helper)))
     + "\" showAs=\""
@@ -103,7 +127,7 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + "\" showAs=\""
     + alias4(((helper = (helper = helpers.exprLangShowAs || (depth0 != null ? depth0.exprLangShowAs : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"exprLangShowAs","hash":{},"data":data}) : helper)))
     + "\" />\r\n                    </gw:languages>\r\n"
-    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"if","hash":{},"fn":container.program(3, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"if","hash":{},"fn":container.program(8, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "                    <gw:dateTime refersTo=\"#docCreatedDate\" datetime=\""
     + alias4(((helper = (helper = helpers.createdDate || (depth0 != null ? depth0.createdDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"createdDate","hash":{},"data":data}) : helper)))
     + "\"/>\r\n                    <gw:dateTime refersTo=\"#docModifiedDate\" datetime=\""
@@ -113,7 +137,7 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + "\" />\r\n                    <gw:date refersTo=\"#docEntryIntoForceDate\" date=\""
     + alias4(((helper = (helper = helpers.docEntryIntoForceDate || (depth0 != null ? depth0.docEntryIntoForceDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docEntryIntoForceDate","hash":{},"data":data}) : helper)))
     + "\" />\r\n                    <gw:themes source=\"#legacy\">\r\n                    </gw:themes>\r\n                </gw:gawati>\r\n            </an:proprietary>\r\n        </an:meta>\r\n        <an:body>\r\n            <an:book refersTo=\"#mainDocument\">  \r\n"
-    + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(6, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(11, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "            </an:book>\r\n        </an:body>\r\n    </an:"
     + alias4(((helper = (helper = helpers.aknType || (depth0 != null ? depth0.aknType : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"aknType","hash":{},"data":data}) : helper)))
     + ">\r\n</an:akomaNtoso>\r\n</gwd:package>";

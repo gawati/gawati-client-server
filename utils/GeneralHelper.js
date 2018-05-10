@@ -4,6 +4,12 @@ const coerceIntoArray = (obj) => {
     return Array.isArray(obj) ? obj : [obj] || [];
 };
 
+
+const stringWhitespaceTrim = (aString) => {
+    return aString.replace(/\s+/g,' ')
+               .replace(/^\s+|\s+$/,'');
+ };
+
 /**
  * This prefixes log messages with the process name
  * @param {*} message 
@@ -18,6 +24,7 @@ const error = (message,code = "general") => {
 
 module.exports = {
     coerceIntoArray: coerceIntoArray,
+    stringWhitespaceTrim: stringWhitespaceTrim,
     serverMsg: serverMsg,
     error: error
 };

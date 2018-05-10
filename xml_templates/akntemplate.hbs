@@ -2,29 +2,22 @@
     created="{{ createdDate }}"  
     modified="{{ modifiedDate }}"
     >
+    {{#if workflow}} 
     <gwd:workflow>
-        <gwd:state status="draft" label="Draft" />
+        <gwd:state status="{{ workflow.status }}" label="{{ workflow.label }}" />
     </gwd:workflow>
+    {{/if}}
     <gwd:permissions>
         <!-- role based permissions -->
-        <gwd:read>
-            <gwd:role name="reader" />
-        </gwd:read>
-        <gwd:edit>
-            <gwd:role name="editor" />
-        </gwd:edit>
-        <gwd:delete>
-            <gwd:role name="deletor" />
-        </gwd:delete>
-        <gwd:view>
-            <gwd:role name="viewer" />
-        </gwd:view>
-        <!-- user specific permissions -->
-        <gwd:users>
-            <gwd:user name="xuser">
-                <gwd:edit />
-            </gwd:user>
-        </gwd:users>
+        {{#each permissions}}
+        <gwd:permission name="{{ name }}">
+            <gwd:roles>
+                {{#each roles}}
+                <gwd:role name="{{ . }}" />
+                {{/each}}
+            </gwd:roles>
+        </gwd:permission>
+        {{/each}}
     </gwd:permissions>
 <an:akomaNtoso 
     xmlns:gw="http://gawati.org/ns/1.0" 
