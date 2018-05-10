@@ -18,7 +18,7 @@ const cors = require('cors');
 
 var app = express();
 
-const env = process.env.NODE_ENV || "development" ;
+const env = process.env.NODE_ENV || "production" ;
 
 console.log(" ENVIRONMENT  = ", env);
 
