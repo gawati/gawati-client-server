@@ -285,7 +285,7 @@ const formStateFromAknDocument = (aknDoc) => {
     const compRefs = generalhelper.coerceIntoArray(xmlDoc.body.book.componentRef);
     // if there are no attachments embeddedContents is undefined
     if (embeddedContents == null) {
-        uiData.attachments.value = {};
+        uiData.attachments.value = []; // was {} should be [] i think KOHSAH 2018-05-11
     } else {
         uiData.attachments.value = componentsHelper.getComponents(embeddedContents, compRefs);
     }
