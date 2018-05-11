@@ -374,8 +374,16 @@ const loadListing = (req, res, next) => {
         data: data
     }).then(
         (response) => {
-            res.locals.aknObjects = response.data;
-            next();
+            const {error, success} = response.data;
+            // if no documents, returns an error code
+            if (error == null) {
+                res.locals.aknObjects = response.data;
+                next();
+            } else {
+                // respond with error in case document set is empty
+                res.locals.returnResponse = error ; 
+                res.json(res.locals.returnResponse);
+            }
         }
     ).catch(
         (err) => {
