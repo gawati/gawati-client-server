@@ -168,9 +168,9 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.docTitle = docTitle.value;
     aknTmpl.docAuthoritative = "true";
     aknTmpl.docPrescriptive = "true";
-    aknTmpl.docOfficialDate = datehelper.ISOStringDateToDate(aknDate);
-    aknTmpl.docPublicationDate = datehelper.ISOStringDateToDate(aknPublicationDate);
-    aknTmpl.docEntryIntoForceDate = datehelper.ISOStringDateToDate(aknEntryIntoForceDate); 
+    aknTmpl.docOfficialDate = aknDate;
+    aknTmpl.docPublicationDate = aknPublicationDate;
+    aknTmpl.docEntryIntoForceDate = aknEntryIntoForceDate; 
     aknTmpl.docPart = docPart.value;
     aknTmpl.workIRI = urihelper.aknWorkIri(
         docCountry.value, 
