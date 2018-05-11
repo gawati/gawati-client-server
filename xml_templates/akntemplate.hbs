@@ -70,7 +70,6 @@
                     <gw:languages>
                         <gw:language code="{{ exprLangCode }}" showAs="{{ exprLangShowAs }}" />
                     </gw:languages>
-                    {{#if components}}
                     <gw:embeddedContents>
                         {{#each components}}
                         <gw:embeddedContent eId="embedded-doc-{{ index }}" 
@@ -78,7 +77,6 @@
                             origFileName="{{ origFileName }}" state="true"/>
                         {{/each}}
                     </gw:embeddedContents>
-                    {{/if}}
                     <gw:dateTime refersTo="#docCreatedDate" datetime="{{ createdDate }}"/>
                     <gw:dateTime refersTo="#docModifiedDate" datetime="{{ modifiedDate }}"/>
                     <gw:date refersTo="#docPublicationDate" date="{{ docPublicationDate }}" />

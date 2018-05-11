@@ -141,8 +141,7 @@ const docDoesNotExist = (response, res) => {
 const docExistsOnClient = (req, res, next) => {
     console.log(" IN: docExists");
     const {pkg} = res.locals.formObject;
-    const {docIri, docPart} = pkg.pkgIdentity;
-    const iri = urihelper.aknWorkIriThis(docIri.value, docPart.value);
+    const iri = pkg.pkgIdentity.docIri.value;
     const docExistsApi = servicehelper.getApi("xmlServer", "docExists");
     const {url, method} = docExistsApi;
     axios({
@@ -176,8 +175,7 @@ const doesExistOnPortal = (req, res, next) => {
     if (skipCheck) {
         next();
     } else {
-        const {docIri, docPart} = pkg.pkgIdentity;
-        const iri = urihelper.aknWorkIriThis(docIri.value, docPart.value);
+        const iri = pkg.pkgIdentity.docIri.value;
         const doesExistApi = servicehelper.getApi("portalData", "docExists");
         const {url, method} = doesExistApi;
         axios({
