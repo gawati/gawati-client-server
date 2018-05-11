@@ -126,32 +126,35 @@ const saveToXmlDb = (req, res, next) => {
     );
 };
 
+const docDoesNotExist = (response, res) => {
+    const {error, success} = response.data;
+    error
+    ? res.locals.returnResponse = error.code
+    : res.locals.returnResponse = success.code;
+    return res.locals.returnResponse === 'doc_not_found';
+}
+
 /**
  * Checks if a document with the given iri already exists in
- * the portal data server.
+ * the client data server.
  */
-const doesExistOnPortal = (req, res, next) => {
-    console.log(" IN: doesExistOnPortal");
-    const {docIri, docPart} = res.locals.formObject.pkgIdentity;
+const docExistsOnClient = (req, res, next) => {
+    console.log(" IN: docExists");
+    const {pkg} = res.locals.formObject;
+    const {docIri, docPart} = pkg.pkgIdentity;
     const iri = urihelper.aknWorkIriThis(docIri.value, docPart.value);
-    const doesExistApi = servicehelper.getApi("portalData", "docExists");
-    const {url, method} = doesExistApi;
+    const docExistsApi = servicehelper.getApi("xmlServer", "docExists");
+    const {url, method} = docExistsApi;
     axios({
         method: method,
         url: url,
         data: {iri}
     }).then(
         (response) => {
-            const {error, success} = response.data;
-            error 
-            ? res.locals.returnResponse = error.code
-            : res.locals.returnResponse = success.code;
-
-            const canSave = (res.locals.returnResponse === 'doc_not_found');
-            if (canSave) {
+            if (docDoesNotExist(response, res)) {
                 next();
             } else {
-                res.locals.returnResponse = 'doc_exists_on_portal';
+                res.locals.returnResponse = 'doc_exists_on_client';
                 res.json(res.locals.returnResponse);
             }
         }
@@ -163,9 +166,57 @@ const doesExistOnPortal = (req, res, next) => {
     );
 }
 
+/**
+ * Checks if a document with the given iri already exists in
+ * the portal data server.
+ */
+const doesExistOnPortal = (req, res, next) => {
+    console.log(" IN: doesExistOnPortal");
+    const {pkg, skipCheck} = res.locals.formObject;
+    if (skipCheck) {
+        next();
+    } else {
+        const {docIri, docPart} = pkg.pkgIdentity;
+        const iri = urihelper.aknWorkIriThis(docIri.value, docPart.value);
+        const doesExistApi = servicehelper.getApi("portalData", "docExists");
+        const {url, method} = doesExistApi;
+        axios({
+            method: method,
+            url: url,
+            data: {iri}
+        }).then(
+            (response) => {
+                if (docDoesNotExist(response, res)) {
+                    next();
+                } else {
+                    res.locals.returnResponse = 'doc_exists_on_portal';
+                    res.json(res.locals.returnResponse);
+                }
+            }
+        ).catch(
+            (err) => {
+                res.locals.returnResponse = err;
+                res.json(res.locals.returnResponse);
+            }
+        );
+    }
+}
+
+/**
+ * When extras are sent by the client ui, set formObject to 
+ * contain only pkg.
+ */
+const setFormObject = (req, res, next) => {
+    const {pkg} = res.locals.formObject;
+    res.locals.formObject = pkg;
+    next();
+}
+
 documentManageAPIs["/document/add"] = [
     receiveSubmitData,
+    docExistsOnClient,
     doesExistOnPortal,
+    setFormObject,
     convertFormObjectToAknObject,
     convertAknObjectToXml,
     saveToXmlDb,
@@ -404,40 +455,6 @@ documentManageAPIs["/documents"] = [
     receiveSubmitData,
     loadListing,
     convertAknXmlToObjects,
-    returnResponse
-];
-
-/**
- * Checks if a document with the given iri already exists in
- * the client data server.
- */
-const docExists = (req, res, next) => {
-    console.log(" IN: docExists");
-    const docExistsApi = servicehelper.getApi("xmlServer", "docExists");
-    const {url, method} = docExistsApi;
-    axios({
-        method: method,
-        url: url,
-        data: res.locals.formObject
-    }).then(
-        (response) => {
-            const {error, success} = response.data;
-            error 
-            ? res.locals.returnResponse = error.code 
-            : res.locals.returnResponse = success.code;
-            next();
-        }
-    ).catch(
-        (err) => {
-            res.locals.returnResponse = err;
-            next();
-        }
-    );
-}
-
-documentManageAPIs["/document/exists"] = [
-    receiveSubmitData,
-    docExists,
     returnResponse
 ];
 
