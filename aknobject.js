@@ -64,6 +64,8 @@ const aknTmplSchema = yup.object().shape({
     "aknType": yup.string().required(),
     "localTypeNormalized":  yup.string().required(),
     "subType": yup.boolean().required(),
+    "docCreatedDate":  yup.date().required(),
+    "docModifiedDate":  yup.date().required(),
     "docNumber": yup.string().required(),
     "docNumberNormalized": yup.string().required(),        
     "docTitle": yup.string().required(),
@@ -84,8 +86,6 @@ const aknTmplSchema = yup.object().shape({
     "manIRIthis": yup.string().required(),
     "manIRI": yup.string().required(),
     "manVersionDate": yup.string().required(),
-    "createdDate":  yup.date().required(),
-    "modifiedDate":  yup.date().required(),
     "permissions": yup.array().of(
         yup.object().shape({
             name: yup.string().required(),
@@ -109,6 +109,8 @@ const aknTmplSchema = yup.object().shape({
 
 const identityFormTemplate = () => {
     return {
+        docCreatedDate: {value: undefined, error: null },
+        docModifiedDate: {value: undefined, error: null },
         docLang: {value: {} , error: null },
         docType: {value: "", error: null },
         docAknType: {value: "", error: null },
@@ -138,6 +140,8 @@ const attachmentsFormTemplate = () => {
  */
 const formObject2AknTemplateObject = (form) => {
     const {
+        docCreatedDate,
+        docModifiedDate,
         docAknType, 
         docType, 
         docNumber, 
@@ -153,7 +157,8 @@ const formObject2AknTemplateObject = (form) => {
     
     // this aknTmpl object is applied on the handlebars schema to generate the XML 
     let aknTmpl = {} ;
-    
+    aknTmpl.docCreatedDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
+    aknTmpl.docModifiedDate = aknTmpl.docCreatedDate;
     // official date is sent as a full serialized dateTime with timezone information
     // for AKN official date we need only the date part as an ISO date
     const aknDate = datehelper.parseDateISODatePart(docOfficialDate.value);
@@ -204,8 +209,6 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.manIRIthis = urihelper.aknManIriThis(aknTmpl.exprIRIthis);
     aknTmpl.manVersionDate = aknDate;
 
-    aknTmpl.createdDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
-    aknTmpl.modifiedDate = aknTmpl.createdDate ;
     aknTmpl.attachments = form.pkgAttachments.value;
     aknTmpl.permissions = formObject2AknPermissions(form.permissions);
     aknTmpl.workflow = {...form.workflow.state}; // @label @status

@@ -324,6 +324,8 @@ const formStateFromAknDocument = (aknDoc) => {
     uiData.docTitle.value = xmlDoc.meta.publication.showAs;
     uiData.docOfficialDate.value = 
           xmlDoc.meta.identification.FRBRExpression.FRBRdate.date, 
+    uiData.docCreatedDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docCreatedDate");
+    uiData.docModifiedDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docModifiedDate");
     uiData.docPublicationDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docPublicationDate");
     uiData.docEntryIntoForceDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docEntryIntoForceDate");
     uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
@@ -360,13 +362,10 @@ const formStateFromAknDocument = (aknDoc) => {
    */
 const getOnlineDocumentFromAknObject = (aknObject) => {
     var uiData = formStateFromAknDocument(aknObject.akomaNtoso);
-
     //Get all workflow state info
     var curWFState = aknObject.workflow.state.status;
     var workflow = Object.assign({}, aknObject.workflow, wf.getWFStateInfo(uiData.docAknType.value, uiData.docType.value, curWFState, wf.wf));
     return {
-        created: aknObject.created,
-        modified: aknObject.modified,
         workflow: workflow,
         permissions: aknObject.permissions,
         akomaNtoso: uiData
