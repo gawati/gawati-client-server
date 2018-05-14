@@ -13,13 +13,19 @@ const getAknRootDocType = (aknDoc)  => {
     return "doc";
 };
 
+/**
+ * Get both date and dateTime elements
+ */
 const getGawatiNamedDate = (aknDoc, dateName) => {
     const gawatiDates = generalhelper.coerceIntoArray(aknDoc.meta.proprietary.gawati.date);
-    const foundDate = gawatiDates.find ( 
+    const gawatiDateTimes = generalhelper.coerceIntoArray(aknDoc.meta.proprietary.gawati.dateTime);
+
+    const allDates = gawatiDates.concat(gawatiDateTimes);
+    const foundDate = allDates.find(
         (theDate) => theDate.refersTo === `#${dateName}`
     );
     if (foundDate) {
-        return foundDate.date;
+        return foundDate.date || foundDate.datetime;
     } else {
         return undefined;
     }
