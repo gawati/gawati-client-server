@@ -72,6 +72,7 @@ const aknTmplSchema = yup.object().shape({
     "docOfficialDate": yup.date().format("YYYY-MM-DD", true).required(),
     "docPublicationDate": yup.date().format("YYYY-MM-DD", true).required(),
     "docEntryIntoForceDate": yup.date().format("YYYY-MM-DD", true).required(),
+    "docVersionDate": yup.date().default(() => null).nullable(true).notRequired(),
     "docAuthoritative": yup.boolean().required(),      
     "docPrescriptive": yup.boolean().required(),
     "workIRIthis":  yup.string().required(),
@@ -119,6 +120,7 @@ const identityFormTemplate = () => {
         docOfficialDate: {value: undefined, error: null },
         docPublicationDate: {value: undefined, error: null },
         docEntryIntoForceDate: {value: undefined, error: null },
+        docVersionDate: {value: undefined, error: null },
         docNumber: {value: "", error: null },
         docPart: {value: "", error: null },
         docIri : {value: "", error: null }
@@ -149,6 +151,7 @@ const formObject2AknTemplateObject = (form) => {
         docOfficialDate, 
         docPublicationDate,
         docEntryIntoForceDate,
+        docVersionDate,
         docPart, 
         docIri, 
         docCountry, 
@@ -164,6 +167,7 @@ const formObject2AknTemplateObject = (form) => {
     const aknDate = datehelper.parseDateISODatePart(docOfficialDate.value);
     const aknPublicationDate = datehelper.parseDateISODatePart(docPublicationDate.value);
     const aknEntryIntoForceDate = datehelper.parseDateISODatePart(docEntryIntoForceDate.value);
+    const aknVersionDate = datehelper.parseDateISODatePart(docVersionDate.value);
     
     aknTmpl.aknType = docAknType.value ;
     aknTmpl.localTypeNormalized = docType.value; 
@@ -175,7 +179,8 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.docPrescriptive = "true";
     aknTmpl.docOfficialDate = aknDate;
     aknTmpl.docPublicationDate = aknPublicationDate;
-    aknTmpl.docEntryIntoForceDate = aknEntryIntoForceDate; 
+    aknTmpl.docEntryIntoForceDate = aknEntryIntoForceDate;
+    aknTmpl.docVersionDate = aknVersionDate; 
     aknTmpl.docPart = docPart.value;
     aknTmpl.workIRI = urihelper.aknWorkIri(
         docCountry.value, 
@@ -194,8 +199,9 @@ const formObject2AknTemplateObject = (form) => {
 
     aknTmpl.exprIRI = urihelper.aknExprIri(
         aknTmpl.workIRI, 
-        docLang.value.value, 
-        docPart.value
+        docLang.value.value,
+        aknVersionDate 
+        // docPart.value
     );
     aknTmpl.exprIRIthis = urihelper.aknExprIriThis(
         aknTmpl.exprIRI, 

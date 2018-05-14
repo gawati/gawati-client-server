@@ -40,6 +40,12 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + alias4(((helper = (helper = helpers.origFileName || (depth0 != null ? depth0.origFileName : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"origFileName","hash":{},"data":data}) : helper)))
     + "\" state=\"true\"/>\n";
 },"10":function(container,depth0,helpers,partials,data) {
+    var helper;
+
+  return "                    <gw:date refersTo=\"#docVersionDate\" date=\""
+    + container.escapeExpression(((helper = (helper = helpers.docVersionDate || (depth0 != null ? depth0.docVersionDate : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"docVersionDate","hash":{},"data":data}) : helper)))
+    + "\" />\n";
+},"12":function(container,depth0,helpers,partials,data) {
     var helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression;
 
   return "                <an:componentRef src=\""
@@ -126,8 +132,10 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + alias4(((helper = (helper = helpers.docPublicationDate || (depth0 != null ? depth0.docPublicationDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docPublicationDate","hash":{},"data":data}) : helper)))
     + "\" />\n                    <gw:date refersTo=\"#docEntryIntoForceDate\" date=\""
     + alias4(((helper = (helper = helpers.docEntryIntoForceDate || (depth0 != null ? depth0.docEntryIntoForceDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docEntryIntoForceDate","hash":{},"data":data}) : helper)))
-    + "\" />\n                    <gw:themes source=\"#legacy\">\n                    </gw:themes>\n                </gw:gawati>\n            </an:proprietary>\n        </an:meta>\n        <an:body>\n            <an:book refersTo=\"#mainDocument\">  \n"
-    + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(10, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + "\" />\n                    \n"
+    + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.docVersionDate : depth0),{"name":"if","hash":{},"fn":container.program(10, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
+    + "\n                    <gw:themes source=\"#legacy\">\n                    </gw:themes>\n                </gw:gawati>\n            </an:proprietary>\n        </an:meta>\n        <an:body>\n            <an:book refersTo=\"#mainDocument\">  \n"
+    + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(12, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "            </an:book>\n        </an:body>\n    </an:"
     + alias4(((helper = (helper = helpers.aknType || (depth0 != null ? depth0.aknType : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"aknType","hash":{},"data":data}) : helper)))
     + ">\n</an:akomaNtoso>\n</gwd:package>";

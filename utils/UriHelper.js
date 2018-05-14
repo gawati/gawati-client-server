@@ -69,8 +69,9 @@ const aknWorkIriThis = (workIri, docPart) => {
 }
 ;
 
-const aknExprIri = (workIri, docLang) => {
-    return `${workIri}/${docLang}@`;
+const aknExprIri = (workIri, docLang, docVersionDate) => {
+    const verDate = docVersionDate ? docVersionDate : ''; 
+    return `${workIri}/${docLang}@${verDate}`;
 }
 ;
 

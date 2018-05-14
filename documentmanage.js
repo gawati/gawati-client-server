@@ -88,6 +88,7 @@ const convertAknObjectToXml = (req, res, next) => {
     console.log(" IN: convertAknObjectToXml");
     let xml = aknobject.aknTemplateToAknXML(res.locals.aknObject);
     let iriThis = res.locals.aknObject.exprIRIthis;
+    console.log("IRI THIS:::", iriThis);
     // set update = true to ensure the document gets overwritten
     res.locals.xmlPackage = {
         "fileXml": urihelper.fileNameFromIRI(iriThis, "xml"),
@@ -217,8 +218,8 @@ documentManageAPIs["/document/add"] = [
     setFormObject,
     convertFormObjectToAknObject,
     convertAknObjectToXml,
-    saveToXmlDb,
-    returnResponse
+    // saveToXmlDb,
+    // returnResponse
 ];
 
 /**
@@ -328,6 +329,7 @@ const formStateFromAknDocument = (aknDoc) => {
     uiData.docModifiedDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docModifiedDate");
     uiData.docPublicationDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docPublicationDate");
     uiData.docEntryIntoForceDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docEntryIntoForceDate");
+    uiData.docVersionDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docVersionDate");
     uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
     uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
     uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
