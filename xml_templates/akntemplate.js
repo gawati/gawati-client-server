@@ -54,11 +54,7 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
 },"compiler":[7,">= 4.0.0"],"main":function(container,depth0,helpers,partials,data) {
     var stack1, helper, alias1=depth0 != null ? depth0 : (container.nullContext || {}), alias2=helpers.helperMissing, alias3="function", alias4=container.escapeExpression, alias5=container.lambda;
 
-  return "<gwd:package xmlns:gwd=\"http://gawati.org/ns/1.0/data\" \n    created=\""
-    + alias4(((helper = (helper = helpers.createdDate || (depth0 != null ? depth0.createdDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"createdDate","hash":{},"data":data}) : helper)))
-    + "\"  \n    modified=\""
-    + alias4(((helper = (helper = helpers.modifiedDate || (depth0 != null ? depth0.modifiedDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"modifiedDate","hash":{},"data":data}) : helper)))
-    + "\"\n    >\n"
+  return "<gwd:package xmlns:gwd=\"http://gawati.org/ns/1.0/data\">\n"
     + ((stack1 = helpers["if"].call(alias1,(depth0 != null ? depth0.workflow : depth0),{"name":"if","hash":{},"fn":container.program(1, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "    <gwd:permissions>\n        <!-- role based permissions -->\n"
     + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.permissions : depth0),{"name":"each","hash":{},"fn":container.program(3, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
@@ -123,9 +119,9 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + "\" />\n                    </gw:languages>\n                    <gw:embeddedContents>\n"
     + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(8, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "                    </gw:embeddedContents>\n                    <gw:dateTime refersTo=\"#docCreatedDate\" datetime=\""
-    + alias4(((helper = (helper = helpers.createdDate || (depth0 != null ? depth0.createdDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"createdDate","hash":{},"data":data}) : helper)))
+    + alias4(((helper = (helper = helpers.docCreatedDate || (depth0 != null ? depth0.docCreatedDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docCreatedDate","hash":{},"data":data}) : helper)))
     + "\"/>\n                    <gw:dateTime refersTo=\"#docModifiedDate\" datetime=\""
-    + alias4(((helper = (helper = helpers.modifiedDate || (depth0 != null ? depth0.modifiedDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"modifiedDate","hash":{},"data":data}) : helper)))
+    + alias4(((helper = (helper = helpers.docModifiedDate || (depth0 != null ? depth0.docModifiedDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docModifiedDate","hash":{},"data":data}) : helper)))
     + "\"/>\n                    <gw:date refersTo=\"#docPublicationDate\" date=\""
     + alias4(((helper = (helper = helpers.docPublicationDate || (depth0 != null ? depth0.docPublicationDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docPublicationDate","hash":{},"data":data}) : helper)))
     + "\" />\n                    <gw:date refersTo=\"#docEntryIntoForceDate\" date=\""
