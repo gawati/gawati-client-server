@@ -72,7 +72,7 @@ const aknTmplSchema = yup.object().shape({
     "docOfficialDate": yup.date().format("YYYY-MM-DD", true).required(),
     "docPublicationDate": yup.date().format("YYYY-MM-DD", true).required(),
     "docEntryIntoForceDate": yup.date().format("YYYY-MM-DD", true).required(),
-    "docVersionDate": yup.date().default(() => null).nullable(true).notRequired(),
+    "docVersionDate": yup.date().format("YYYY-MM-DD", true).required(),
     "docAuthoritative": yup.boolean().required(),      
     "docPrescriptive": yup.boolean().required(),
     "workIRIthis":  yup.string().required(),
@@ -200,7 +200,8 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.exprIRI = urihelper.aknExprIri(
         aknTmpl.workIRI, 
         docLang.value.value,
-        aknVersionDate 
+        aknVersionDate,
+        aknDate
         // docPart.value
     );
     aknTmpl.exprIRIthis = urihelper.aknExprIriThis(
