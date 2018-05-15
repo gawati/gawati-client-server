@@ -7,17 +7,9 @@ const langhelper = require("./utils/LangHelper");
 const componentsHelper = require("./utils/ComponentsHelper");
 const generalhelper = require("./utils/GeneralHelper");
 const authHelper = require("./utils/AuthHelper");
-const logr = require("./logging");
 const wf = require("./utils/Workflow");
 const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
-
-/*
-Generic Middleware ROute handlers 
-*/
-
-var documentManageAPIs  = {};
-
 
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -42,13 +34,6 @@ const returnResponse = (req, res) => {
     console.log(" IN: returnResponse");    
     res.json(res.locals.returnResponse);
 };
-
-
-/*
-ROUTEHANDLER_DOCUMENT_ADD
-*/
-
-
 
 /**
  * Converts the Form Posting to an AKN Object which is the input for the
@@ -169,8 +154,8 @@ const docExistsOnClient = (req, res, next) => {
  * Checks if a document with the given iri already exists in
  * the portal data server.
  */
-const doesExistOnPortal = (req, res, next) => {
-    console.log(" IN: doesExistOnPortal");
+const docExistsOnPortal = (req, res, next) => {
+    console.log(" IN: docExistsOnPortal");
     const {pkg, skipCheck} = res.locals.formObject;
     if (skipCheck) {
         next();
@@ -210,17 +195,6 @@ const setFormObject = (req, res, next) => {
     next();
 }
 
-documentManageAPIs["/document/add"] = [
-    receiveSubmitData,
-    docExistsOnClient,
-    doesExistOnPortal,
-    setFormObject,
-    convertFormObjectToAknObject,
-    convertAknObjectToXml,
-    saveToXmlDb,
-    returnResponse
-];
-
 /**
  * Updates a specific field in the AKN database. 
  * For existing documents only title can be updated.
@@ -256,21 +230,6 @@ const updateAknField = (req, res, next) => {
         }
     );
 };
-
-documentManageAPIs["/document/edit"] = [
-    receiveSubmitData,
-    updateAknField,
-    //convertXmltoJsonObject,
-    returnResponse
-];
-
-
-
-
-
-/*
-ROUTEHANDLER_DOCUMENT_LOAD
-*/
 
 /**
  * Loads the XML document from the db given a specific IRI
@@ -350,9 +309,15 @@ const formStateFromAknDocument = (aknDoc) => {
       docCountry: {value: '', error: null },
       docTitle: {value: '', error: null},
       docOfficialDate: {value: '', error: null },
+      docCreatedDate: {value: '', error: null},
+      docModifiedDate: {value: '', error: null},
+      docPublicationDate: {value: '', error: null},
+      docEntryIntoForceDate: {value: '', error: null},
+      docVersionDate: {value: '', error: null},
       docNumber: {value: '', error: null },
       docPart: {value: '', error: null },
-      docIri : {value: '', error: null }
+      docIri : {value: '', error: null },
+      attachments: []
     }
     */      
 };
@@ -373,6 +338,9 @@ const getOnlineDocumentFromAknObject = (aknObject) => {
     } ;
 };
 
+/**
+ * Convert a single XML document to an object 
+ */
 const convertAknXmlToObject = (req, res, next) => {
     console.log(" IN: convertAknXmlToObject");
     if (res.locals.aknObject.error) {
@@ -384,18 +352,9 @@ const convertAknXmlToObject = (req, res, next) => {
     next();
 };
 
-/*
-* Pipeline that loads a document
-*/
-documentManageAPIs["/document/load"] = [
-    receiveSubmitData,
-    loadXmlForIri,
-    convertAknXmlToObject,
-    //convertXmltoJsonObject,
-    returnResponse
-];
-
-
+/**
+ * Convert the XML documents to objects 
+ */
 const convertAknXmlToObjects = (req, res, next) => {
     console.log(" IN: convertAknXmlToObjects");
     let packages = generalhelper.coerceIntoArray(res.locals.aknObjects.package);
@@ -411,7 +370,9 @@ const convertAknXmlToObjects = (req, res, next) => {
     next();
 };
 
-
+/**
+ * Load the documents allowed for the user's roles.
+ */
 const loadListing = (req, res, next) => {
     const roles = authHelper.getRolesForClient(res.locals.gawati_auth);
     const data = Object.assign({}, res.locals.formObject, {roles})
@@ -442,25 +403,44 @@ const loadListing = (req, res, next) => {
     );    
 };
 
+/**
+ * Authenticate the user
+ */
 const authenticate = (req, res, next) => {
     console.log(" IN: authenticate");
     const AUTH_OPTIONS = {"authJSON": authJSON};
     return gauth.authTokenValidate(req, res, next, AUTH_OPTIONS);
 }
 
-documentManageAPIs["/documents"] = [
-    authenticate,
-    receiveSubmitData,
-    loadListing,
-    convertAknXmlToObjects,
-    returnResponse
-];
-
 /**
- * API stack for each Request end point. 
- * THey are called one after the other in the order of the array
- * YOu need to call next() at the end to ensure the next api in the chain
+ * API methods for each Request end point.
+ * You need to call next() at the end to ensure the next api in the chain
  * gets called.
+ * Calling res.json(res.locals.returnResponse) will return the response 
+ * without proceeding to the next method in the API stack. 
  */
+module.exports = {
+    //Add new document methods
+    docExistsOnClient: docExistsOnClient,
+    docExistsOnPortal: docExistsOnPortal,
+    setFormObject: setFormObject,
+    convertFormObjectToAknObject: convertFormObjectToAknObject,
+    convertAknObjectToXml: convertAknObjectToXml,
+    saveToXmlDb: saveToXmlDb,
 
-module.exports.documentManage = documentManageAPIs ;
+    //Edit existing document methods
+    updateAknField: updateAknField,
+
+    //Load existing document methods
+    loadXmlForIri: loadXmlForIri,
+
+    //Load documents listing methods 
+    authenticate: authenticate,
+    loadListing: loadListing,
+    convertAknXmlToObjects: convertAknXmlToObjects,
+
+    //Common methods
+    receiveSubmitData: receiveSubmitData,
+    returnResponse: returnResponse,
+    convertAknXmlToObject: convertAknXmlToObject
+};
