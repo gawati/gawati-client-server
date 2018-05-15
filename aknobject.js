@@ -242,7 +242,24 @@ const formObject2AknPermissions = (permissions) => {
     const listOfPermissions = permissions.permission;
     return listOfPermissions.map( (permission) => {
         const {name, roles} = permission;
-        const arrRoles = generalhelper.stringWhitespaceTrim(roles).split(" ");
+        let arrRoles = [];
+
+        /*
+            Roles may be in different formats.
+            Case `New Legal Version`:
+                {
+                    '#text': [ '\n                ', '\n                ', '\n            ' ],
+                    role: [ { name: 'client.Admin' }, { name: 'client.Submitter' } ]
+                }
+
+            Case `Add Document`:
+                client.Admin client.Submitter
+         */
+        if(roles.role) {
+            arrRoles = roles.role.map(r => r.name);
+        } else {
+            arrRoles = generalhelper.stringWhitespaceTrim(roles).split(" ");
+        }
         return {
             "name": name,
             "roles": arrRoles
