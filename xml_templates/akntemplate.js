@@ -126,6 +126,8 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + alias4(((helper = (helper = helpers.docPublicationDate || (depth0 != null ? depth0.docPublicationDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docPublicationDate","hash":{},"data":data}) : helper)))
     + "\" />\n                    <gw:date refersTo=\"#docEntryIntoForceDate\" date=\""
     + alias4(((helper = (helper = helpers.docEntryIntoForceDate || (depth0 != null ? depth0.docEntryIntoForceDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docEntryIntoForceDate","hash":{},"data":data}) : helper)))
+    + "\" />\n                    <gw:date refersTo=\"#docVersionDate\" date=\""
+    + alias4(((helper = (helper = helpers.docVersionDate || (depth0 != null ? depth0.docVersionDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docVersionDate","hash":{},"data":data}) : helper)))
     + "\" />\n                    <gw:themes source=\"#legacy\">\n                    </gw:themes>\n                </gw:gawati>\n            </an:proprietary>\n        </an:meta>\n        <an:body>\n            <an:book refersTo=\"#mainDocument\">  \n"
     + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(10, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "            </an:book>\n        </an:body>\n    </an:"
