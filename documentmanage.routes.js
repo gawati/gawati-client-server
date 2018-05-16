@@ -103,4 +103,21 @@ dmAPIs["/documents/filter"] = {
     ]
 };
 
+/*
+Dispatches a document to be published by placing it's
+iri on a message queue (IRI_Q).
+Input object submitted to the API:
+"data": {
+    "iri": "/akn/ke/act/legge/1970-06-03/Cap_44/eng@/!main"
+}
+ */
+dmAPIs["/document/publish"] = {
+    method: "post",
+    stack: [
+        dm.receiveSubmitData,
+        dm.publishOnIriQ,
+        dm.returnResponse
+    ]
+};
+
 module.exports.dmAPIs = dmAPIs;

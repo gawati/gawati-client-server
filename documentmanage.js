@@ -446,6 +446,27 @@ const authenticate = (req, res, next) => {
 }
 
 /**
+ * Publishes the document iri on the IRI_Q
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+const publishOnIriQ = (req, res, next) => {
+    console.log(" IN: publishOnIriQ");
+    const {iri} = res.locals.formObject;
+
+    //Publish on IRI_Q
+
+    res.locals.returnResponse = {
+        'success': {
+            'code': 'publish_document',
+            'message': res.locals.formObject
+        }
+    }
+    next();
+};
+
+/**
  * API methods for each Request end point.
  * You need to call next() at the end to ensure the next api in the chain
  * gets called.
@@ -476,5 +497,8 @@ module.exports = {
     //Common methods
     receiveSubmitData: receiveSubmitData,
     returnResponse: returnResponse,
-    convertAknXmlToObject: convertAknXmlToObject
+    convertAknXmlToObject: convertAknXmlToObject,
+
+    //Publish methods
+    publishOnIriQ: publishOnIriQ
 };
