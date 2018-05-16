@@ -1,6 +1,5 @@
 const amqp = require('amqplib/callback_api');
 
-<<<<<<< 1aeb57e972920ab6fd7580c2a594337af2290846
 /**
  * Important: mqConfig channels get set in the async calls.
  */
