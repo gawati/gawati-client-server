@@ -10,6 +10,7 @@ const authHelper = require("./utils/AuthHelper");
 const wf = require("./utils/Workflow");
 const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
+const mq = require("./msg_queues/docPublishServices");
 
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -456,6 +457,10 @@ const publishOnIriQ = (req, res, next) => {
     const {iri} = res.locals.formObject;
 
     //Publish on IRI_Q
+    qName = 'IRI_Q';
+    const ex = mq.getExchange();
+    const key = mq.getQKey(qName);
+    mq.getChannel(qName).publish(ex, key, new Buffer(iri));
 
     res.locals.returnResponse = {
         'success': {
