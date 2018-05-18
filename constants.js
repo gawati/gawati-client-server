@@ -7,7 +7,7 @@ const MAX_ATTACHMENTS = 10;
 const CONFIG_FOLDER = 'configs' ;
 
 const AKN_ATTACHMENTS = () => 
-    "./akn_data_test" ;
+    "./akn_data" ;
 
 const API_SERVER_BASE = () =>
     API_PROTOCOL + '://' + API_HOST + ":" + API_PORT + '/exist/restxq';
