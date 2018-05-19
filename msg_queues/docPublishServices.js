@@ -38,7 +38,7 @@ function getQKey(qName) {
  
 // Publisher
 function publisherIriQ(conn) {
-  qName = 'IRI_Q';
+  const qName = 'IRI_Q';
   const ex = getExchange();
   const key = getQKey(qName);
 
@@ -47,8 +47,11 @@ function publisherIriQ(conn) {
     if (err != null) bail(err);
     setChannel(qName, channel);
     channel.assertExchange(ex, 'direct', {durable: false});
+    console.log(" %s publisher channel opened", qName);
+
     //Test Message
-    let msg = 'Hello World!';
+    // let msg = 'Hello World!';
+    let msg = "/akn/ke/act/legge/1970-06-03/Cap_44/eng@/!main";
     channel.publish(ex, key, new Buffer(msg));
     console.log(" [x] Sent %s: '%s'", key, msg);
   }
@@ -56,7 +59,7 @@ function publisherIriQ(conn) {
  
 // Consumer
 function consumerStatusQ(conn) {
-  qName = 'IRI_Q';  //Will be changed to STATUS_Q
+  const qName = 'STATUS_Q';  //Will be changed to STATUS_Q
   const ex = getExchange();
   const key = getQKey(qName);
 
@@ -65,14 +68,16 @@ function consumerStatusQ(conn) {
     if (err != null) bail(err);
     channel.assertExchange(ex, 'direct', {durable: false});
     channel.assertQueue('', {exclusive: true}, function(err, q) {
+      console.log(" %s consumer channel opened", qName);
       console.log(' [*] Waiting for messages. To exit press CTRL+C');
       channel.bindQueue(q.queue, ex, key);
       channel.consume(q.queue, function(msg) {
         console.log(" [x] %s: '%s'", msg.fields.routingKey, msg.content.toString());
+        console.log(" Received Status Object: ", JSON.parse(msg.content.toString()));
       }, {noAck: true});
 
-      //For testing only
-      publisherIriQ(conn);
+      //For standalone testing only
+      // publisherIriQ(conn);
     });
   }
 }
@@ -81,7 +86,7 @@ const rabbit = amqp.connect('amqp://localhost', function(err, conn) {
   console.log(" AMQP CONNECTED");
   if (err != null) bail(err);
   consumerStatusQ(conn);
-  // publisherIriQ(conn);
+  publisherIriQ(conn);
 });
 
 module.exports = {

@@ -457,7 +457,7 @@ const publishOnIriQ = (req, res, next) => {
     const {iri} = res.locals.formObject;
 
     //Publish on IRI_Q
-    qName = 'IRI_Q';
+    const qName = 'IRI_Q';
     const ex = mq.getExchange();
     const key = mq.getQKey(qName);
     mq.getChannel(qName).publish(ex, key, new Buffer(iri));
