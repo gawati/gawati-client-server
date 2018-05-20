@@ -97,7 +97,7 @@ dmAPIs["/documents/filter"] = {
     stack: [
         dm.authenticate,
         dm.receiveSubmitData,
-        dm.loadListing,
+        dm.loadFilterListing,
         dm.convertAknXmlToObjects,
         dm.returnResponse
     ]
