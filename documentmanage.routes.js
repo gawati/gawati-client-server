@@ -92,4 +92,15 @@ dmAPIs["/documents"] = {
     ]
 };
 
+dmAPIs["/documents/filter"] = {
+    method: "post", 
+    stack: [
+        dm.authenticate,
+        dm.receiveSubmitData,
+        dm.loadFilterListing,
+        dm.convertAknXmlToObjects,
+        dm.returnResponse
+    ]
+};
+
 module.exports.dmAPIs = dmAPIs;

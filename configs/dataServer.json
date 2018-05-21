@@ -18,6 +18,10 @@
                 "url": "/gwdc/documents",
                 "method": "post"
             },
+            "getFilteredDocuments": {
+                "url": "/gwdc/documents/filter",
+                "method": "post"
+            },
             "docExists": {
                 "url": "/gwdc/document/exists",
                 "method": "post"
