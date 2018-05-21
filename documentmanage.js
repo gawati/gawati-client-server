@@ -404,6 +404,39 @@ const loadListing = (req, res, next) => {
 };
 
 /**
+ * Load the filtered documents allowed for the user's roles.
+ */
+const loadFilterListing = (req, res, next) => {
+    const roles = authHelper.getRolesForClient(res.locals.gawati_auth);
+    const data = Object.assign({}, res.locals.formObject, {roles})
+    const loadDocumentsApi = servicehelper.getApi("xmlServer", "getFilteredDocuments");
+    const {url, method} = loadDocumentsApi;
+    axios({
+        method: method,
+        url: url,
+        data: data
+    }).then(
+        (response) => {
+            const {error, success} = response.data;
+            // if no documents, returns an error code
+            if (error == null) {
+                res.locals.aknObjects = response.data;
+                next();
+            } else {
+                // respond with error in case document set is empty
+                res.locals.returnResponse = error ; 
+                res.json(res.locals.returnResponse);
+            }
+        }
+    ).catch(
+        (err) => {
+            res.locals.aknObjects = err;
+            next();
+        }
+    );    
+};
+
+/**
  * Authenticate the user
  */
 const authenticate = (req, res, next) => {
@@ -437,6 +470,7 @@ module.exports = {
     //Load documents listing methods 
     authenticate: authenticate,
     loadListing: loadListing,
+    loadFilterListing: loadFilterListing,
     convertAknXmlToObjects: convertAknXmlToObjects,
 
     //Common methods
