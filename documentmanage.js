@@ -10,7 +10,7 @@ const authHelper = require("./utils/AuthHelper");
 const wf = require("./utils/Workflow");
 const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
-const mq = require("./msg_queues/docPublishServices");
+const mq = require("./docPublishServices/queues");
 
 /**
  * Receives the Form posting, not suitable for multipart form data

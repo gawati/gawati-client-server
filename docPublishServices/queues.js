@@ -1,4 +1,5 @@
 const amqp = require('amqplib/callback_api');
+const dpService = require("./updateStatus"); 
 
 /**
  * Important: mqConfig channels get set in the async calls.
@@ -51,9 +52,9 @@ function publisherIriQ(conn) {
 
     //Test Message
     // let msg = 'Hello World!';
-    let msg = "/akn/ke/act/legge/1970-06-03/Cap_44/eng@/!main";
-    channel.publish(ex, key, new Buffer(msg));
-    console.log(" [x] Sent %s: '%s'", key, msg);
+    // let msg = "/akn/ke/act/legge/1970-06-03/Cap_44/eng@/!main";
+    // channel.publish(ex, key, new Buffer(msg));
+    // console.log(" [x] Sent %s: '%s'", key, msg);
   }
 }
  
@@ -74,6 +75,8 @@ function consumerStatusQ(conn) {
       channel.consume(q.queue, function(msg) {
         console.log(" [x] %s: '%s'", msg.fields.routingKey, msg.content.toString());
         console.log(" Received Status Object: ", JSON.parse(msg.content.toString()));
+        const statusObj = JSON.parse(msg.content.toString());
+        dpService.updateStatus(statusObj);
       }, {noAck: true});
 
       //For standalone testing only
