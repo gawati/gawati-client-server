@@ -86,7 +86,27 @@
             ]
         },
         {
-            "name": "publish",
+            "name": "under_processing",
+            "title": "Under Processing",
+            "level": "5",
+            "color": "final",
+            "permission": [
+                {
+                    "name": "view",
+                    "roles": "client.Admin client.Public"
+                },
+                {
+                    "name": "list",
+                    "roles": "client.Admin client.Publisher"
+                },
+                {
+                    "name": "transit",
+                    "roles": "client.Admin client.Publisher client.Editor"
+                }
+            ]
+        },
+        {
+            "name": "published",
             "title": "Published",
             "level": "5",
             "color": "final",
@@ -124,9 +144,16 @@
         {
             "name": "make_publish",
             "icon": "fa-building",
-            "title": "Publish",
+            "title": "Send for Publication",
             "from": "editable",
-            "to": "publish"
+            "to": "under_processing"
+        },
+        {
+            "name": "make_published",
+            "icon": "fa-building",
+            "title": "Published",
+            "from": "under_processing",
+            "to": "published"
         },
         {
             "name": "make_retract",
