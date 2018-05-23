@@ -6,12 +6,17 @@
  * which is an es6 construct not supported on node yet. Instead we use the more 
  * verbose module.exports mechanism
  */
-const moment = require('moment');
+const moment = require("moment");
 
 /**
  * Generates a normalized file name from a FRBRExpression/FRBRthis/@value iri
  */
 const fileNameFromIRI = (iri, fileType) => {
+    let filePrefix = fileNamePrefixFromIRI(iri);
+    return `${filePrefix}.${fileType}`;
+};
+
+const fileNamePrefixFromIRI = (iri) => {
     let iriArr = iri.split("/");
     iriArr.shift();
     let filePrefix = iriArr.map(
@@ -27,7 +32,7 @@ const fileNameFromIRI = (iri, fileType) => {
             }
         }
     ).join("_");
-    return `${filePrefix}.${fileType}`;
+    return filePrefix;
 };
 
 const collectionRelativePathFromIri = (iri) => {
@@ -64,8 +69,12 @@ const aknWorkIriThis = (workIri, docPart) => {
 }
 ;
 
-const aknExprIri = (workIri, docLang) => {
-    return `${workIri}/${docLang}@`;
+const aknExprIri = (workIri, docLang, docVersionDate, docOfficialDate) => {
+    if (docVersionDate === docOfficialDate) {
+        return `${workIri}/${docLang}@`;
+    } else {
+        return `${workIri}/${docLang}@${docVersionDate}`; 
+    }
 }
 ;
 
@@ -85,10 +94,10 @@ const aknManIri = (exprIri) => {
 const normalizeDocNumber = (docNumber) => {
     return docNumber
         .trim()
-        .replace(/\s+/g, '_')
-        .replace(/[.;,?]/g, '')
-        .replace(/[\\/]/g, '-')
-        .replace(/[+!@#$%^&*()]/g, '') ;
+        .replace(/\s+/g, "_")
+        .replace(/[.;,?]/g, "")
+        .replace(/[\\/]/g, "-")
+        .replace(/[+!@#$%^&*()]/g, "") ;
 };
 
 
@@ -101,6 +110,7 @@ module.exports = {
     aknWorkIri: aknWorkIri,
     aknWorkIriThis: aknWorkIriThis,
     fileNameFromIRI: fileNameFromIRI,
+    fileNamePrefixFromIRI: fileNamePrefixFromIRI,
     normalizeDocNumber: normalizeDocNumber,
     collectionRelativePathFromIri: collectionRelativePathFromIri
 };

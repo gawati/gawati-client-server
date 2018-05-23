@@ -1,30 +1,20 @@
-<gwd:package xmlns:gwd="http://gawati.org/ns/1.0/data" 
-    created="{{ createdDate }}"  
-    modified="{{ modifiedDate }}"
-    >
+<gwd:package xmlns:gwd="http://gawati.org/ns/1.0/data">
+    {{#if workflow}} 
     <gwd:workflow>
-        <gwd:state status="draft" label="Draft" />
+        <gwd:state status="{{ workflow.status }}" label="{{ workflow.label }}" />
     </gwd:workflow>
+    {{/if}}
     <gwd:permissions>
         <!-- role based permissions -->
-        <gwd:read>
-            <gwd:role name="reader" />
-        </gwd:read>
-        <gwd:edit>
-            <gwd:role name="editor" />
-        </gwd:edit>
-        <gwd:delete>
-            <gwd:role name="deletor" />
-        </gwd:delete>
-        <gwd:view>
-            <gwd:role name="viewer" />
-        </gwd:view>
-        <!-- user specific permissions -->
-        <gwd:users>
-            <gwd:user name="xuser">
-                <gwd:edit />
-            </gwd:user>
-        </gwd:users>
+        {{#each permissions}}
+        <gwd:permission name="{{ name }}">
+            <gwd:roles>
+                {{#each roles}}
+                <gwd:role name="{{ . }}" />
+                {{/each}}
+            </gwd:roles>
+        </gwd:permission>
+        {{/each}}
     </gwd:permissions>
 <an:akomaNtoso 
     xmlns:gw="http://gawati.org/ns/1.0" 
@@ -61,7 +51,7 @@
                     <an:FRBRformat value="xml"/>
                 </an:FRBRManifestation>
             </an:identification>
-            <an:publication date="{{ publicationDate }}" showAs="{{ docTitle }}" name="{{ localTypeNormalized }}" number="{{ docNumber }}"/>
+            <an:publication date="{{ docPublicationDate }}" showAs="{{ docTitle }}" name="{{ localTypeNormalized }}" number="{{ docNumber }}"/>
             <an:classification source="#gawati">
             </an:classification>
             <an:lifecycle source="#all">
@@ -78,18 +68,27 @@
                         <gw:language code="{{ exprLangCode }}" showAs="{{ exprLangShowAs }}" />
                     </gw:languages>
                     <gw:embeddedContents>
-                        <gw:embeddedContent eId="embedded-doc-1" type="{{ embeddedOrigFileType }}" file="{{ embeddedOrigFileName }}" state="true"/>
+                        {{#each components}}
+                        <gw:embeddedContent eId="embedded-doc-{{ index }}" 
+                            type="{{ type }}" fileType="{{ fileType }}" file="{{ fileName }}" 
+                            origFileName="{{ origFileName }}" state="true"/>
+                        {{/each}}
                     </gw:embeddedContents>
-                    <gw:dateTime refersTo="#dtCreated" datetime="{{ createdDate }}"/>
-                    <gw:dateTime refersTo="#dtModified" datetime="{{ modifiedDate }}"/>
+                    <gw:dateTime refersTo="#docCreatedDate" datetime="{{ docCreatedDate }}"/>
+                    <gw:dateTime refersTo="#docModifiedDate" datetime="{{ docModifiedDate }}"/>
+                    <gw:date refersTo="#docPublicationDate" date="{{ docPublicationDate }}" />
+                    <gw:date refersTo="#docEntryIntoForceDate" date="{{ docEntryIntoForceDate }}" />
+                    <gw:date refersTo="#docVersionDate" date="{{ docVersionDate }}" />
                     <gw:themes source="#legacy">
                     </gw:themes>
                 </gw:gawati>
             </an:proprietary>
         </an:meta>
         <an:body>
-            <an:book refersTo="#mainDocument">
-                <an:componentRef src="{{ manIRIthis }}" alt="{{ embeddedOrigFileNameNormalized }}" GUID="#embedded-doc-1" showAs="{{ docTitle }}"/>
+            <an:book refersTo="#mainDocument">  
+                {{#each components}}
+                <an:componentRef src="{{ iriThis }}" alt="{{ origFileName }}" GUID="#embedded-doc-{{ index }}" showAs="{{ showAs }}"/>
+                {{/each}}
             </an:book>
         </an:body>
     </an:{{ aknType}}>
