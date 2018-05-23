@@ -68,6 +68,7 @@ const transit = (docJson, status, iri) => {
       data: data
     }).then(
       (response) => {
+        console.log("SAVED FOR STATUS:::", status);
         console.log(response.data);
       }
     ).catch(
