@@ -11,6 +11,7 @@ const wf = require("./utils/Workflow");
 const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
 const mq = require("./docPublishServices/queues");
+const dpService = require("./docPublishServices/updateStatus");
 
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -455,6 +456,13 @@ const authenticate = (req, res, next) => {
 const publishOnIriQ = (req, res, next) => {
     console.log(" IN: publishOnIriQ");
     const {iri} = res.locals.formObject;
+
+    //Set interim document state
+    const statusObj = {
+        "iri": iri,
+        "status": 'under_processing'
+    }
+    dpService.updateStatus(statusObj);
 
     //Publish on IRI_Q
     const qName = 'IRI_Q';

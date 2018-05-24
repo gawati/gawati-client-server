@@ -57,6 +57,17 @@ function publisherIriQ(conn) {
     // console.log(" [x] Sent %s: '%s'", key, msg);
   }
 }
+
+/**
+ * Transit document only if status is published.
+ * The other statuses on this Q will be for interim progress info only.
+ * To-Do: Handle failure -> Put iri back in IRI_Q?
+ */
+function handleStatus(statusObj) {
+  if (statusObj.status === 'published') {
+    dpService.updateStatus(statusObj);
+  }
+}
  
 // Consumer
 function consumerStatusQ(conn) {
@@ -76,7 +87,7 @@ function consumerStatusQ(conn) {
         console.log(" [x] %s: '%s'", msg.fields.routingKey, msg.content.toString());
         console.log(" Received Status Object: ", JSON.parse(msg.content.toString()));
         const statusObj = JSON.parse(msg.content.toString());
-        dpService.updateStatus(statusObj);
+        handleStatus(statusObj);
       }, {noAck: true});
 
       //For standalone testing only
