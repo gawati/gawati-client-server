@@ -64,7 +64,9 @@ function publisherIriQ(conn) {
  * To-Do: Handle failure -> Put iri back in IRI_Q?
  */
 function handleStatus(statusObj) {
-  if (statusObj.status === 'published') {
+  const {iri, status, message} = statusObj;
+  console.log(message);
+  if (status === 'published') {
     dpService.updateStatus(statusObj);
   }
 }
