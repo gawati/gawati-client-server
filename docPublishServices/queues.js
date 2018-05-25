@@ -5,7 +5,7 @@ const dpService = require("./updateStatus");
  * Important: mqConfig channels get set in the async calls.
  */
 let mqConfig = {
-  "exchange" : "doc_publish",
+  "exchange" : "editor_doc_publish",
   "IRI_Q": {
     "key": "iriQ",
     "channel": {}
