@@ -61,4 +61,8 @@ typings/
 .next
 
 # Attachments folder
-akn_data_test/
+akn_data/
+
+# auth.json
+
+auth.json
