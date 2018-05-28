@@ -468,7 +468,7 @@ const publishOnIriQ = (req, res, next) => {
     const qName = 'IRI_Q';
     const ex = mq.getExchange();
     const key = mq.getQKey(qName);
-    mq.getChannel(qName).publish(ex, key, new Buffer(iri));
+    mq.getChannel(qName).publish(ex, key, new Buffer(iri), {persistent: true});
 
     res.locals.returnResponse = {
         'success': {
