@@ -59,15 +59,29 @@ function publisherIriQ(conn) {
 }
 
 /**
+ * Put iri back in IRI_Q
+ */
+function reQueueIri(iri) {
+  const qName = 'IRI_Q';
+  const ex = getExchange();
+  const key = getQKey(qName);
+  getChannel(qName).publish(ex, key, new Buffer(iri));
+}
+
+/**
  * Transit document only if status is published.
  * The other statuses on this Q will be for interim progress info only.
- * To-Do: Handle failure -> Put iri back in IRI_Q?
+ * If failed, requeue the iri.
  */
 function handleStatus(statusObj) {
   const {iri, status, message} = statusObj;
   console.log(message);
   if (status === 'published') {
     dpService.updateStatus(statusObj);
+  } else if (status === 'failed') {
+    //Requeue: Publish on IRI_Q
+    console.log(" Requeue ", iri);
+    setTimeout(() => reQueueIri(iri), 5000);
   }
 }
  
