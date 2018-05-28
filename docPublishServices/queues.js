@@ -47,7 +47,7 @@ function publisherIriQ(conn) {
   function onOpen(err, channel) {
     if (err != null) bail(err);
     setChannel(qName, channel);
-    channel.assertExchange(ex, 'direct', {durable: false});
+    channel.assertExchange(ex, 'direct', {durable: true});
     console.log(" %s publisher channel opened", qName);
 
     //Test Message
@@ -94,7 +94,7 @@ function consumerStatusQ(conn) {
   conn.createChannel(onOpen);
   function onOpen(err, channel) {
     if (err != null) bail(err);
-    channel.assertExchange(ex, 'direct', {durable: false});
+    channel.assertExchange(ex, 'direct', {durable: true});
     channel.assertQueue('', {exclusive: true}, function(err, q) {
       console.log(" %s consumer channel opened", qName);
       console.log(' [*] Waiting for messages. To exit press CTRL+C');
