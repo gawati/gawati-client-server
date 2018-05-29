@@ -436,6 +436,37 @@ const loadFilterListing = (req, res, next) => {
     );    
 };
 
+const deleteDocument = (req, res, next) => {
+    console.log(" IN: deleteDocument");
+    const data = Object.assign({}, res.locals.formObject)
+    console.log("data is " + JSON.stringify(data));
+    const loadDocumentsApi = servicehelper.getApi("xmlServer", "deleteDocuments");
+    const {url, method} = loadDocumentsApi;
+    axios({
+        method: method,
+        url: url,
+        data: data
+    }).then(
+        (response) => {
+            const {error, success} = response.data;
+            // if no documents, returns an error code
+            if (error == null) {
+                res.locals.aknObjects = response.data;
+                next();
+            } else {
+                // respond with error in case document set is empty
+                res.locals.returnResponse = error ; 
+                res.json(res.locals.returnResponse);
+            }
+        }
+    ).catch(
+        (err) => {
+            res.locals.aknObjects = err;
+            next();
+        }
+    );    
+};
+
 /**
  * Authenticate the user
  */
@@ -472,6 +503,9 @@ module.exports = {
     loadListing: loadListing,
     loadFilterListing: loadFilterListing,
     convertAknXmlToObjects: convertAknXmlToObjects,
+
+    // Delete Document
+    deleteDocument: deleteDocument,
 
     //Common methods
     receiveSubmitData: receiveSubmitData,

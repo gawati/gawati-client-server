@@ -51,6 +51,35 @@ Object.keys(dmapis.dmAPIs).forEach(
     }
 );
 
+Object.keys(dmapis.dmAPIs).forEach(
+    (routePath) => {
+        const dmRoute = dmapis.dmAPIs[routePath];
+        console.log(` ROUTE PATH = ${routePath} with ${dmRoute.method}`);
+        switch(dmRoute.method) {
+        case "get":
+            router.get(
+                routePath,
+                jsonParser,
+                dmRoute.stack
+            );
+            break;
+        case "post":
+            if (EXCLUDE_FROM_AUTO_ROUTE.indexOf(routePath) < 0) {
+                // only paths NOT IN  EXCLUDE_FROM_AUTO_ROUTE
+                router.post(
+                    routePath,
+                    jsonParser,
+                    dmRoute.stack
+                );
+            }
+            break;
+        default:
+            logr.error(`Unknown method provide ${dmRoute.method} only "get" and "post" are supported` );
+            break;
+        }
+    }
+);
+
 // handle /attachments/upload here because it is special as it has attachments
 var cpUpload = upload.fields(); //[{ name: 'file_0', maxCount: 1 }]
 router.post("/attachments/upload",
