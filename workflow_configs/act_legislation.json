@@ -151,7 +151,7 @@
         {
             "name": "make_published",
             "icon": "fa-building",
-            "title": "Published",
+            "title": "Make Published",
             "from": "under_processing",
             "to": "published"
         },
@@ -159,7 +159,7 @@
             "name": "make_retract",
             "icon": "fa-building",
             "title": "Retract",
-            "from": "publish",
+            "from": "published",
             "to": "editable"
         }
     ]}
