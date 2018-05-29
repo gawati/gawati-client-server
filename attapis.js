@@ -293,9 +293,8 @@ const removeAttFromFS = (req, res, next) => {
         });
 };
 
-const deleteAttFromFS =(req,res,next) => {
-    console.log("attachments are " + JSON.stringify(req.body.data.attachments));
-    let attachments = req.body.data.attachments;
+const deleteAttFromFS =(attachments) => {
+    console.log("attachments are " + JSON.stringify(attachments));
     for(let att of attachments){
 
         let arrIri = att.iriThis.split("/");
@@ -315,11 +314,9 @@ const deleteAttFromFS =(req,res,next) => {
         removeFile(fullPath, responseMsg)
             .then(result => {
                 console.log(" RESPONSE MSG = ", JSON.stringify(result));
-                res.locals.binaryFileRemoveResponse = responseMsg;
                 next();
             })
             .catch(err => {
-                res.locals.binaryFileRemoveResponse = responseMsg;
                 console.log(err);
             });
         }

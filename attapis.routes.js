@@ -52,13 +52,5 @@ attAPIs[`${BASE_URI}/remove`] = {
     ]
 };
 
-attAPIs[`${BASE_URI}/delete`] = {
-    method: "post",
-    stack: [
-        attapis.deleteAttFromFS,
-        attapis.returnResponse
-    ]
-};
-
 
 module.exports.attAPIs = attAPIs;

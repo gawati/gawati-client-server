@@ -10,6 +10,7 @@ const authHelper = require("./utils/AuthHelper");
 const wf = require("./utils/Workflow");
 const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
+const attapis = require("./attapis");
 
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -439,19 +440,20 @@ const loadFilterListing = (req, res, next) => {
 const deleteDocument = (req, res, next) => {
     console.log(" IN: deleteDocument");
     const data = Object.assign({}, res.locals.formObject)
-    console.log("data is " + JSON.stringify(data));
+    console.log("res.t is " + data.iri);
     const loadDocumentsApi = servicehelper.getApi("xmlServer", "deleteDocuments");
     const {url, method} = loadDocumentsApi;
     axios({
         method: method,
         url: url,
-        data: data
+        data: {"iri":data.iri}
     }).then(
         (response) => {
             const {error, success} = response.data;
             // if no documents, returns an error code
             if (error == null) {
                 res.locals.aknObjects = response.data;
+                attapis.deleteAttFromFS(data.attachments);
                 next();
             } else {
                 // respond with error in case document set is empty
