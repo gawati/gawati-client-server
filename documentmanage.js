@@ -10,8 +10,6 @@ const authHelper = require("./utils/AuthHelper");
 const wf = require("./utils/Workflow");
 const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
-const mq = require("./docPublishServices/queues");
-const dpService = require("./docPublishServices/updateStatus");
 
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -448,38 +446,6 @@ const authenticate = (req, res, next) => {
 }
 
 /**
- * Publishes the document iri on the IRI_Q
- * @param {*} req
- * @param {*} res
- * @param {*} next
- */
-const publishOnIriQ = (req, res, next) => {
-    console.log(" IN: publishOnIriQ");
-    const {iri} = res.locals.formObject;
-
-    //Set interim document state
-    const statusObj = {
-        "iri": iri,
-        "status": 'under_processing'
-    }
-    dpService.updateStatus(statusObj);
-
-    //Publish on IRI_Q
-    const qName = 'IRI_Q';
-    const ex = mq.getExchange();
-    const key = mq.getQKey(qName);
-    mq.getChannel(qName).publish(ex, key, new Buffer(iri), {persistent: true});
-
-    res.locals.returnResponse = {
-        'success': {
-            'code': 'publish_document',
-            'message': res.locals.formObject
-        }
-    }
-    next();
-};
-
-/**
  * API methods for each Request end point.
  * You need to call next() at the end to ensure the next api in the chain
  * gets called.
@@ -510,8 +476,5 @@ module.exports = {
     //Common methods
     receiveSubmitData: receiveSubmitData,
     returnResponse: returnResponse,
-    convertAknXmlToObject: convertAknXmlToObject,
-
-    //Publish methods
-    publishOnIriQ: publishOnIriQ
+    convertAknXmlToObject: convertAknXmlToObject
 };

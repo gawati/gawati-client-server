@@ -3,7 +3,9 @@ const gen = require("./utils/GeneralHelper");
 const logr = require("./logging");
 const wf = require("./utils/Workflow");
 const servicehelper = require("./utils/ServiceHelper");
+const qh = require("./utils/QueueHelper");
 const serializeError = require("serialize-error");
+const mq = require("./docPublishServices/queues");
 /**
  * Receives the Form posting, not suitable for multipart form data
  * @param {*} req 
@@ -98,6 +100,7 @@ const stateRefactorPermissionsForStorage = (state) => {
  * @param {*} res 
  */
 const doTransit = (req, res) => {
+    console.log(" IN: doTransit");
     const apiObj = servicehelper.getApi("xmlServer", "transit");
     const data = res.locals.transitObject;
     axios({
@@ -106,6 +109,11 @@ const doTransit = (req, res) => {
         data: data
     }).then(
         (response) => {
+            const {docIri: iri, state} = data;
+            // Publishes the document iri on the IRI_Q if document has transited to under_processing due to a publish request
+            if (state.name === 'under_processing') {
+                qh.publishOnIriQ(iri)
+            }
             res.json(response.data);
         }
     ).catch(
