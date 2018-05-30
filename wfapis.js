@@ -110,8 +110,9 @@ const doTransit = (req, res) => {
     }).then(
         (response) => {
             const {docIri: iri, state} = data;
-            // Publishes the document iri on the IRI_Q if document has transited to under_processing due to a publish request
-            if (state.name === 'under_processing') {
+            // Publishes the document iri on the IRI_Q if make_publish transit has been requested
+            const {transitionName} = res.locals.formObject;
+            if (transitionName === 'make_publish') {
                 qh.publishOnIriQ(iri)
             }
             res.json(response.data);
