@@ -314,7 +314,6 @@ const deleteAttFromFS =(attachments) => {
         removeFile(fullPath, responseMsg)
             .then(result => {
                 console.log(" RESPONSE MSG = ", JSON.stringify(result));
-                next();
             })
             .catch(err => {
                 console.log(err);

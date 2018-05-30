@@ -437,34 +437,24 @@ const loadFilterListing = (req, res, next) => {
     );    
 };
 
-const deleteDocument = (req, res, next) => {
+const deleteDocument = (req,res,next) => {
     console.log(" IN: deleteDocument");
-    const data = Object.assign({}, res.locals.formObject)
-    console.log("res.t is " + data.iri);
+    console.log("response is " + JSON.stringify(res.locals.returnResponse));   
     const loadDocumentsApi = servicehelper.getApi("xmlServer", "deleteDocuments");
     const {url, method} = loadDocumentsApi;
     axios({
         method: method,
         url: url,
-        data: {"iri":data.iri}
+        data:res.locals.formObject
     }).then(
         (response) => {
-            const {error, success} = response.data;
-            // if no documents, returns an error code
-            if (error == null) {
-                res.locals.aknObjects = response.data;
-                attapis.deleteAttFromFS(data.attachments);
-                next();
-            } else {
-                // respond with error in case document set is empty
-                res.locals.returnResponse = error ; 
-                res.json(res.locals.returnResponse);
-            }
+            let attachments = res.locals.returnResponse.akomaNtoso.attachments.value;
+            attapis.deleteAttFromFS(attachments);
+            next();
         }
     ).catch(
         (err) => {
-            res.locals.aknObjects = err;
-            next();
+            console.log("error")
         }
     );    
 };
@@ -506,7 +496,7 @@ module.exports = {
     loadFilterListing: loadFilterListing,
     convertAknXmlToObjects: convertAknXmlToObjects,
 
-    // Delete Document
+    // Delete a document based on doc iri
     deleteDocument: deleteDocument,
 
     //Common methods
