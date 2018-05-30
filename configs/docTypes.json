@@ -1,0 +1,17 @@
+{"docTypes": [
+    {
+        "aknType": "act",
+        "aknDocTag": "act",
+        "localTypeName": "Act",
+        "localTypeNameNormalized": "legge",
+        "category": "legislation"
+    },
+    {
+        "aknType": "judgment",
+        "aknDocTag": "judgment",
+        "localTypeName": "Judgement",
+        "localTypeNameNormalized": "courtjudgment",
+        "category": "case law"
+    }
+]
+}
