@@ -103,7 +103,7 @@ dmAPIs["/documents/filter"] = {
     ]
 };
 
-dmAPIs["/documents/delete"] = {
+dmAPIs["/document/delete"] = {
     method: "post", 
     stack: [
         dm.receiveSubmitData,

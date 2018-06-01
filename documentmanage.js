@@ -440,7 +440,7 @@ const loadFilterListing = (req, res, next) => {
 const deleteDocument = (req,res,next) => {
     console.log(" IN: deleteDocument");
     console.log("response is " + JSON.stringify(res.locals.returnResponse));   
-    const loadDocumentsApi = servicehelper.getApi("xmlServer", "deleteDocuments");
+    const loadDocumentsApi = servicehelper.getApi("xmlServer", "deleteDocument");
     const {url, method} = loadDocumentsApi;
     axios({
         method: method,
