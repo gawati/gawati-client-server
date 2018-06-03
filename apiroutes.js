@@ -10,6 +10,7 @@ const packageJSON = require("./package.json");
 const dmapis = require ("./documentmanage.routes");
 const wfapis = require("./wfapis.routes");
 const attapis = require("./attapis.routes");
+const appconstants = require("./constants");
 
 var upload = multer();
 
@@ -149,7 +150,14 @@ router.get(
 router.get("/auth/config", function (req, res) {
     res.send(authJSON);
 });
-  
+
+// Send config
+router.get("/config", function (req, res) {
+    res.json({
+        "docTypes": appconstants.DOC_TYPES,
+        "aknDocTypes": appconstants.AKN_DOC_TYPES 
+    });
+});
 
 module.exports = router;
 
