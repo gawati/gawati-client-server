@@ -22,6 +22,10 @@
                 "url": "/gwdc/documents/filter",
                 "method": "post"
             },
+            "deleteDocument": {
+                "url": "/gwdc/document/delete",
+                "method": "post"
+            },
             "docExists": {
                 "url": "/gwdc/document/exists",
                 "method": "post"

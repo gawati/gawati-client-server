@@ -10,6 +10,7 @@ const authHelper = require("./utils/AuthHelper");
 const wf = require("./utils/Workflow");
 const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
+const attapis = require("./attapis");
 
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -436,6 +437,28 @@ const loadFilterListing = (req, res, next) => {
     );    
 };
 
+const deleteDocument = (req,res,next) => {
+    console.log(" IN: deleteDocument");
+    console.log("response is " + JSON.stringify(res.locals.returnResponse));   
+    const loadDocumentsApi = servicehelper.getApi("xmlServer", "deleteDocument");
+    const {url, method} = loadDocumentsApi;
+    axios({
+        method: method,
+        url: url,
+        data:res.locals.formObject
+    }).then(
+        (response) => {
+            let attachments = res.locals.returnResponse.akomaNtoso.attachments.value;
+            attapis.deleteAttFromFS(attachments);
+            next();
+        }
+    ).catch(
+        (err) => {
+            console.log("error")
+        }
+    );    
+};
+
 /**
  * Authenticate the user
  */
@@ -472,6 +495,9 @@ module.exports = {
     loadListing: loadListing,
     loadFilterListing: loadFilterListing,
     convertAknXmlToObjects: convertAknXmlToObjects,
+
+    // Delete a document based on doc iri
+    deleteDocument: deleteDocument,
 
     //Common methods
     receiveSubmitData: receiveSubmitData,

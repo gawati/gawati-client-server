@@ -293,6 +293,33 @@ const removeAttFromFS = (req, res, next) => {
         });
 };
 
+const deleteAttFromFS =(attachments) => {
+    console.log("attachments are " + JSON.stringify(attachments));
+    for(let att of attachments){
+
+        let arrIri = att.iriThis.split("/");
+        let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
+        let attPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
+
+        let fileExt = path.extname(att.origFileName);
+        let filePrefix = urihelper.fileNamePrefixFromIRI(att.iriThis);
+        let attFileName = `${filePrefix}${fileExt}`;
+
+        let fullPath = path.join(attPath, attFileName);
+
+        var responseMsg = {
+        "step_1": {"status": "", "msg": [] }
+    };
+
+        removeFile(fullPath, responseMsg)
+            .then(result => {
+                console.log(" RESPONSE MSG = ", JSON.stringify(result));
+            })
+            .catch(err => {
+                console.log(err);
+            });
+        }
+}
 /**
  * Remove attachment from attachments list.
  */
@@ -368,7 +395,7 @@ module.exports = {
     receiveAttSubmitData: receiveAttSubmitData,
     removeAttFromFS: removeAttFromFS,
     removeAttInfoFromAknObject: removeAttInfoFromAknObject,
-
+    deleteAttFromFS: deleteAttFromFS,
     //Common methods
     saveAttToXmlDb: saveAttToXmlDb,
     returnResponse: returnResponse

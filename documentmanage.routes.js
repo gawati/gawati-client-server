@@ -103,4 +103,15 @@ dmAPIs["/documents/filter"] = {
     ]
 };
 
+dmAPIs["/document/delete"] = {
+    method: "post", 
+    stack: [
+        dm.receiveSubmitData,
+        dm.loadXmlForIri,
+        dm.convertAknXmlToObject,
+        dm.deleteDocument,
+        dm.returnResponse
+    ]
+};
+
 module.exports.dmAPIs = dmAPIs;
