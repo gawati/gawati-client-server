@@ -72,4 +72,4 @@ The act of publishing is not a synchronous one, the system has been designed wit
 
 ### Deleting Exchange
 
-For development purposes if you ever need to reset the rabbitmq exchange, run `delete_exchange` from the rabbitmq server folder
+For development purposes if you ever need to reset the rabbitmq exchange, run `delete_exchange_queues` from the rabbitmq server folder
