@@ -69,3 +69,7 @@ The act of publishing is not a synchronous one, the system has been designed wit
 
 ### Publish Workflow Diagram
 ![Publish Workflow Diagram](https://user-images.githubusercontent.com/5685392/40117804-a7ac284c-5935-11e8-9c5f-df963048ac26.png "Publish Workflow Diagram")
+
+### Deleting Exchange
+
+For development purposes if you ever need to reset the rabbitmq exchange, run `delete_exchange` from the rabbitmq server folder
