@@ -86,7 +86,27 @@
             ]
         },
         {
-            "name": "publish",
+            "name": "under_processing",
+            "title": "Under Processing",
+            "level": "5",
+            "color": "final",
+            "permission": [
+                {
+                    "name": "view",
+                    "roles": "client.Admin client.Public"
+                },
+                {
+                    "name": "list",
+                    "roles": "client.Admin client.Publisher"
+                },
+                {
+                    "name": "transit",
+                    "roles": "client.Admin client.Publisher client.Editor"
+                }
+            ]
+        },
+        {
+            "name": "published",
             "title": "Published",
             "level": "5",
             "color": "final",
@@ -112,28 +132,40 @@
             "icon": "fa-thumbs-up",
             "title": "Send for Editing",
             "from": "draft",
-            "to": "editable"
+            "to": "editable",
+            "bySystem": false
         },
         {
             "name": "make_drafting",
             "icon": "fa-thumbs-up",
             "title": "Back to Drafting",
             "from": "editable",
-            "to": "draft"
+            "to": "draft",
+            "bySystem": false
         },
         {
             "name": "make_publish",
             "icon": "fa-building",
-            "title": "Publish",
+            "title": "Send for Publication",
             "from": "editable",
-            "to": "publish"
+            "to": "under_processing",
+            "bySystem": false
+        },
+        {
+            "name": "make_published",
+            "icon": "fa-building",
+            "title": "Make Published",
+            "from": "under_processing",
+            "to": "published",
+            "bySystem": true
         },
         {
             "name": "make_retract",
             "icon": "fa-building",
             "title": "Retract",
-            "from": "publish",
-            "to": "editable"
+            "from": "published",
+            "to": "editable",
+            "bySystem": false
         }
     ]}
 }}
