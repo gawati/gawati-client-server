@@ -1,0 +1,1 @@
+./rabbitmqadmin delete exchange name="editor_doc_publish"

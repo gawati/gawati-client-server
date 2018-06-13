@@ -4,6 +4,7 @@ const path = require("path");
 const logr = require("./logging.js");
 // this loads the workflow
 const wf = require("./utils/Workflow");
+const mq = require("./docPublishServices/queues");
 const routes = require("./apiroutes");
 var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
