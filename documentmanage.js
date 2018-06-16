@@ -301,6 +301,13 @@ const formStateFromAknDocument = (aknDoc) => {
     } else {
         uiData.attachments.value = componentsHelper.getComponents(embeddedContents, compRefs);
     }
+
+    const classification = xmlDoc.meta.classification;
+    if(classification==null){ //if classification is not defined
+        uiData.docClassifications = {};
+    }else{
+        uiData.docClassifications = classification;
+    }
     return uiData;
     /*
     {
@@ -460,6 +467,74 @@ const deleteDocument = (req,res,next) => {
 };
 
 /**
+ * Load meta data from gawati-data and gawati-client-data
+ * merge both the data
+ */
+const loadMetadata = (req, res, next) => {
+    console.log(" IN: docExists");
+    const metadataApi = servicehelper.getApi("xmlServer", "metadata");
+    const {url, method} = metadataApi;
+    let results = {metadata : []};
+    
+    axios({
+        method: method,
+        url: url
+    }).then(
+        (response) => {
+            const metadataApi = servicehelper.getApi("portalData", "metadata");
+            const {url, method} = metadataApi;
+            axios({
+                method: method,
+                url: url
+            }).then(
+                (response2) => {
+                    const metadataApi = servicehelper.getApi("portalData", "metadata");
+                    const {url, method} = metadataApi;
+                    if(response.data.keyword!=undefined){
+                        results.metadata = response.data.keyword;
+                        if(response2.data.keyword!=undefined){
+                            for(var i=0; i<response2.data.keyword.length; i++){
+                                var isExist = false;
+                                for(var j=0; j<response.data.keyword.length; j++){
+                                    if(response2.data.keyword[i]===response.data.keyword[j]){
+                                        isExist = true;
+                                        break;
+                                    }
+                                }
+                                if(!isExist){
+                                    results.metadata.push(response2.data.keyword[i]);
+                                }
+                            }
+                        }
+                        res.locals.returnResponse = results;
+                    }else{
+                        if(response2.data.keyword!=undefined){
+                            results.metadata = response2.data.keyword;
+                        }
+                        res.locals.returnResponse = results;
+                    }
+                    next();
+                }
+            ).catch(
+                (err) => {
+                    console.log(err);
+                    if(response.data.keyword!=undefined){
+                        results.metadata = response.data.keyword;
+                    }
+                    res.locals.returnResponse = results;
+                    next();
+                }
+            );
+        }
+    ).catch(
+        (err) => {
+            res.locals.returnResponse = err;
+            res.json(res.locals.returnResponse);
+        }
+    );
+}
+
+/**
  * Authenticate the user
  */
 const authenticate = (req, res, next) => {
@@ -502,5 +577,8 @@ module.exports = {
     //Common methods
     receiveSubmitData: receiveSubmitData,
     returnResponse: returnResponse,
-    convertAknXmlToObject: convertAknXmlToObject
+    convertAknXmlToObject: convertAknXmlToObject,
+
+    //get meta data
+    loadMetadata: loadMetadata
 };

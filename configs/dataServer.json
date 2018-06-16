@@ -37,6 +37,10 @@
             "saveAttachments": {
                 "url": "/gwdc/document/attachments",
                 "method": "post"
+            },
+            "metadata":{
+                "url": "/gwdc/documents/metadata",
+                "method": "get"
             }
         }
     },
@@ -46,6 +50,10 @@
             "docExists": {
                 "url": "/gw/doc/exists",
                 "method": "post"
+            },
+            "metadata":{
+                "url": "/gw/doc/metadata",
+                "method": "get"
             }
         }
     }
