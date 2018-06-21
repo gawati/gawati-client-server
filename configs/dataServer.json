@@ -41,6 +41,10 @@
             "metadata":{
                 "url": "/gwdc/documents/metadata",
                 "method": "get"
+            },
+            "saveFT": {
+                "url": "/gwdc/document/attachments/ft",
+                "method": "post"
             }
         }
     },
@@ -54,6 +58,15 @@
             "metadata":{
                 "url": "/gw/doc/metadata",
                 "method": "get"
+            }
+        }
+    },
+    "extractText": {
+        "serviceEndPoint" : "http://localhost:5000",
+        "api": {
+            "pdf2txt": {
+                "url": "/uploadajax",
+                "method": "post"
             }
         }
     }

@@ -52,5 +52,31 @@ attAPIs[`${BASE_URI}/remove`] = {
     ]
 };
 
+/*
+* Extracts text from an attachment.
+* Receive the JSON containing the attachment info.
+* Retrieves attachment from the FS
+* Calls service to get extracted text.
+* Save the extracted text file the Database.
+Input json object submitted to the API:
+{
+    "data": {
+        "emDoc": Attachment to be extracted
+        "pkg": {
+          pkgIdentity,
+          pkgAttachments
+        }
+    }
+}
+*/
+attAPIs[`${BASE_URI}/extract`] = {
+    method: "post",
+    stack: [
+        attapis.receiveAttSubmitData,
+        attapis.extractText,
+        // attapis.saveFTtoXmlDb,
+        attapis.returnResponse
+    ]
+};
 
 module.exports.attAPIs = attAPIs;
