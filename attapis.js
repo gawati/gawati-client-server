@@ -1,5 +1,6 @@
 const axios = require("axios");
-const fs = require("fs");
+const fs = require("fs-extra");
+const FormData = require('form-data');
 const logr = require("./logging");
 const path = require("path");
 const mkdirp = require("mkdirp");
@@ -263,20 +264,7 @@ const removeFile = (fullPath, responseMsg) => {
  */
 const removeAttFromFS = (req, res, next) => {
     console.log("IN: removeAttFromFS");
-    let emDoc = res.locals.emDoc;
-    let aknObj = res.locals.formObject.pkgIdentity;
-    let iri = aknObj["docIri"].value;
-
-    let arrIri = iri.split("/");
-    let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
-    let attPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
-
-    let fileExt = path.extname(emDoc.origFileName);
-    let filePrefix = urihelper.fileNamePrefixFromIRI(iri);
-    let attFileName = `${filePrefix}_${emDoc.index}${fileExt}`;
-
-    let fullPath = path.join(attPath, attFileName);
-
+    let fullPath = getAttFSPath(res.locals.emDoc, res.locals.formObject);
     var responseMsg = {
         "step_1": {"status": "", "msg": [] }
     };
@@ -375,6 +363,96 @@ const saveAttToXmlDb = (req, res, next) => {
 };
 
 /**
+ * Retrieves the FS full path of an existing attachment.
+ */
+const getAttFSPath = (emDoc, pkg) => {
+    console.log(" IN: getAttFSPath");
+    let aknObj = pkg.pkgIdentity;
+    let iri = aknObj["docIri"].value;
+
+    let arrIri = iri.split("/");
+    let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
+    let attPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
+
+    let fileExt = path.extname(emDoc.origFileName);
+    let filePrefix = urihelper.fileNamePrefixFromIRI(iri);
+    let attFileName = `${filePrefix}_${emDoc.index}${fileExt}`;
+
+    let fullPath = path.join(attPath, attFileName);
+    return fullPath
+}
+
+/**
+ * Calls the extractor service to get text for the attachment.
+ */
+const extractText = (req, res, next) => {
+    console.log(" IN: extractText");
+    let fullPath = getAttFSPath(res.locals.emDoc, res.locals.formObject);
+    const extractTextApi = servicehelper.getApi("extractText", "pdf2txt");
+    const {url, method} = extractTextApi;
+
+    let data = new FormData();
+    data.append('file', fs.createReadStream(fullPath));
+
+    axios({
+        method: method,
+        url: url,
+        data: data,
+        headers: data.getHeaders()
+    }).then(
+        (response) => {
+            res.locals.text = response.data["text"];
+            res.locals.returnResponse = {
+                'success': { 'code': fullPath, 'message': 'ATT' }
+            }
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.returnResponse = {
+                'error': { 'code': fullPath, 'message': 'Error while extracting text' }
+            }
+            next();
+        }
+    );
+};
+
+/**
+ * Saves the full text for attachment to the database
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+const saveFTtoXmlDb = (req, res, next) => {
+    console.log(" IN: saveFTtoXmlDb");
+    const saveFTApi = servicehelper.getApi("xmlServer", "saveFT");
+    const {url, method} = saveFTApi;
+    let iri = res.locals.emDoc.iriThis;
+    let filename = urihelper.fileNameFromIRI(iri, "xml");
+
+    let data = {
+        'fileXml': filename, 
+        'data': res.locals.text,
+        'iri': iri
+    }
+    axios({
+        method: method,
+        url: url,
+        data: data
+    }).then(
+        (response) => {
+            res.locals.returnResponse = response.data;
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.returnResponse = err;
+            next();
+        }
+    );
+};
+
+/**
  * 
  * @param {*} req 
  * @param {*} res 
@@ -396,6 +474,11 @@ module.exports = {
     removeAttFromFS: removeAttFromFS,
     removeAttInfoFromAknObject: removeAttInfoFromAknObject,
     deleteAttFromFS: deleteAttFromFS,
+
+    //Extract text from attachment methods
+    extractText: extractText,
+    saveFTtoXmlDb: saveFTtoXmlDb,
+
     //Common methods
     saveAttToXmlDb: saveAttToXmlDb,
     returnResponse: returnResponse

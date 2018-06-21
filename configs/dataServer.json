@@ -37,6 +37,10 @@
             "saveAttachments": {
                 "url": "/gwdc/document/attachments",
                 "method": "post"
+            },
+            "saveFT": {
+                "url": "/gwdc/document/attachments/ft",
+                "method": "post"
             }
         }
     },
@@ -45,6 +49,15 @@
         "api": {
             "docExists": {
                 "url": "/gw/doc/exists",
+                "method": "post"
+            }
+        }
+    },
+    "extractText": {
+        "serviceEndPoint" : "http://localhost:5000",
+        "api": {
+            "pdf2txt": {
+                "url": "/uploadajax",
                 "method": "post"
             }
         }
