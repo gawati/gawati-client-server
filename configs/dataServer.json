@@ -41,10 +41,6 @@
             "metadata":{
                 "url": "/gwdc/documents/metadata",
                 "method": "get"
-            },
-            "saveFT": {
-                "url": "/gwdc/document/attachments/ft",
-                "method": "post"
             }
         }
     },

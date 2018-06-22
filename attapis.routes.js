@@ -74,7 +74,7 @@ attAPIs[`${BASE_URI}/extract`] = {
     stack: [
         attapis.receiveAttSubmitData,
         attapis.extractText,
-        // attapis.saveFTtoXmlDb,
+        attapis.saveFTtoXmlDb,
         attapis.returnResponse
     ]
 };
