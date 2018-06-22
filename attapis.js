@@ -403,15 +403,15 @@ const extractText = (req, res, next) => {
         (response) => {
             res.locals.text = response.data["text"];
             res.locals.returnResponse = {
-                'success': { 'code': fullPath, 'message': 'ATT' }
-            }
+                "step_1": {"status": "extract_text_success"}
+            };
             next();
         }
     ).catch(
         (err) => {
             res.locals.returnResponse = {
-                'error': { 'code': fullPath, 'message': 'Error while extracting text' }
-            }
+                "step_1": {"status": "failure"}
+            };
             next();
         }
     );
@@ -425,31 +425,39 @@ const extractText = (req, res, next) => {
  */
 const saveFTtoXmlDb = (req, res, next) => {
     console.log(" IN: saveFTtoXmlDb");
-    const saveFTApi = servicehelper.getApi("xmlServer", "saveXml");
-    const {url, method} = saveFTApi;
     let iri = res.locals.emDoc.iriThis;
 
-    let data = {
-        'fileXml': urihelper.fileNameFromIRI(iri, "xml"),
-        'update': true,
-        'iri': iri,
-        'data': res.locals.text,
+    if (res.locals.returnResponse.step_1.status === 'extract_text_success') {
+        const saveFTApi = servicehelper.getApi("xmlServer", "saveXml");
+        const {url, method} = saveFTApi;
+
+        let data = {
+            'fileXml': urihelper.fileNameFromIRI(iri, "xml"),
+            'update': true,
+            'iri': iri,
+            'data': res.locals.text,
+        }
+        axios({
+            method: method,
+            url: url,
+            data: data
+        }).then(
+            (response) => {
+                res.locals.returnResponse = response.data;
+                next();
+            }
+        ).catch(
+            (err) => {
+                res.locals.returnResponse = err;
+                next();
+            }
+        );
+    } else {
+        res.locals.returnResponse = {
+            'error': { 'code': iri, 'message': 'Error while extracting text' }
+        }
+        next();
     }
-    axios({
-        method: method,
-        url: url,
-        data: data
-    }).then(
-        (response) => {
-            res.locals.returnResponse = response.data;
-            next();
-        }
-    ).catch(
-        (err) => {
-            res.locals.returnResponse = err;
-            next();
-        }
-    );
 };
 
 /**
