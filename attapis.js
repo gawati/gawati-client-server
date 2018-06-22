@@ -425,15 +425,15 @@ const extractText = (req, res, next) => {
  */
 const saveFTtoXmlDb = (req, res, next) => {
     console.log(" IN: saveFTtoXmlDb");
-    const saveFTApi = servicehelper.getApi("xmlServer", "saveFT");
+    const saveFTApi = servicehelper.getApi("xmlServer", "saveXml");
     const {url, method} = saveFTApi;
     let iri = res.locals.emDoc.iriThis;
-    let filename = urihelper.fileNameFromIRI(iri, "xml");
 
     let data = {
-        'fileXml': filename, 
+        'fileXml': urihelper.fileNameFromIRI(iri, "xml"),
+        'update': true,
+        'iri': iri,
         'data': res.locals.text,
-        'iri': iri
     }
     axios({
         method: method,

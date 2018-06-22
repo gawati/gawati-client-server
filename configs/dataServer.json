@@ -37,10 +37,6 @@
             "saveAttachments": {
                 "url": "/gwdc/document/attachments",
                 "method": "post"
-            },
-            "saveFT": {
-                "url": "/gwdc/document/attachments/ft",
-                "method": "post"
             }
         }
     },
