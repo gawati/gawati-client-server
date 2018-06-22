@@ -425,7 +425,8 @@ const extractText = (req, res, next) => {
  */
 const saveFTtoXmlDb = (req, res, next) => {
     console.log(" IN: saveFTtoXmlDb");
-    let iri = res.locals.emDoc.iriThis;
+    const {iriThis} = res.locals.emDoc;
+    let iri = iriThis.replace('/akn', '/akn_ft');
 
     if (res.locals.returnResponse.step_1.status === 'extract_text_success') {
         const saveFTApi = servicehelper.getApi("xmlServer", "saveXml");
