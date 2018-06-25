@@ -74,6 +74,7 @@ attAPIs[`${BASE_URI}/extract`] = {
     stack: [
         attapis.receiveAttSubmitData,
         attapis.extractText,
+        attapis.tagText,
         attapis.saveFTtoXmlDb,
         attapis.returnResponse
     ]
