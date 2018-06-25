@@ -114,4 +114,13 @@ dmAPIs["/document/delete"] = {
     ]
 };
 
+dmAPIs["/documents/metadata"] = {
+    method: "get", 
+    stack: [
+        //dm.authenticate,
+        dm.loadMetadata,
+        dm.returnResponse
+    ]
+};
+
 module.exports.dmAPIs = dmAPIs;
