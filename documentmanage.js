@@ -529,8 +529,8 @@ const loadMetadata = (req, res, next) => {
         }
     ).catch(
         (err) => {
-            res.locals.returnResponse = err;
-            res.json(res.locals.returnResponse);
+            const {message, stack} = serializeError(err);
+            res.json({error: {code: "EXCEPTION", value: message + " \n " + stack}});
         }
     );
 }
