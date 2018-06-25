@@ -4,7 +4,7 @@ const FormData = require('form-data');
 const logr = require("./logging");
 const path = require("path");
 const mkdirp = require("mkdirp");
-
+const xml2js = require('xml2js');
 const urihelper = require("./utils/UriHelper");
 const generalhelper = require("./utils/GeneralHelper");
 const componentsHelper = require("./utils/ComponentsHelper");
@@ -418,6 +418,59 @@ const extractText = (req, res, next) => {
 };
 
 /**
+ * Inject tags into the fulltext xml
+ */
+const injectTags = (filepath, xml, tags) => {
+    return new Promise(function(resolve, reject) {
+        xml2js.parseString(xml, (error, ftJSON) => {
+            if (error) reject(err);
+            else {
+                ftJSON.pages.tags = tags.join(",");
+                let builder = new xml2js.Builder();
+                const resultXML = builder.buildObject(ftJSON);
+                resolve(resultXML);
+            }
+        });
+    });
+}
+
+/**
+ * Calls the tagit service to get tags for the attachment.
+ */
+const tagText = (req, res, next) => {
+    console.log(" IN: tagText");
+    let ftXML = res.locals.text;
+    const extractTextApi = servicehelper.getApi("tagText", "tag");
+    const {url, method} = extractTextApi;
+
+    let data = new FormData();
+    data.append('file', new Buffer(ftXML), { filename: 'temp.txt' });
+
+    res.locals.returnResponse = { "step_2": {"status": "failure"} };
+
+    axios({
+        method: method,
+        url: url,
+        data: data,
+        headers: data.getHeaders()
+    }).then((response) => {
+        if (response.data.hasOwnProperty('tags')) {
+            const ftFilepath = getAttFSPath(res.locals.emDoc, res.locals.formObject);
+            return injectTags(ftFilepath, ftXML, response.data["tags"]);
+        }
+    }).then((xmlWithTags) => {
+        res.locals.text = xmlWithTags;
+        res.locals.returnResponse = { 
+            "step_2": {"status": "tag_text_success"}
+        };
+        next();
+    }).catch((err) => {
+        console.log(err);
+        next();
+    });
+};
+
+/**
  * Saves the full text for attachment to the database
  * @param {*} req
  * @param {*} res
@@ -428,7 +481,7 @@ const saveFTtoXmlDb = (req, res, next) => {
     const {iriThis} = res.locals.emDoc;
     let iri = iriThis.replace('/akn', '/akn_ft');
 
-    if (res.locals.returnResponse.step_1.status === 'extract_text_success') {
+    if (res.locals.returnResponse.step_2.status === 'tag_text_success') {
         const saveFTApi = servicehelper.getApi("xmlServer", "saveXml");
         const {url, method} = saveFTApi;
 
@@ -455,7 +508,7 @@ const saveFTtoXmlDb = (req, res, next) => {
         );
     } else {
         res.locals.returnResponse = {
-            'error': { 'code': iri, 'message': 'Error while extracting text' }
+            'error': { 'code': iri, 'message': 'Error while extracting and tagging text' }
         }
         next();
     }
@@ -486,6 +539,7 @@ module.exports = {
 
     //Extract text from attachment methods
     extractText: extractText,
+    tagText: tagText,
     saveFTtoXmlDb: saveFTtoXmlDb,
 
     //Common methods

@@ -57,5 +57,14 @@
                 "method": "post"
             }
         }
+    },
+    "tagText": {
+        "serviceEndPoint" : "http://localhost:5001",
+        "api": {
+            "tag": {
+                "url": "/api/tag",
+                "method": "post"
+            }
+        }
     }
 }
