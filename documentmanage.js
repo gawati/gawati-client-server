@@ -1,4 +1,5 @@
 const axios = require("axios");
+const serializeError = require("serialize-error");
 const aknobject = require("./aknobject");
 const aknhelper = require("./utils/AknHelper");
 const urihelper = require("./utils/UriHelper");
@@ -432,8 +433,8 @@ const loadFilterListing = (req, res, next) => {
                 next();
             } else {
                 // respond with error in case document set is empty
-                res.locals.returnResponse = error ; 
-                res.json(res.locals.returnResponse);
+                const {message, stack} = serializeError(err);
+                res.json({error: {code: "EXCEPTION", value: message + " \n " + stack}});
             }
         }
     ).catch(
