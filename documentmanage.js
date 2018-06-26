@@ -460,6 +460,34 @@ const deleteDocument = (req,res,next) => {
 };
 
 /**
+ * Refreshes the tags for AKN.
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+const refreshTags = (req, res, next) => {
+    console.log(" IN: refreshTags");
+    const refreshTagsApi = servicehelper.getApi("xmlServer", "refreshTags");
+    const {url, method} = refreshTagsApi;
+    const {iri} = res.locals.formObject;
+    axios({
+        method: method,
+        url: url,
+        data: {"iri": iri}
+    }).then(
+        (response) => {
+            res.locals.returnResponse = response.data;
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.returnResponse = err;
+            next();
+        }
+    );
+};
+
+/**
  * Authenticate the user
  */
 const authenticate = (req, res, next) => {
@@ -498,6 +526,9 @@ module.exports = {
 
     // Delete a document based on doc iri
     deleteDocument: deleteDocument,
+
+    // Refresh tags
+    refreshTags: refreshTags,
 
     //Common methods
     receiveSubmitData: receiveSubmitData,

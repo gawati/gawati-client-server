@@ -114,4 +114,13 @@ dmAPIs["/document/delete"] = {
     ]
 };
 
+dmAPIs["/document/tags/refresh"] = {
+    method: "post",
+    stack: [
+        dm.receiveSubmitData,
+        dm.refreshTags,
+        dm.returnResponse
+    ]
+};
+
 module.exports.dmAPIs = dmAPIs;

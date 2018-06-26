@@ -37,6 +37,10 @@
             "saveAttachments": {
                 "url": "/gwdc/document/attachments",
                 "method": "post"
+            },
+            "refreshTags": {
+                "url": "/gwdc/document/tags/refresh",
+                "method": "post"
             }
         }
     },
