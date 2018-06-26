@@ -445,7 +445,6 @@ const tagText = (req, res, next) => {
 
     let data = new FormData();
     data.append('file', new Buffer(ftXML), { filename: 'temp.txt' });
-
     res.locals.returnResponse = { "step_2": {"status": "failure"} };
 
     axios({
@@ -455,8 +454,9 @@ const tagText = (req, res, next) => {
         headers: data.getHeaders()
     }).then((response) => {
         if (response.data.hasOwnProperty('tags')) {
+            tags = [res.locals.emDoc.showAs].concat(response.data["tags"]);
             const ftFilepath = getAttFSPath(res.locals.emDoc, res.locals.formObject);
-            return injectTags(ftFilepath, ftXML, response.data["tags"]);
+            return injectTags(ftFilepath, ftXML, tags);
         }
     }).then((xmlWithTags) => {
         res.locals.text = xmlWithTags;

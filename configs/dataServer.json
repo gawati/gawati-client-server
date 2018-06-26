@@ -41,6 +41,10 @@
             "metadata":{
                 "url": "/gwdc/documents/metadata",
                 "method": "get"
+            },
+            "refreshTags": {
+                "url": "/gwdc/document/tags/refresh",
+                "method": "post"
             }
         }
     },
