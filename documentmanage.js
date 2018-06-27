@@ -293,7 +293,7 @@ const formStateFromAknDocument = (aknDoc) => {
     uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
     uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
     uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
-
+    uiData.docTags.value = xmlDoc.meta.tags;
     const embeddedContents = xmlDoc.meta.proprietary.gawati.embeddedContents;
     const compRefs = generalhelper.coerceIntoArray(xmlDoc.body.book.componentRef);
     // if there are no attachments embeddedContents is undefined

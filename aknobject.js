@@ -75,6 +75,7 @@ const aknTmplSchema = yup.object().shape({
     "docVersionDate": yup.date().format("YYYY-MM-DD", true).required(),
     "docAuthoritative": yup.boolean().required(),      
     "docPrescriptive": yup.boolean().required(),
+    "docTags": yup.boolean().required(),
     "workIRIthis":  yup.string().required(),
     "workIRI":  yup.string().required(),
     "workDate" :  yup.string().required(),
@@ -105,7 +106,7 @@ const aknTmplSchema = yup.object().shape({
             fileName: yup.string().required(), 
             origFileName: yup.string().required()
         })
-    )
+    ),
 });
 
 const identityFormTemplate = () => {
@@ -121,6 +122,7 @@ const identityFormTemplate = () => {
         docPublicationDate: {value: undefined, error: null },
         docEntryIntoForceDate: {value: undefined, error: null },
         docVersionDate: {value: undefined, error: null },
+        docTags: {value: undefined, error: null },
         docNumber: {value: "", error: null },
         docPart: {value: "", error: null },
         docIri : {value: "", error: null }
