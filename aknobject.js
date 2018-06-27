@@ -75,7 +75,7 @@ const aknTmplSchema = yup.object().shape({
     "docVersionDate": yup.date().format("YYYY-MM-DD", true).required(),
     "docAuthoritative": yup.boolean().required(),      
     "docPrescriptive": yup.boolean().required(),
-    "docTags": yup.boolean().required(),
+    "docTags": yup.string(),
     "workIRIthis":  yup.string().required(),
     "workIRI":  yup.string().required(),
     "workDate" :  yup.string().required(),
@@ -157,7 +157,8 @@ const formObject2AknTemplateObject = (form) => {
         docPart, 
         docIri, 
         docCountry, 
-        docLang
+        docLang,
+        docTags
     } = form.pkgIdentity ;
     
     // this aknTmpl object is applied on the handlebars schema to generate the XML 
