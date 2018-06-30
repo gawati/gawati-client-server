@@ -41,6 +41,10 @@
             "metadata":{
                 "url": "/gwdc/documents/metadata",
                 "method": "get"
+            },
+            "saveMetadata":{
+                "url": "/gwdc/document/metadata/add",
+                "method": "post"
             }
         }
     },
