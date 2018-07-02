@@ -128,7 +128,7 @@ templates['akntemplate.hbs'] = template({"1":function(container,depth0,helpers,p
     + alias4(((helper = (helper = helpers.docEntryIntoForceDate || (depth0 != null ? depth0.docEntryIntoForceDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docEntryIntoForceDate","hash":{},"data":data}) : helper)))
     + "\" />\n                    <gw:date refersTo=\"#docVersionDate\" date=\""
     + alias4(((helper = (helper = helpers.docVersionDate || (depth0 != null ? depth0.docVersionDate : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"docVersionDate","hash":{},"data":data}) : helper)))
-    + "\" />\n                    <gw:themes source=\"#legacy\">\n                    </gw:themes>\n                </gw:gawati>\n            </an:proprietary>\n        </an:meta>\n        <an:body>\n            <an:book refersTo=\"#mainDocument\">  \n"
+    + "\" />\n                    <gw:themes source=\"#legacy\">\n                    </gw:themes>\n                </gw:gawati>\n            </an:proprietary>\n            <an:tags></an:tags>\n        </an:meta>\n        <an:body>\n            <an:book refersTo=\"#mainDocument\">  \n"
     + ((stack1 = helpers.each.call(alias1,(depth0 != null ? depth0.components : depth0),{"name":"each","hash":{},"fn":container.program(10, data, 0),"inverse":container.noop,"data":data})) != null ? stack1 : "")
     + "            </an:book>\n        </an:body>\n    </an:"
     + alias4(((helper = (helper = helpers.aknType || (depth0 != null ? depth0.aknType : depth0)) != null ? helper : alias2),(typeof helper === alias3 ? helper.call(alias1,{"name":"aknType","hash":{},"data":data}) : helper)))

@@ -41,6 +41,10 @@
             "metadata":{
                 "url": "/gwdc/documents/metadata",
                 "method": "get"
+            },
+            "refreshTags": {
+                "url": "/gwdc/document/tags/refresh",
+                "method": "post"
             }
         }
     },
@@ -54,6 +58,42 @@
             "metadata":{
                 "url": "/gw/doc/metadata",
                 "method": "get"
+            }
+        }
+    },
+    "extractText": {
+        "serviceEndPoint" : "http://localhost:5000",
+        "api": {
+            "pdf2txt": {
+                "url": "/uploadajax",
+                "method": "post"
+            }
+        }
+    },
+    "tagText": {
+        "serviceEndPoint" : "http://localhost:5001",
+        "api": {
+            "tag": {
+                "url": "/api/tag",
+                "method": "post"
+            }
+        }
+    },
+    "extractText": {
+        "serviceEndPoint" : "http://localhost:5000",
+        "api": {
+            "pdf2txt": {
+                "url": "/uploadajax",
+                "method": "post"
+            }
+        }
+    },
+    "tagText": {
+        "serviceEndPoint" : "http://localhost:5001",
+        "api": {
+            "tag": {
+                "url": "/api/tag",
+                "method": "post"
             }
         }
     }

@@ -18,6 +18,8 @@
     "dot": "^1.1.2",
     "express": "~4.15.5",
     "express-bearer-token": "^2.1.1",
+    "form-data": "^2.3.2",
+    "fs-extra": "^6.0.1",
     "gawati-auth-middleware": "^1.0.0",
     "gawati-workflow": "^1.0.3",
     "glob": "^7.1.2",
@@ -30,6 +32,7 @@
     "serialize-error": "^2.1.0",
     "serve-favicon": "~2.4.5",
     "winston": "^2.4.0",
+    "xml2js": "^0.4.19",
     "yup": "^0.24.1"
   },
   "devDependencies": {

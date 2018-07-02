@@ -1,9 +1,10 @@
 const axios = require("axios");
-const fs = require("fs");
+const fs = require("fs-extra");
+const FormData = require('form-data');
 const logr = require("./logging");
 const path = require("path");
 const mkdirp = require("mkdirp");
-
+const xml2js = require('xml2js');
 const urihelper = require("./utils/UriHelper");
 const generalhelper = require("./utils/GeneralHelper");
 const componentsHelper = require("./utils/ComponentsHelper");
@@ -263,20 +264,7 @@ const removeFile = (fullPath, responseMsg) => {
  */
 const removeAttFromFS = (req, res, next) => {
     console.log("IN: removeAttFromFS");
-    let emDoc = res.locals.emDoc;
-    let aknObj = res.locals.formObject.pkgIdentity;
-    let iri = aknObj["docIri"].value;
-
-    let arrIri = iri.split("/");
-    let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
-    let attPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
-
-    let fileExt = path.extname(emDoc.origFileName);
-    let filePrefix = urihelper.fileNamePrefixFromIRI(iri);
-    let attFileName = `${filePrefix}_${emDoc.index}${fileExt}`;
-
-    let fullPath = path.join(attPath, attFileName);
-
+    let fullPath = getAttFSPath(res.locals.emDoc, res.locals.formObject);
     var responseMsg = {
         "step_1": {"status": "", "msg": [] }
     };
@@ -375,6 +363,158 @@ const saveAttToXmlDb = (req, res, next) => {
 };
 
 /**
+ * Retrieves the FS full path of an existing attachment.
+ */
+const getAttFSPath = (emDoc, pkg) => {
+    console.log(" IN: getAttFSPath");
+    let aknObj = pkg.pkgIdentity;
+    let iri = aknObj["docIri"].value;
+
+    let arrIri = iri.split("/");
+    let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
+    let attPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
+
+    let fileExt = path.extname(emDoc.origFileName);
+    let filePrefix = urihelper.fileNamePrefixFromIRI(iri);
+    let attFileName = `${filePrefix}_${emDoc.index}${fileExt}`;
+
+    let fullPath = path.join(attPath, attFileName);
+    return fullPath
+}
+
+/**
+ * Calls the extractor service to get text for the attachment.
+ */
+const extractText = (req, res, next) => {
+    console.log(" IN: extractText");
+    let fullPath = getAttFSPath(res.locals.emDoc, res.locals.formObject);
+    const extractTextApi = servicehelper.getApi("extractText", "pdf2txt");
+    const {url, method} = extractTextApi;
+
+    let data = new FormData();
+    data.append('file', fs.createReadStream(fullPath));
+
+    axios({
+        method: method,
+        url: url,
+        data: data,
+        headers: data.getHeaders()
+    }).then(
+        (response) => {
+            res.locals.text = response.data["text"];
+            res.locals.returnResponse = {
+                "step_1": {"status": "extract_text_success"}
+            };
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.returnResponse = {
+                "step_1": {"status": "failure"}
+            };
+            next();
+        }
+    );
+};
+
+/**
+ * Inject tags into the fulltext xml
+ */
+const injectTags = (filepath, xml, tags) => {
+    return new Promise(function(resolve, reject) {
+        xml2js.parseString(xml, (error, ftJSON) => {
+            if (error) reject(err);
+            else {
+                ftJSON.pages.tags = tags.join(",");
+                let builder = new xml2js.Builder();
+                const resultXML = builder.buildObject(ftJSON);
+                resolve(resultXML);
+            }
+        });
+    });
+}
+
+/**
+ * Calls the tagit service to get tags for the attachment.
+ */
+const tagText = (req, res, next) => {
+    console.log(" IN: tagText");
+    let ftXML = res.locals.text;
+    const extractTextApi = servicehelper.getApi("tagText", "tag");
+    const {url, method} = extractTextApi;
+
+    let data = new FormData();
+    data.append('file', new Buffer(ftXML), { filename: 'temp.txt' });
+    res.locals.returnResponse = { "step_2": {"status": "failure"} };
+
+    axios({
+        method: method,
+        url: url,
+        data: data,
+        headers: data.getHeaders()
+    }).then((response) => {
+        if (response.data.hasOwnProperty('tags')) {
+            tags = [res.locals.emDoc.showAs].concat(response.data["tags"]);
+            const ftFilepath = getAttFSPath(res.locals.emDoc, res.locals.formObject);
+            return injectTags(ftFilepath, ftXML, tags);
+        }
+    }).then((xmlWithTags) => {
+        res.locals.text = xmlWithTags;
+        res.locals.returnResponse = { 
+            "step_2": {"status": "tag_text_success"}
+        };
+        next();
+    }).catch((err) => {
+        console.log(err);
+        next();
+    });
+};
+
+/**
+ * Saves the full text for attachment to the database
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+const saveFTtoXmlDb = (req, res, next) => {
+    console.log(" IN: saveFTtoXmlDb");
+    const {iriThis} = res.locals.emDoc;
+    let iri = iriThis.replace('/akn', '/akn_ft');
+
+    if (res.locals.returnResponse.step_2.status === 'tag_text_success') {
+        const saveFTApi = servicehelper.getApi("xmlServer", "saveXml");
+        const {url, method} = saveFTApi;
+
+        let data = {
+            'fileXml': urihelper.fileNameFromIRI(iri, "xml"),
+            'update': true,
+            'iri': iri,
+            'data': res.locals.text,
+        }
+        axios({
+            method: method,
+            url: url,
+            data: data
+        }).then(
+            (response) => {
+                res.locals.returnResponse = response.data;
+                next();
+            }
+        ).catch(
+            (err) => {
+                res.locals.returnResponse = err;
+                next();
+            }
+        );
+    } else {
+        res.locals.returnResponse = {
+            'error': { 'code': iri, 'message': 'Error while extracting and tagging text' }
+        }
+        next();
+    }
+};
+
+/**
  * 
  * @param {*} req 
  * @param {*} res 
@@ -396,6 +536,12 @@ module.exports = {
     removeAttFromFS: removeAttFromFS,
     removeAttInfoFromAknObject: removeAttInfoFromAknObject,
     deleteAttFromFS: deleteAttFromFS,
+
+    //Extract text from attachment methods
+    extractText: extractText,
+    tagText: tagText,
+    saveFTtoXmlDb: saveFTtoXmlDb,
+
     //Common methods
     saveAttToXmlDb: saveAttToXmlDb,
     returnResponse: returnResponse
