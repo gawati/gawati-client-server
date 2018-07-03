@@ -535,7 +535,8 @@ const loadMetadata = (req, res, next) => {
     );
 }
 
- * Refreshes the tags for AKN.
+/*
+* Refreshes the tags for AKN.
  * @param {*} req
  * @param {*} res
  * @param {*} next
@@ -590,33 +591,6 @@ const saveMetadata = (req, res, next) => {
     );
 };
 
-/**
- * Saves the XML document metadata to the database
- * @param {*} req 
- * @param {*} res 
- * @param {*} next 
- */
-const saveMetadata = (req, res, next) => {
-    console.log(" IN: saveMetadata");
-    console.log(res.locals.formObject);    
-    const saveMetadataApi = servicehelper.getApi("xmlServer", "saveMetadata");
-    const {url, method} = saveMetadataApi;
-    axios({
-        method: method,
-        url: url,
-        data: res.locals.formObject
-    }).then(
-        (response) => {
-            res.locals.returnResponse = response.data;
-            next();
-        }
-    ).catch(
-        (err) => {
-            res.locals.returnResponse = err;
-            next();
-        }
-    );
-};
 
 /**
  * Authenticate the user
