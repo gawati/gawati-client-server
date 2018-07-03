@@ -45,6 +45,10 @@
             "refreshTags": {
                 "url": "/gwdc/document/tags/refresh",
                 "method": "post"
+            },
+            "saveMetadata":{
+                "url": "/gwdc/document/metadata/add",
+                "method": "post"
             }
         }
     },
@@ -58,24 +62,6 @@
             "metadata":{
                 "url": "/gw/doc/metadata",
                 "method": "get"
-            }
-        }
-    },
-    "extractText": {
-        "serviceEndPoint" : "http://localhost:5000",
-        "api": {
-            "pdf2txt": {
-                "url": "/uploadajax",
-                "method": "post"
-            }
-        }
-    },
-    "tagText": {
-        "serviceEndPoint" : "http://localhost:5001",
-        "api": {
-            "tag": {
-                "url": "/api/tag",
-                "method": "post"
             }
         }
     },
