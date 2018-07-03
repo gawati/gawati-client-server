@@ -12,6 +12,7 @@ const wf = require("./utils/Workflow");
 const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
 const attapis = require("./attapis");
+const lodash = require("lodash");
 
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -445,6 +446,62 @@ const loadFilterListing = (req, res, next) => {
     );    
 };
 
+/**
+ * Returns the workflow completion percentage of the document.
+ * @param {object} current document's workflow information.
+ */
+const getWFProgress = (workflow) => {
+    var i = 0;
+    //Get position of current workflow state from among all states
+    for (i; i < workflow.allStates.length; i++) {
+        if (workflow.allStates[i].name === workflow.state.status) {
+            break;
+        }
+    }
+    var progressPercent = ((i+1) / workflow.allStates.length) * 100;
+    return Math.floor(progressPercent);
+}
+
+/**
+ * Sort the documents allowed for the user's roles.
+ */
+const sortListing = (req, res, next) => {
+    const iteratees = req.body.data.sortOrder.fields;
+    const iterateeFns = iteratees.map( field => {
+        if (field === 'docTitle') 
+            return (
+                el => {
+                    return el.akomaNtoso.docTitle.value;
+                }
+            )
+        else if (field === 'state' )
+            return (
+                el => {
+                    return el.workflow[field].status;
+                }
+            )
+        else if (field === 'nextStates') 
+            return (
+                el => {
+                    return el.workflow[field][0];
+                }
+            )
+        else if (field === 'workflow')
+            return (
+                el => {
+                    return getWFProgress(el.workflow);
+                }
+            )  
+    })
+    const orders = req.body.data.sortOrder.orders;
+    debugger;
+    const sorted =  lodash.orderBy(res.locals.returnResponse.documents, iterateeFns, orders);
+    res.locals.returnResponse.documents = sorted; 
+    debugger;
+    next();
+            
+};
+
 const deleteDocument = (req,res,next) => {
     console.log(" IN: deleteDocument");
     console.log("response is " + JSON.stringify(res.locals.returnResponse));   
@@ -598,6 +655,7 @@ module.exports = {
     loadListing: loadListing,
     loadFilterListing: loadFilterListing,
     convertAknXmlToObjects: convertAknXmlToObjects,
+    sortListing: sortListing,
 
     // Delete a document based on doc iri
     deleteDocument: deleteDocument,
