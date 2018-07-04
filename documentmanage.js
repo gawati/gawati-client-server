@@ -494,10 +494,8 @@ const sortListing = (req, res, next) => {
             )  
     })
     const orders = req.body.data.sortOrder.orders;
-    debugger;
     const sorted =  lodash.orderBy(res.locals.returnResponse.documents, iterateeFns, orders);
     res.locals.returnResponse.documents = sorted; 
-    debugger;
     next();
             
 };
