@@ -88,6 +88,7 @@ dmAPIs["/documents"] = {
         dm.receiveSubmitData,
         dm.loadListing,
         dm.convertAknXmlToObjects,
+        dm.sortListing,
         dm.returnResponse
     ]
 };
