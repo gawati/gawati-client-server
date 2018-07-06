@@ -440,7 +440,7 @@ const injectTags = (filepath, xml, tags) => {
 const getTagitFilename = (ftFilepath) => {
     console.log(" IN: getTagitFilename");
     let fname = path.basename(ftFilepath, path.extname(ftFilepath))
-    fname = fname.replace(/main.*/, "main") + '.txt'; 
+    fname = fname.replace(/main.*/, "main") + '.xml'; 
     return fname;
 }
 
