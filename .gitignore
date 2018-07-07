@@ -66,3 +66,6 @@ akn_data/
 # auth.json
 
 auth.json
+
+# Temporary Pkg folder
+tmp/
