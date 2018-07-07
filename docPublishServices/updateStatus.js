@@ -86,7 +86,7 @@ const transit = (docJson, status, iri) => {
  */
 const loadJSONForIri = (iri) => {
   console.log(" IN: loadJSONForIri");
-  const loadApi = servicehelper.getApi("xmlServer", "getXml");
+  const loadApi = servicehelper.getApi("xmlServer", "getJson");
   const {url, method} = loadApi;
   return axios({
     method: method,

@@ -1,5 +1,4 @@
 const pkgapis = require("./pkgapis");
-const dm = require("./documentmanage.js");
 
 var pkgAPIs  = {};
 const BASE_URI = "/pkg"
@@ -17,7 +16,7 @@ pkgAPIs[`${BASE_URI}/load`] = {
     method: "post",
     stack: [
         pkgapis.receiveSubmitData,
-        dm.loadXmlForIri,
+        pkgapis.loadXmlForIri,
         pkgapis.prepareAndSendPkg,
         pkgapis.returnResponse
     ]
