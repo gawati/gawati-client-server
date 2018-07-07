@@ -235,14 +235,14 @@ const updateAknField = (req, res, next) => {
 };
 
 /**
- * Loads the XML document from the db given a specific IRI
+ * Loads the XML document (as JS object) from the db given a specific IRI
  * @param {*} req 
  * @param {*} res 
  * @param {*} next 
  */
 const loadXmlForIri = (req, res, next) => {
     console.log(" IN: loadXmlForIri");
-    const loadXmlApi = servicehelper.getApi("xmlServer", "getXml");
+    const loadXmlApi = servicehelper.getApi("xmlServer", "getJson");
     const {url, method} = loadXmlApi;
     axios({
         method: method,

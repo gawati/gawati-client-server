@@ -18,6 +18,7 @@ const constants = require("./constants");
 const receiveSubmitData = (req, res, next) => {
     console.log(" IN: receiveSubmitData");
     res.locals.iri = req.body.data.iri;
+    res.locals.formObject = req.body.data;
     next();
 };
 
@@ -40,7 +41,7 @@ const prepareAndSendPkg = (req, res, next) => {
   const tmpUid = 'tmp' + getUid();
   const tmpAknDir = path.join(constants.TMP_PKG_FOLDER(), tmpUid);
   const zipPath = tmpAknDir + '.zip';
-  const docXml = res.locals.aknObject;
+  const docXml = res.locals.aknXml;
 
   //Remove existing folders with the same tmpUid
   fileHelper.removeFileFolder(tmpAknDir)
@@ -77,6 +78,34 @@ const prepareAndSendPkg = (req, res, next) => {
 }
 
 /**
+ * Loads the XML document from the db given a specific IRI
+ * Note: this loads the actual xml and not the json.
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const loadXmlForIri = (req, res, next) => {
+    console.log(" IN: loadXmlForIri");
+    const loadXmlApi = servicehelper.getApi("xmlServer", "getXml");
+    const {url, method} = loadXmlApi;
+    axios({
+        method: method,
+        url: url,
+        data: res.locals.formObject
+    }).then(
+        (response) => {
+            res.locals.aknXml = response.data;
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.aknXml = err;
+            next();
+        }
+    );
+};
+
+/**
  * Returns the zipped package in the response.
  */
 const returnPkg = (res, zipPath) => {
@@ -99,6 +128,7 @@ const returnResponse = (req, res) => {
 module.exports = {
     //Load pkg methods
     receiveSubmitData: receiveSubmitData,
+    loadXmlForIri: loadXmlForIri,
     prepareAndSendPkg: prepareAndSendPkg,
 
     //Common methods

@@ -6,8 +6,12 @@
                 "url": "/gwdc/document/add",
                 "method": "post"
             },
-            "getXml" : {
+            "getJson" : {
                 "url": "/gwdc/document/load",
+                "method": "post"
+            },
+            "getXml" : {
+                "url": "/gwdc/document/load/xml",
                 "method": "post"
             },
             "updateXml" : {
