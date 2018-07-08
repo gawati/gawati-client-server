@@ -1,6 +1,7 @@
 const axios = require("axios");
 const fs = require("fs-extra");
 const FormData = require('form-data');
+var PDFImage = require("pdf-image").PDFImage;
 const logr = require("./logging");
 const path = require("path");
 const mkdirp = require("mkdirp");
@@ -103,6 +104,40 @@ const writeFile = (fileParams, responseMsg) => {
 };
 
 /**
+ * Writes the uploaded attachment to the filesystem.
+ *
+ * @param {*} file parameters
+ * @param {*} response message
+ */
+const writeThumbnailFile = (fileParams, responseMsg) => {
+    const {newPath, newFileName, origName} = fileParams;
+    var pdfImage = new PDFImage(path.join(fileParams.newPath, fileParams.newFileName));
+    
+    return new Promise(function(resolve, reject) {
+        pdfImage.convertPage(0).then(function (imagePath) {
+            logr.info(generalhelper.serverMsg(" Thmbnail was written to file system "));
+            responseMsg.step_1.msg.push(
+                {
+                    "thumbnail": imagePath
+                }
+            );
+            responseMsg.step_1.status = "write_to_fs_thumbanil_success";
+            resolve(responseMsg);
+        }, function (err) {
+            logr.error(generalhelper.serverMsg("ERROR while generating thumbnail to file "), err) ;
+            responseMsg.step_1.status = "failure";
+            responseMsg.step_1.msg.push(
+                {
+                    "originalname": origName,
+                    "err": err
+                }
+            );
+            reject(err);
+        });
+    });
+};
+
+/**
  * Writes a binary file to file system.
  * Single uploads only, they are processed from the file
  * provided by multer
@@ -162,7 +197,16 @@ const writeSubmittedFiletoFS = (req, res, next) => {
                 .then(result => {
                     console.log(" RESPONSE MSG = ", JSON.stringify(result));
                     res.locals.binaryFilesWriteResponse = responseMsg;
-                    next();
+
+                    writeThumbnailFile(fileParams, responseMsg)
+                        .then(res => {
+                            console.log(" RESPONSE MSG = ", JSON.stringify(res));
+                            next();
+                        })
+                        .catch(err => {
+                            res.locals.binaryFilesWriteResponse = responseMsg;
+                            console.log(err);
+                        });
                 })
                 .catch(err => {
                     res.locals.binaryFilesWriteResponse = responseMsg;
