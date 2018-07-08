@@ -612,7 +612,7 @@ const refreshTags = (req, res, next) => {
         }
     ).catch(
         (err) => {
-            res.locals.returnResponse = err;
+            res.locals.returnResponse = serializeError(err);
             next();
         }
     );

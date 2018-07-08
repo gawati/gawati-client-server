@@ -204,13 +204,14 @@ const writeSubmittedFiletoFS = (req, res, next) => {
                     if (generateThumbnails) {
                         writeThumbnailFile(fileParams, responseMsg)
                         .then(res => {
-                            console.log(" RESPONSE MSG = ", JSON.stringify(res));
                             next();
                         })
                         .catch(err => {
                             res.locals.binaryFilesWriteResponse = responseMsg;
                             console.log(err);
                         });
+                    }  else {
+                        next();
                     }
                 })
                 .catch(err => {
