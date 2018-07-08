@@ -11,6 +11,9 @@ const generalhelper = require("./utils/GeneralHelper");
 const componentsHelper = require("./utils/ComponentsHelper");
 const servicehelper = require("./utils/ServiceHelper");
 const constants = require("./constants");
+// check if we have enabled thumbnail generation
+const generalConfigs = require("./configs/generalConfigs");
+
 /**
  * Restructures the formObject to a standard form.
  * @param {object} req.body object 
@@ -149,6 +152,7 @@ const writeThumbnailFile = (fileParams, responseMsg) => {
 const writeSubmittedFiletoFS = (req, res, next) => {
     console.log(" IN: writeSubmittedFiletoFS", res.locals.formFiles.length, 
         res.locals.formObject.pkgIdentity["docIri"].value);
+    const generateThumbnails = generalConfigs.generateThumbnails;        
     let aknObj = res.locals.formObject.pkgIdentity;
     let attachments = res.locals.formObject.pkgAttachments.value;
     let iri = aknObj["docIri"].value;
@@ -197,8 +201,8 @@ const writeSubmittedFiletoFS = (req, res, next) => {
                 .then(result => {
                     console.log(" RESPONSE MSG = ", JSON.stringify(result));
                     res.locals.binaryFilesWriteResponse = responseMsg;
-
-                    writeThumbnailFile(fileParams, responseMsg)
+                    if (generateThumbnails) {
+                        writeThumbnailFile(fileParams, responseMsg)
                         .then(res => {
                             console.log(" RESPONSE MSG = ", JSON.stringify(res));
                             next();
@@ -207,6 +211,7 @@ const writeSubmittedFiletoFS = (req, res, next) => {
                             res.locals.binaryFilesWriteResponse = responseMsg;
                             console.log(err);
                         });
+                    }
                 })
                 .catch(err => {
                     res.locals.binaryFilesWriteResponse = responseMsg;
