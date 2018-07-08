@@ -435,6 +435,16 @@ const injectTags = (filepath, xml, tags) => {
 }
 
 /**
+ * Get gawati-tagit compliant input filename from fulltext filepath
+ */
+const getTagitFilename = (ftFilepath) => {
+    console.log(" IN: getTagitFilename");
+    let fname = path.basename(ftFilepath, path.extname(ftFilepath))
+    fname = fname.replace(/main.*/, "main") + '.xml'; 
+    return fname;
+}
+
+/**
  * Calls the tagit service to get tags for the attachment.
  */
 const tagText = (req, res, next) => {
@@ -443,8 +453,11 @@ const tagText = (req, res, next) => {
     const extractTextApi = servicehelper.getApi("tagText", "tag");
     const {url, method} = extractTextApi;
 
+    const ftFilepath = getAttFSPath(res.locals.emDoc, res.locals.formObject);
+    const tagsInputFile = getTagitFilename(ftFilepath);
+
     let data = new FormData();
-    data.append('file', new Buffer(ftXML), { filename: 'temp.txt' });
+    data.append('file', new Buffer(ftXML), { filename: tagsInputFile });
     res.locals.returnResponse = { "step_2": {"status": "failure"} };
 
     axios({
@@ -455,7 +468,6 @@ const tagText = (req, res, next) => {
     }).then((response) => {
         if (response.data.hasOwnProperty('tags')) {
             tags = [res.locals.emDoc.showAs].concat(response.data["tags"]);
-            const ftFilepath = getAttFSPath(res.locals.emDoc, res.locals.formObject);
             return injectTags(ftFilepath, ftXML, tags);
         }
     }).then((xmlWithTags) => {
