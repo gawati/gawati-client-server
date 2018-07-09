@@ -53,6 +53,10 @@
             "saveMetadata":{
                 "url": "/gwdc/document/metadata/add",
                 "method": "post"
+            },
+            "savePkg": {
+                "url": "/gwdc/pkg/add",
+                "method": "post"
             }
         }
     },
