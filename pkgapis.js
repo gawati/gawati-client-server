@@ -23,6 +23,20 @@ const receiveSubmitData = (req, res, next) => {
 };
 
 /**
+ * Receives the submitted data. This particular API expects multipart form data.
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const receiveFilesSubmitData = (req, res, next) => {
+    // convert the formdata multipart object to use the json object form expected in formObject.
+    console.log(" IN: receiveFilesSubmitData");
+    res.locals.formObject = req.body;
+    res.locals.formFiles = req.files;
+    next();
+};
+
+/**
  * Generates a uid of length 5
  */
 const getUid = () => {
@@ -112,7 +126,69 @@ const returnPkg = (res, zipPath) => {
   res.contentType('zip');
   res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(zipPath));
   res.sendFile(path.resolve(zipPath));
-} 
+}
+
+/**
+ * Prepare package to save on database
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const prepToSavePkg = (req, res, next) => {
+    console.log(" IN: prepToSavePkg");
+    let {iri} = res.locals.formObject;
+    let files = res.locals.formFiles;
+
+    let aknXml = '';
+    let publicKey = '';
+    for (let i=0; i<files.length; i++) {
+        if (files[i].fieldname === 'file') {
+            aknXml = files[i].buffer.toString();
+        } else (files[i].fieldname === 'public_key') {
+            publicKey = files[i].buffer.toString();
+        }
+    }
+
+    // set update = true to ensure the document gets overwritten
+    res.locals.signedPkg = {
+        "update": true,
+        "iri": iri,
+        "fnameXml": urihelper.fileNameFromIRI(iri, "xml"),
+        "doc": aknXml,
+        "fnameKey": urihelper.fileNameFromIRI(iri, "public"),
+        "publicKey": publicKey
+    };
+
+    next();
+};
+
+/**
+ * Saves package on database
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const savePkgForIri = (req, res, next) => {
+    console.log(" IN: loadXmlForIri");
+    const savePkgApi = servicehelper.getApi("xmlServer", "savePkg");
+    const {url, method} = savePkgApi;
+    axios({
+        method: method,
+        url: url,
+        data: res.locals.signedPkg
+    }).then(
+        (response) => {
+            res.locals.returnResponse = response.data;
+            next();
+        }
+    ).catch(
+        (err) => {
+            console.log(err);
+            res.locals.returnResponse = err;
+            next();
+        }
+    );
+}
 
 /**
  * 
@@ -131,6 +207,9 @@ module.exports = {
     loadXmlForIri: loadXmlForIri,
     prepareAndSendPkg: prepareAndSendPkg,
 
-    //Common methods
+    //Upload pkg methods
+    receiveFilesSubmitData: receiveFilesSubmitData,
+    prepToSavePkg: prepToSavePkg,
+    savePkgForIri: savePkgForIri,
     returnResponse: returnResponse
 };
