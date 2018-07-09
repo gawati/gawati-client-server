@@ -144,7 +144,7 @@ const prepToSavePkg = (req, res, next) => {
     for (let i=0; i<files.length; i++) {
         if (files[i].fieldname === 'file') {
             aknXml = files[i].buffer.toString();
-        } else (files[i].fieldname === 'public_key') {
+        } else if (files[i].fieldname === 'public_key') {
             publicKey = files[i].buffer.toString();
         }
     }
