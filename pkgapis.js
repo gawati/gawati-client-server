@@ -188,7 +188,7 @@ const prepToSavePkg = (req, res, next) => {
  * @param {*} next 
  */
 const savePkgForIri = (req, res, next) => {
-    console.log(" IN: loadXmlForIri");
+    console.log(" IN: savePkgForIri");
     const savePkgApi = servicehelper.getApi("xmlServer", "savePkg");
     const {url, method} = savePkgApi;
     axios({
