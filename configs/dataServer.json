@@ -6,12 +6,8 @@
                 "url": "/gwdc/document/add",
                 "method": "post"
             },
-            "getJson" : {
-                "url": "/gwdc/document/load",
-                "method": "post"
-            },
             "getXml" : {
-                "url": "/gwdc/document/load/xml",
+                "url": "/gwdc/document/load",
                 "method": "post"
             },
             "updateXml" : {
@@ -56,6 +52,10 @@
             },
             "savePkg": {
                 "url": "/gwdc/pkg/add",
+                "method": "post"
+            },
+            "loadPkg": {
+                "url": "/gwdc/pkg/load",
                 "method": "post"
             }
         }

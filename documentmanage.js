@@ -242,7 +242,7 @@ const updateAknField = (req, res, next) => {
  */
 const loadXmlForIri = (req, res, next) => {
     console.log(" IN: loadXmlForIri");
-    const loadXmlApi = servicehelper.getApi("xmlServer", "getJson");
+    const loadXmlApi = servicehelper.getApi("xmlServer", "getXml");
     const {url, method} = loadXmlApi;
     axios({
         method: method,
