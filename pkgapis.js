@@ -164,7 +164,7 @@ const prepToSavePkg = (req, res, next) => {
         if (files[i].fieldname === 'file') {
             aknXml = files[i].buffer.toString();
         } else if (files[i].fieldname === 'public_key') {
-            publicKey = files[i].buffer.toString('base64');
+            publicKey = files[i].buffer.toString();
         }
     }
 
