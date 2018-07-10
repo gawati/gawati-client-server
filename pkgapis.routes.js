@@ -4,7 +4,7 @@ var pkgAPIs  = {};
 const BASE_URI = "/pkg"
 
 /**
-Sends a package of metadata xml and its attachments for the given iri
+Sends a package of metadata xml, public key (if present) and its attachments for the given iri
 Input json object submitted to the API:
 {
     "data": {
@@ -16,7 +16,7 @@ pkgAPIs[`${BASE_URI}/load`] = {
     method: "post",
     stack: [
         pkgapis.receiveSubmitData,
-        pkgapis.loadXmlForIri,
+        pkgapis.loadPkgForIri,
         pkgapis.prepareAndSendPkg
     ]
 };

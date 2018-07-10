@@ -2,11 +2,24 @@ const axios = require("axios");
 const FormData = require('form-data');
 const logr = require("./logging");
 const path = require("path");
+const extract = require("extract-zip");
 const urihelper = require("./utils/UriHelper");
 const servicehelper = require("./utils/ServiceHelper");
 const zipFolder = require("./utils/ZipHelper");
 const fileHelper = require("./utils/FileHelper");
 const constants = require("./constants");
+
+/**
+ * Extract a zip folder
+ */
+const unzip = (src, dest) => {
+  return new Promise(function(resolve, reject) {
+    extract(src, {dir: dest}, function(err) {
+      if (err) reject(err);
+      else resolve(true);
+    })
+  });
+}
 
 /**
  * Receives the submitted data. 
@@ -48,21 +61,22 @@ const getUid = () => {
  * a. Doc XML
  * b. Attachments
  * We also create the attachment folder structure inside akn/
- * Create a zip folder, 'akn.zip' 
+ * Create and return a zip folder.
  */
 const prepareAndSendPkg = (req, res, next) => {
-  console.log(" IN: prepareZip");  
+  console.log(" IN: prepareZip");
+
+  //metadata + public key (if present) loaded from DB
+  const unzippedPkgPath = path.join(constants.TMP_PKG_FOLDER(), "pkg");
+
   const tmpUid = 'tmp' + getUid();
   const tmpAknDir = path.join(constants.TMP_PKG_FOLDER(), tmpUid);
   const zipPath = tmpAknDir + '.zip';
-  const docXml = res.locals.aknXml;
 
   //Remove existing folders with the same tmpUid
   fileHelper.removeFileFolder(tmpAknDir)
   .then((result) => {
     const iri = res.locals.iri;
-    //Filename for doc XML
-    const xmlFilename = path.join(tmpAknDir, urihelper.fileNameFromIRI(iri, "xml"));
 
     //Create the folder structure for attachments
     let arrIri = iri.split("/");
@@ -74,7 +88,7 @@ const prepareAndSendPkg = (req, res, next) => {
     return fileHelper.createFolder(dest)
     .then((result) => {
       return axios.all([
-        fileHelper.writeFile(docXml, xmlFilename), 
+        fileHelper.copyFiles(unzippedPkgPath, dest), 
         fileHelper.copyFiles(attSrc, dest)
       ])
     })
@@ -92,28 +106,33 @@ const prepareAndSendPkg = (req, res, next) => {
 }
 
 /**
- * Loads the XML document from the db given a specific IRI
- * Note: this loads the actual xml and not the json.
+ * Loads the metadata XML document and public key (if present) from the db given a specific IRI
  * @param {*} req 
  * @param {*} res 
  * @param {*} next 
  */
-const loadXmlForIri = (req, res, next) => {
-    console.log(" IN: loadXmlForIri");
-    const loadXmlApi = servicehelper.getApi("xmlServer", "getXml");
-    const {url, method} = loadXmlApi;
+const loadPkgForIri = (req, res, next) => {
+    console.log(" IN: loadPkgForIri");
+    const loadPkgApi = servicehelper.getApi("xmlServer", "loadPkg");
+    const {url, method} = loadPkgApi;
+
+    const pkgZipPath = path.join(constants.TMP_PKG_FOLDER(), "pkg.zip");
+
     axios({
         method: method,
         url: url,
         data: res.locals.formObject
-    }).then(
-        (response) => {
-            res.locals.aknXml = response.data;
-            next();
-        }
-    ).catch(
+    }).then((response) => {
+        return fileHelper.writeFile(new Buffer(response.data, "base64"), pkgZipPath);
+    })
+    .then(result => {
+        const unzippedPkgPath = path.join(constants.TMP_PKG_FOLDER(), "pkg");
+        return unzip(pkgZipPath, path.resolve(unzippedPkgPath));
+    })
+    .then(result => next())
+    .catch(
         (err) => {
-            res.locals.aknXml = err;
+            console.log(err);
             next();
         }
     );
@@ -145,7 +164,7 @@ const prepToSavePkg = (req, res, next) => {
         if (files[i].fieldname === 'file') {
             aknXml = files[i].buffer.toString();
         } else if (files[i].fieldname === 'public_key') {
-            publicKey = files[i].buffer.toString();
+            publicKey = files[i].buffer.toString('base64');
         }
     }
 
@@ -204,7 +223,7 @@ const returnResponse = (req, res) => {
 module.exports = {
     //Load pkg methods
     receiveSubmitData: receiveSubmitData,
-    loadXmlForIri: loadXmlForIri,
+    loadPkgForIri: loadPkgForIri,
     prepareAndSendPkg: prepareAndSendPkg,
 
     //Upload pkg methods
