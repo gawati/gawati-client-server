@@ -164,7 +164,7 @@ const prepToSavePkg = (req, res, next) => {
         if (files[i].fieldname === 'file') {
             aknXml = files[i].buffer.toString();
         } else if (files[i].fieldname === 'public_key') {
-            publicKey = files[i].buffer.toString();
+            publicKey = files[i].buffer.toString('base64');
         }
     }
 
@@ -172,9 +172,7 @@ const prepToSavePkg = (req, res, next) => {
     res.locals.signedPkg = {
         "update": true,
         "iri": iri,
-        "fnameXml": urihelper.fileNameFromIRI(iri, "xml"),
         "doc": aknXml,
-        "fnameKey": urihelper.fileNameFromIRI(iri, "public"),
         "publicKey": publicKey
     };
 
