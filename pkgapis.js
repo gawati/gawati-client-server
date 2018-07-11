@@ -95,11 +95,13 @@ const prepareAndSendPkg = (req, res, next) => {
     //Pass returnPkg as callback on completion of zip.
     .then(result => zipFolder(tmpUid, zipPath, () => returnPkg(res, zipPath)))
     .catch((err) => {
+      res.locals.returnResponse = {"status": "failure"};
       console.log(err);
       next();
     });
   })
   .catch(err => {
+    res.locals.returnResponse = {"status": "failure"}
     console.log(err)
     next();
   });
@@ -130,21 +132,34 @@ const loadPkgForIri = (req, res, next) => {
         return unzip(pkgZipPath, path.resolve(unzippedPkgPath));
     })
     .then(result => next())
-    .catch(
-        (err) => {
-            console.log(err);
-            next();
-        }
-    );
+    .catch((err) => {
+        res.locals.returnResponse = {"status": "failure"};
+        console.log(err);
+        next();
+    });
 };
+
+/**
+ * Check if return response status is errored
+ */
+const isFailed = (returnResponse) => {
+	if (returnResponse && 'status' in returnResponse)
+		return returnResponse.status === 'failure';
+	else
+		return false;
+}
 
 /**
  * Returns the zipped package in the response.
  */
 const returnPkg = (res, zipPath) => {
-  res.contentType('zip');
-  res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(zipPath));
-  res.sendFile(path.resolve(zipPath));
+	if (isFailed(res.locals.returnResponse)) {
+		res.json(res.locals.returnResponse);	
+	} else {
+		res.contentType('zip');
+		res.setHeader('Content-Disposition', 'attachment; filename=' + path.basename(zipPath));
+		res.sendFile(path.resolve(zipPath));
+	}
 }
 
 /**
