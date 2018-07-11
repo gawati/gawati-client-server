@@ -10,6 +10,7 @@ const packageJSON = require("./package.json");
 const dmapis = require ("./documentmanage.routes");
 const wfapis = require("./wfapis.routes");
 const attapis = require("./attapis.routes");
+const pkgapis = require("./pkgapis.routes");
 const appconstants = require("./constants");
 
 var upload = multer();
@@ -20,7 +21,7 @@ var router = express.Router();
 
 var jsonParser = bodyParser.json();
 
-const EXCLUDE_FROM_AUTO_ROUTE = ["/attachments/upload", "/document/auth"];
+const EXCLUDE_FROM_AUTO_ROUTE = ["/attachments/upload", "/document/auth", "/pkg/upload"];
 
 /** adding document apis */
 Object.keys(dmapis.dmAPIs).forEach(
@@ -111,6 +112,35 @@ Object.keys(wfapis.wfAPIs).forEach(
             break;
         default:
             logr.error(`Unknown method provide ${wfRoute.method} only "get" and "post" are supported` );
+            break; 
+        }
+    }
+);
+
+// handle /pkg/upload here because it is special as it has files
+var cpUpload = upload.fields(); //[{ name: 'file_0', maxCount: 1 }]
+router.post("/pkg/upload",
+    upload.any(),
+    pkgapis.pkgAPIs["/pkg/upload"].stack
+);
+
+/** adding Pkg apis */
+Object.keys(pkgapis.pkgAPIs).forEach(
+    (routePath) => {
+        const pkgRoute = pkgapis.pkgAPIs[routePath];
+        console.log(` ROUTE PATH = ${routePath} with ${pkgRoute.method}`);
+        switch(pkgRoute.method) {
+        case "post":
+            if (EXCLUDE_FROM_AUTO_ROUTE.indexOf(routePath) < 0) {
+                router.post(
+                    routePath,
+                    jsonParser,
+                    pkgRoute.stack
+                );
+            }
+            break;
+        default:
+            logr.error(`Unknown method provide ${pkgRoute.method} only "post" is supported` );
             break; 
         }
     }

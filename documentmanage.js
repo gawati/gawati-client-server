@@ -235,7 +235,7 @@ const updateAknField = (req, res, next) => {
 };
 
 /**
- * Loads the XML document from the db given a specific IRI
+ * Loads the XML document (as JS object) from the db given a specific IRI
  * @param {*} req 
  * @param {*} res 
  * @param {*} next 

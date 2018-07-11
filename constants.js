@@ -1,3 +1,4 @@
+const path = require("path");
 const API_PROTOCOL = process.env.API_PROTOCOL || 'http' ;
 const API_HOST = process.env.API_HOST || 'localhost' ;
 const API_PORT = process.env.API_PORT || '8080' ;
@@ -8,6 +9,7 @@ const CONFIG_FOLDER = 'configs' ;
 
 const AKN_ATTACHMENTS = () => 
     "./akn_data" ;
+const TMP_PKG_FOLDER = () => path.join(".", "tmp");
 
 const API_SERVER_BASE = () =>
     API_PROTOCOL + '://' + API_HOST + ":" + API_PORT + '/exist/restxq';
@@ -22,6 +24,7 @@ module.exports = {
     CONFIG_FOLDER: CONFIG_FOLDER,
     API_SERVER_BASE: API_SERVER_BASE,
     AKN_ATTACHMENTS: AKN_ATTACHMENTS,
+    TMP_PKG_FOLDER: TMP_PKG_FOLDER,
     PROCESS_NAME: PROCESS_NAME,
     MAX_ATTACHMENTS: MAX_ATTACHMENTS,
     AKN_DOC_TYPES: AKN_DOC_TYPES,
