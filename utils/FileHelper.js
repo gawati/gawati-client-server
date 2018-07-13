@@ -21,14 +21,15 @@ const writeFile = (data, filename) => {
  */
 const copyFiles = (src, dest) => {
   return new Promise(function(resolve, reject) {
-    if (fs.existsSync(src)) {
-      fs.copy(src, dest, function(err) {
-        if (err) reject(err);
-        else resolve(true);
-      })
-    } else {
-      resolve(true);
-    }
+    fs.access(src, fs.constants.R_OK, (err) => {
+      if (err) reject(err);
+      else {
+        fs.copy(src, dest, function(err) {
+          if (err) reject(err);
+          else resolve(true);
+        })
+      }
+    });
   });
 }
 
