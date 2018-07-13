@@ -5,6 +5,7 @@ const logr = require("./logging.js");
 // this loads the workflow
 const wf = require("./utils/Workflow");
 const mq = require("./docPublishServices/queues");
+const sh = require("./utils/ServiceHelper");
 const routes = require("./apiroutes");
 var cookieParser = require("cookie-parser");
 var bodyParser = require("body-parser");
@@ -64,6 +65,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/gwc", routes);
 
+//Check if dependent services are up
+sh.checkServices();
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
