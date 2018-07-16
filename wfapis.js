@@ -1,4 +1,5 @@
 const axios = require("axios");
+const path = require("path");
 const gen = require("./utils/GeneralHelper");
 const logr = require("./logging");
 const wf = require("./utils/Workflow");
@@ -94,6 +95,16 @@ const stateRefactorPermissionsForStorage = (state) => {
     return newState;
 };
 
+// Invoke Pre/Post-Transit actions
+const doPrePostTransit = (wfData, params={pre: false, post: false}) => {
+    console.log(" IN: doPrePostTransit");
+    const {transitionName, aknType, aknSubType} = wfData;
+    const workflow = wf.getWorkflowforTypeAndSubType(aknType, aknSubType);
+    const mPath = path.resolve(workflow.getActionModulePath());
+    const action = params.pre ? workflow.getPreTransitAction(transitionName) : workflow.getPostTransitAction(transitionName);
+    workflow.callModuleAction(mPath, action, params);
+}
+
 /**
  * Calls the eXist-db api that does the transit
  * @param {*} req 
@@ -103,18 +114,17 @@ const doTransit = (req, res) => {
     console.log(" IN: doTransit");
     const apiObj = servicehelper.getApi("xmlServer", "transit");
     const data = res.locals.transitObject;
+
+    const {docIri: iri} = data;
+    doPrePostTransit(res.locals.formObject, {'pre': true, 'iri': iri});
+
     axios({
         method: apiObj.method,
         url: apiObj.url,
         data: data
     }).then(
         (response) => {
-            const {docIri: iri, state} = data;
-            // Publishes the document iri on the IRI_Q if make_publish transit has been requested
-            const {transitionName} = res.locals.formObject;
-            if (transitionName === 'make_publish') {
-                qh.publishOnIriQ(iri)
-            }
+            doPrePostTransit(res.locals.formObject, {'post': true, 'iri': iri});
             res.json(response.data);
         }
     ).catch(
