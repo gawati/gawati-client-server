@@ -1,6 +1,7 @@
 {"workflow": {
     "doctype": "act",
     "subtype": "legge",
+    "modulePath": "utils/wfActions.js",
     "permissions": {"permission": [
         {
             "name": "view",
@@ -149,7 +150,8 @@
             "title": "Send for Publication",
             "from": "editable",
             "to": "under_processing",
-            "bySystem": false
+            "bySystem": false,
+            "postTransit": "doPublish"
         },
         {
             "name": "make_published",

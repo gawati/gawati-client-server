@@ -24,7 +24,7 @@
     "form-data": "^2.3.2",
     "fs-extra": "^6.0.1",
     "gawati-auth-middleware": "^1.0.0",
-    "gawati-workflow": "^1.0.3",
+    "gawati-workflow": "^1.0.6",
     "glob": "^7.1.2",
     "handlebars": "^4.0.11",
     "hbs": "~4.0.1",
