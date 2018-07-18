@@ -13,6 +13,7 @@ const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
 const attapis = require("./attapis");
 const lodash = require("lodash");
+const path = require("path");
 
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -648,6 +649,22 @@ const saveMetadata = (req, res, next) => {
 
 
 /**
+ * Returns the blueprint for metadata form specific to the doc type
+ */
+const getMetaBlueprint = (req, res, next) => {
+    console.log(" IN: getMetaBlueprint");
+    const {aknType} = res.locals.formObject;
+    const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
+    try {
+        const metaMgr = require(fname);
+        res.locals.returnResponse = metaMgr.metaFormTemplate;
+    } catch (err) {
+        res.locals.returnResponse = undefined;
+    }
+    next(); 
+}
+
+/**
  * Authenticate the user
  */
 const authenticate = (req, res, next) => {
@@ -690,6 +707,9 @@ module.exports = {
 
     // Refresh tags
     refreshTags: refreshTags,
+
+    //Doc Type specific metadata methods
+    getMetaBlueprint: getMetaBlueprint,
 
     //Common methods
     receiveSubmitData: receiveSubmitData,

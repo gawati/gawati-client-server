@@ -143,4 +143,14 @@ dmAPIs["/documents/metadata/add"] = {
     ]
 };
 
+dmAPIs["/documents/custom/meta"] = {
+    method: "post", 
+    stack: [
+        //dm.authenticate,
+        dm.receiveSubmitData,
+        dm.getMetaBlueprint,
+        dm.returnResponse
+    ]
+};
+
 module.exports.dmAPIs = dmAPIs;
