@@ -61,8 +61,7 @@ const validateMetaObject = (metaObject) => {
  * meta handlebar template.
  */
 const toMetaXML = (metaTmpl) => {
-    const template = Handlebars.templates["act.hbs"];
-    console.log("Handlebars Templates: ", Handlebars.templates);
+    const template = Handlebars.templates["judgment.hbs"];
     const metaXml = template(metaTmpl);
     return metaXml;
 };

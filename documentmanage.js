@@ -647,7 +647,6 @@ const saveMetadata = (req, res, next) => {
     );
 };
 
-
 /**
  * Returns the blueprint for metadata form specific to the doc type
  */
@@ -659,10 +658,80 @@ const getMetaBlueprint = (req, res, next) => {
         const metaMgr = require(fname);
         res.locals.returnResponse = metaMgr.metaFormTemplate;
     } catch (err) {
+        console.log(err);
         res.locals.returnResponse = undefined;
     }
     next(); 
 }
+
+/**
+ * Sets the error message and code.
+ * Intended to be used to set returnResponse.
+ */
+const setError = (code, msg) => {
+    return {
+        'error': {
+            'code': code,
+            'message': msg
+        }
+    }
+}
+
+/**
+ * Converts the Form Posting to a Custom Meta Object which is the input for the
+ * Handlebars template that outputs Custom Meta XML
+ */
+const convertFormToMetaObject = (req, res, next) => {
+    console.log(" IN: convertFormToMetaObject");
+    //To-Do: Remove dummy true from if statement
+    if (true || res.locals.returnResponse === 'doc_exists_on_client') {
+        const {pkg} = res.locals.formObject;
+        const aknType = pkg.pkgIdentity.docAknType.value;
+        const customMeta = pkg.customMeta;
+
+        const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
+        const metaMgr = require(fname);
+        let metaObject = metaMgr.toMetaTemplateObject(customMeta);
+        metaMgr.validateMetaObject(metaObject)
+        .then(() => {
+            res.locals.metaObject = metaObject;
+            next();
+        })
+        .catch((err) => {
+            res.locals.returnResponse = setError('invalid_values', err.errors);
+            next();
+        });
+    } else {
+        res.locals.returnResponse = setError('doc_not_found', 'Document does not exist');
+        next();
+    }
+}
+
+/**
+ * Convert the Meta Object to XML by applying the pre-compiled template
+ */
+const convertMetaObjectToXml = (req, res, next) => {
+    console.log(" IN: convertMetaObjectToXml");
+    //To-Do: Remove dummy true from if statement
+    if (true || !('error' in res.locals.returnResponse)) {
+        const {pkg} = res.locals.formObject;
+        const iri = pkg.pkgIdentity.docIri.value;
+        const aknType = pkg.pkgIdentity.docAknType.value;
+        const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
+        const metaMgr = require(fname);
+
+        let xml = metaMgr.toMetaXML(res.locals.metaObject);
+        console.log("XML::: ", xml);
+        // set update = true to ensure the document gets overwritten
+        res.locals.xmlPackage = {
+            "fileXml": urihelper.fileNameFromIRI(iriThis, "xml"),
+            "update": true,
+            "iri": iri,
+            "data": xml
+        };
+    }
+    next();
+};
 
 /**
  * Authenticate the user
@@ -710,6 +779,8 @@ module.exports = {
 
     //Doc Type specific metadata methods
     getMetaBlueprint: getMetaBlueprint,
+    convertFormToMetaObject: convertFormToMetaObject,
+    convertMetaObjectToXml: convertMetaObjectToXml,
 
     //Common methods
     receiveSubmitData: receiveSubmitData,
