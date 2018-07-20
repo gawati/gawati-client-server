@@ -64,14 +64,18 @@ const aknTmplSchema = yup.object().shape({
     "aknType": yup.string().required(),
     "localTypeNormalized":  yup.string().required(),
     "subType": yup.boolean().required(),
+    "docCreatedDate":  yup.date().required(),
+    "docModifiedDate":  yup.date().required(),
     "docNumber": yup.string().required(),
     "docNumberNormalized": yup.string().required(),        
     "docTitle": yup.string().required(),
     "docOfficialDate": yup.date().format("YYYY-MM-DD", true).required(),
     "docPublicationDate": yup.date().format("YYYY-MM-DD", true).required(),
     "docEntryIntoForceDate": yup.date().format("YYYY-MM-DD", true).required(),
+    "docVersionDate": yup.date().format("YYYY-MM-DD", true).required(),
     "docAuthoritative": yup.boolean().required(),      
     "docPrescriptive": yup.boolean().required(),
+    "docTags": yup.string(),
     "workIRIthis":  yup.string().required(),
     "workIRI":  yup.string().required(),
     "workDate" :  yup.string().required(),
@@ -84,8 +88,6 @@ const aknTmplSchema = yup.object().shape({
     "manIRIthis": yup.string().required(),
     "manIRI": yup.string().required(),
     "manVersionDate": yup.string().required(),
-    "createdDate":  yup.date().required(),
-    "modifiedDate":  yup.date().required(),
     "permissions": yup.array().of(
         yup.object().shape({
             name: yup.string().required(),
@@ -104,11 +106,13 @@ const aknTmplSchema = yup.object().shape({
             fileName: yup.string().required(), 
             origFileName: yup.string().required()
         })
-    )
+    ),
 });
 
 const identityFormTemplate = () => {
     return {
+        docCreatedDate: {value: undefined, error: null },
+        docModifiedDate: {value: undefined, error: null },
         docLang: {value: {} , error: null },
         docType: {value: "", error: null },
         docAknType: {value: "", error: null },
@@ -117,6 +121,8 @@ const identityFormTemplate = () => {
         docOfficialDate: {value: undefined, error: null },
         docPublicationDate: {value: undefined, error: null },
         docEntryIntoForceDate: {value: undefined, error: null },
+        docVersionDate: {value: undefined, error: null },
+        docTags: {value: undefined, error: null },
         docNumber: {value: "", error: null },
         docPart: {value: "", error: null },
         docIri : {value: "", error: null }
@@ -138,6 +144,8 @@ const attachmentsFormTemplate = () => {
  */
 const formObject2AknTemplateObject = (form) => {
     const {
+        docCreatedDate,
+        docModifiedDate,
         docAknType, 
         docType, 
         docNumber, 
@@ -145,20 +153,24 @@ const formObject2AknTemplateObject = (form) => {
         docOfficialDate, 
         docPublicationDate,
         docEntryIntoForceDate,
+        docVersionDate,
         docPart, 
         docIri, 
         docCountry, 
-        docLang
+        docLang,
+        docTags
     } = form.pkgIdentity ;
     
     // this aknTmpl object is applied on the handlebars schema to generate the XML 
     let aknTmpl = {} ;
-    
+    aknTmpl.docCreatedDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
+    aknTmpl.docModifiedDate = aknTmpl.docCreatedDate;
     // official date is sent as a full serialized dateTime with timezone information
     // for AKN official date we need only the date part as an ISO date
     const aknDate = datehelper.parseDateISODatePart(docOfficialDate.value);
     const aknPublicationDate = datehelper.parseDateISODatePart(docPublicationDate.value);
     const aknEntryIntoForceDate = datehelper.parseDateISODatePart(docEntryIntoForceDate.value);
+    const aknVersionDate = datehelper.parseDateISODatePart(docVersionDate.value);
     
     aknTmpl.aknType = docAknType.value ;
     aknTmpl.localTypeNormalized = docType.value; 
@@ -170,7 +182,8 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.docPrescriptive = "true";
     aknTmpl.docOfficialDate = aknDate;
     aknTmpl.docPublicationDate = aknPublicationDate;
-    aknTmpl.docEntryIntoForceDate = aknEntryIntoForceDate; 
+    aknTmpl.docEntryIntoForceDate = aknEntryIntoForceDate;
+    aknTmpl.docVersionDate = aknVersionDate; 
     aknTmpl.docPart = docPart.value;
     aknTmpl.workIRI = urihelper.aknWorkIri(
         docCountry.value, 
@@ -189,8 +202,10 @@ const formObject2AknTemplateObject = (form) => {
 
     aknTmpl.exprIRI = urihelper.aknExprIri(
         aknTmpl.workIRI, 
-        docLang.value.value, 
-        docPart.value
+        docLang.value.value,
+        aknVersionDate,
+        aknDate
+        // docPart.value
     );
     aknTmpl.exprIRIthis = urihelper.aknExprIriThis(
         aknTmpl.exprIRI, 
@@ -204,8 +219,6 @@ const formObject2AknTemplateObject = (form) => {
     aknTmpl.manIRIthis = urihelper.aknManIriThis(aknTmpl.exprIRIthis);
     aknTmpl.manVersionDate = aknDate;
 
-    aknTmpl.createdDate = moment().format("YYYY-MM-DDTHH:mm:ssZ");
-    aknTmpl.modifiedDate = aknTmpl.createdDate ;
     aknTmpl.attachments = form.pkgAttachments.value;
     aknTmpl.permissions = formObject2AknPermissions(form.permissions);
     aknTmpl.workflow = {...form.workflow.state}; // @label @status
@@ -232,7 +245,24 @@ const formObject2AknPermissions = (permissions) => {
     const listOfPermissions = permissions.permission;
     return listOfPermissions.map( (permission) => {
         const {name, roles} = permission;
-        const arrRoles = generalhelper.stringWhitespaceTrim(roles).split(" ");
+        let arrRoles = [];
+
+        /*
+            Roles may be in different formats.
+            Case `New Legal Version`:
+                {
+                    '#text': [ '\n                ', '\n                ', '\n            ' ],
+                    role: [ { name: 'client.Admin' }, { name: 'client.Submitter' } ]
+                }
+
+            Case `Add Document`:
+                client.Admin client.Submitter
+         */
+        if(roles.role) {
+            arrRoles = roles.role.map(r => r.name);
+        } else {
+            arrRoles = generalhelper.stringWhitespaceTrim(roles).split(" ");
+        }
         return {
             "name": name,
             "roles": arrRoles

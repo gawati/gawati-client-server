@@ -18,6 +18,14 @@
                 "url": "/gwdc/documents",
                 "method": "post"
             },
+            "getFilteredDocuments": {
+                "url": "/gwdc/documents/filter",
+                "method": "post"
+            },
+            "deleteDocument": {
+                "url": "/gwdc/document/delete",
+                "method": "post"
+            },
             "docExists": {
                 "url": "/gwdc/document/exists",
                 "method": "post"
@@ -29,6 +37,26 @@
             "saveAttachments": {
                 "url": "/gwdc/document/attachments",
                 "method": "post"
+            },
+            "metadata":{
+                "url": "/gwdc/documents/metadata",
+                "method": "get"
+            },
+            "refreshTags": {
+                "url": "/gwdc/document/tags/refresh",
+                "method": "post"
+            },
+            "saveMetadata":{
+                "url": "/gwdc/document/metadata/add",
+                "method": "post"
+            },
+            "savePkg": {
+                "url": "/gwdc/pkg/add",
+                "method": "post"
+            },
+            "loadPkg": {
+                "url": "/gwdc/pkg/load",
+                "method": "post"
             }
         }
     },
@@ -37,6 +65,28 @@
         "api": {
             "docExists": {
                 "url": "/gw/doc/exists",
+                "method": "post"
+            },
+            "metadata":{
+                "url": "/gw/doc/metadata",
+                "method": "get"
+            }
+        }
+    },
+    "extractText": {
+        "serviceEndPoint" : "http://localhost:5000",
+        "api": {
+            "pdf2txt": {
+                "url": "/uploadajax",
+                "method": "post"
+            }
+        }
+    },
+    "tagText": {
+        "serviceEndPoint" : "http://localhost:5001",
+        "api": {
+            "tag": {
+                "url": "/api/tag",
                 "method": "post"
             }
         }

@@ -1,7 +1,4 @@
-<gwd:package xmlns:gwd="http://gawati.org/ns/1.0/data" 
-    created="{{ createdDate }}"  
-    modified="{{ modifiedDate }}"
-    >
+<gwd:package xmlns:gwd="http://gawati.org/ns/1.0/data">
     {{#if workflow}} 
     <gwd:workflow>
         <gwd:state status="{{ workflow.status }}" label="{{ workflow.label }}" />
@@ -70,7 +67,6 @@
                     <gw:languages>
                         <gw:language code="{{ exprLangCode }}" showAs="{{ exprLangShowAs }}" />
                     </gw:languages>
-                    {{#if components}}
                     <gw:embeddedContents>
                         {{#each components}}
                         <gw:embeddedContent eId="embedded-doc-{{ index }}" 
@@ -78,15 +74,16 @@
                             origFileName="{{ origFileName }}" state="true"/>
                         {{/each}}
                     </gw:embeddedContents>
-                    {{/if}}
-                    <gw:dateTime refersTo="#docCreatedDate" datetime="{{ createdDate }}"/>
-                    <gw:dateTime refersTo="#docModifiedDate" datetime="{{ modifiedDate }}"/>
+                    <gw:dateTime refersTo="#docCreatedDate" datetime="{{ docCreatedDate }}"/>
+                    <gw:dateTime refersTo="#docModifiedDate" datetime="{{ docModifiedDate }}"/>
                     <gw:date refersTo="#docPublicationDate" date="{{ docPublicationDate }}" />
                     <gw:date refersTo="#docEntryIntoForceDate" date="{{ docEntryIntoForceDate }}" />
+                    <gw:date refersTo="#docVersionDate" date="{{ docVersionDate }}" />
                     <gw:themes source="#legacy">
                     </gw:themes>
                 </gw:gawati>
             </an:proprietary>
+            <an:tags></an:tags>
         </an:meta>
         <an:body>
             <an:book refersTo="#mainDocument">  

@@ -5,11 +5,13 @@ const gauth = require("gawati-auth-middleware");
 
 const logr = require("./logging");
 //const aknobject = require("./aknobject");
-const docmanage = require ("./documentmanage");
 const authJSON = require("./auth");
 const packageJSON = require("./package.json");
+const dmapis = require ("./documentmanage.routes");
 const wfapis = require("./wfapis.routes");
 const attapis = require("./attapis.routes");
+const pkgapis = require("./pkgapis.routes");
+const appconstants = require("./constants");
 
 var upload = multer();
 
@@ -19,26 +21,37 @@ var router = express.Router();
 
 var jsonParser = bodyParser.json();
 
-const EXCLUDE_FROM_AUTO_ROUTE = ["/attachments/upload", "/document/auth"];
+const EXCLUDE_FROM_AUTO_ROUTE = ["/attachments/upload", "/document/auth", "/pkg/upload"];
 
-/*
-Map all the routes form docmanage automatically
-except for indicated ones which need special treatement. 
-*/
-Object.keys(docmanage.documentManage).forEach( 
+/** adding document apis */
+Object.keys(dmapis.dmAPIs).forEach(
     (routePath) => {
-        console.log(" ROUTE PATH ", routePath);
-        // map all the paths except /document/upload, /document/auth
-        if (EXCLUDE_FROM_AUTO_ROUTE.indexOf(routePath) < 0) {
-            // only paths NOT IN  EXCLUDE_FROM_AUTO_ROUTE
-            router.post(
+        const dmRoute = dmapis.dmAPIs[routePath];
+        console.log(` ROUTE PATH = ${routePath} with ${dmRoute.method}`);
+        switch(dmRoute.method) {
+        case "get":
+            router.get(
                 routePath,
                 jsonParser,
-                docmanage.documentManage[routePath]
+                dmRoute.stack
             );
+            break;
+        case "post":
+            if (EXCLUDE_FROM_AUTO_ROUTE.indexOf(routePath) < 0) {
+                // only paths NOT IN  EXCLUDE_FROM_AUTO_ROUTE
+                router.post(
+                    routePath,
+                    jsonParser,
+                    dmRoute.stack
+                );
+            }
+            break;
+        default:
+            logr.error(`Unknown method provide ${dmRoute.method} only "get" and "post" are supported` );
+            break;
         }
-    });
-
+    }
+);
 
 // handle /attachments/upload here because it is special as it has attachments
 var cpUpload = upload.fields(); //[{ name: 'file_0', maxCount: 1 }]
@@ -54,7 +67,6 @@ Object.keys(attapis.attAPIs).forEach(
         console.log(` ROUTE PATH = ${routePath} with ${attRoute.method}`);
         switch(attRoute.method) {
         case "get":
-            console.log();
             router.get(
                 routePath,
                 jsonParser,
@@ -85,7 +97,6 @@ Object.keys(wfapis.wfAPIs).forEach(
         console.log(` ROUTE PATH = ${routePath} with ${wfRoute.method}`);
         switch(wfRoute.method) {
         case "get":
-            console.log();
             router.get(
                 routePath, 
                 jsonParser,
@@ -101,6 +112,35 @@ Object.keys(wfapis.wfAPIs).forEach(
             break;
         default:
             logr.error(`Unknown method provide ${wfRoute.method} only "get" and "post" are supported` );
+            break; 
+        }
+    }
+);
+
+// handle /pkg/upload here because it is special as it has files
+var cpUpload = upload.fields(); //[{ name: 'file_0', maxCount: 1 }]
+router.post("/pkg/upload",
+    upload.any(),
+    pkgapis.pkgAPIs["/pkg/upload"].stack
+);
+
+/** adding Pkg apis */
+Object.keys(pkgapis.pkgAPIs).forEach(
+    (routePath) => {
+        const pkgRoute = pkgapis.pkgAPIs[routePath];
+        console.log(` ROUTE PATH = ${routePath} with ${pkgRoute.method}`);
+        switch(pkgRoute.method) {
+        case "post":
+            if (EXCLUDE_FROM_AUTO_ROUTE.indexOf(routePath) < 0) {
+                router.post(
+                    routePath,
+                    jsonParser,
+                    pkgRoute.stack
+                );
+            }
+            break;
+        default:
+            logr.error(`Unknown method provide ${pkgRoute.method} only "post" is supported` );
             break; 
         }
     }
@@ -140,7 +180,14 @@ router.get(
 router.get("/auth/config", function (req, res) {
     res.send(authJSON);
 });
-  
+
+// Send config
+router.get("/config", function (req, res) {
+    res.json({
+        "docTypes": appconstants.DOC_TYPES,
+        "aknDocTypes": appconstants.AKN_DOC_TYPES 
+    });
+});
 
 module.exports = router;
 

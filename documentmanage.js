@@ -1,4 +1,5 @@
 const axios = require("axios");
+const serializeError = require("serialize-error");
 const aknobject = require("./aknobject");
 const aknhelper = require("./utils/AknHelper");
 const urihelper = require("./utils/UriHelper");
@@ -7,17 +8,11 @@ const langhelper = require("./utils/LangHelper");
 const componentsHelper = require("./utils/ComponentsHelper");
 const generalhelper = require("./utils/GeneralHelper");
 const authHelper = require("./utils/AuthHelper");
-const logr = require("./logging");
 const wf = require("./utils/Workflow");
 const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
-
-/*
-Generic Middleware ROute handlers 
-*/
-
-var documentManageAPIs  = {};
-
+const attapis = require("./attapis");
+const lodash = require("lodash");
 
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -42,13 +37,6 @@ const returnResponse = (req, res) => {
     console.log(" IN: returnResponse");    
     res.json(res.locals.returnResponse);
 };
-
-
-/*
-ROUTEHANDLER_DOCUMENT_ADD
-*/
-
-
 
 /**
  * Converts the Form Posting to an AKN Object which is the input for the
@@ -126,32 +114,34 @@ const saveToXmlDb = (req, res, next) => {
     );
 };
 
+const docDoesNotExist = (response, res) => {
+    const {error, success} = response.data;
+    error
+    ? res.locals.returnResponse = error.code
+    : res.locals.returnResponse = success.code;
+    return res.locals.returnResponse === 'doc_not_found';
+}
+
 /**
  * Checks if a document with the given iri already exists in
- * the portal data server.
+ * the client data server.
  */
-const doesExistOnPortal = (req, res, next) => {
-    console.log(" IN: doesExistOnPortal");
-    const {docIri, docPart} = res.locals.formObject.pkgIdentity;
-    const iri = urihelper.aknWorkIriThis(docIri.value, docPart.value);
-    const doesExistApi = servicehelper.getApi("portalData", "docExists");
-    const {url, method} = doesExistApi;
+const docExistsOnClient = (req, res, next) => {
+    console.log(" IN: docExists");
+    const {pkg} = res.locals.formObject;
+    const iri = pkg.pkgIdentity.docIri.value;
+    const docExistsApi = servicehelper.getApi("xmlServer", "docExists");
+    const {url, method} = docExistsApi;
     axios({
         method: method,
         url: url,
         data: {iri}
     }).then(
         (response) => {
-            const {error, success} = response.data;
-            error 
-            ? res.locals.returnResponse = error.code
-            : res.locals.returnResponse = success.code;
-
-            const canSave = (res.locals.returnResponse === 'doc_not_found');
-            if (canSave) {
+            if (docDoesNotExist(response, res)) {
                 next();
             } else {
-                res.locals.returnResponse = 'doc_exists_on_portal';
+                res.locals.returnResponse = 'doc_exists_on_client';
                 res.json(res.locals.returnResponse);
             }
         }
@@ -163,14 +153,50 @@ const doesExistOnPortal = (req, res, next) => {
     );
 }
 
-documentManageAPIs["/document/add"] = [
-    receiveSubmitData,
-    doesExistOnPortal,
-    convertFormObjectToAknObject,
-    convertAknObjectToXml,
-    saveToXmlDb,
-    returnResponse
-];
+/**
+ * Checks if a document with the given iri already exists in
+ * the portal data server.
+ */
+const docExistsOnPortal = (req, res, next) => {
+    console.log(" IN: docExistsOnPortal");
+    const {pkg, skipCheck} = res.locals.formObject;
+    if (skipCheck) {
+        next();
+    } else {
+        const iri = pkg.pkgIdentity.docIri.value;
+        const doesExistApi = servicehelper.getApi("portalData", "docExists");
+        const {url, method} = doesExistApi;
+        axios({
+            method: method,
+            url: url,
+            data: {iri}
+        }).then(
+            (response) => {
+                if (docDoesNotExist(response, res)) {
+                    next();
+                } else {
+                    res.locals.returnResponse = 'doc_exists_on_portal';
+                    res.json(res.locals.returnResponse);
+                }
+            }
+        ).catch(
+            (err) => {
+                res.locals.returnResponse = err;
+                res.json(res.locals.returnResponse);
+            }
+        );
+    }
+}
+
+/**
+ * When extras are sent by the client ui, set formObject to 
+ * contain only pkg.
+ */
+const setFormObject = (req, res, next) => {
+    const {pkg} = res.locals.formObject;
+    res.locals.formObject = pkg;
+    next();
+}
 
 /**
  * Updates a specific field in the AKN database. 
@@ -208,23 +234,8 @@ const updateAknField = (req, res, next) => {
     );
 };
 
-documentManageAPIs["/document/edit"] = [
-    receiveSubmitData,
-    updateAknField,
-    //convertXmltoJsonObject,
-    returnResponse
-];
-
-
-
-
-
-/*
-ROUTEHANDLER_DOCUMENT_LOAD
-*/
-
 /**
- * Loads the XML document from the db given a specific IRI
+ * Loads the XML document (as JS object) from the db given a specific IRI
  * @param {*} req 
  * @param {*} res 
  * @param {*} next 
@@ -275,12 +286,15 @@ const formStateFromAknDocument = (aknDoc) => {
     uiData.docTitle.value = xmlDoc.meta.publication.showAs;
     uiData.docOfficialDate.value = 
           xmlDoc.meta.identification.FRBRExpression.FRBRdate.date, 
+    uiData.docCreatedDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docCreatedDate");
+    uiData.docModifiedDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docModifiedDate");
     uiData.docPublicationDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docPublicationDate");
     uiData.docEntryIntoForceDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docEntryIntoForceDate");
+    uiData.docVersionDate.value = aknhelper.getGawatiNamedDate(xmlDoc, "docVersionDate");
     uiData.docNumber.value = xmlDoc.meta.identification.FRBRWork.FRBRnumber.showAs;
     uiData.docPart.value = xmlDoc.meta.proprietary.gawati.docPart;
     uiData.docIri.value = xmlDoc.meta.identification.FRBRExpression.FRBRthis.value;
-
+    uiData.docTags.value = xmlDoc.meta.tags;
     const embeddedContents = xmlDoc.meta.proprietary.gawati.embeddedContents;
     const compRefs = generalhelper.coerceIntoArray(xmlDoc.body.book.componentRef);
     // if there are no attachments embeddedContents is undefined
@@ -288,6 +302,13 @@ const formStateFromAknDocument = (aknDoc) => {
         uiData.attachments.value = []; // was {} should be [] i think KOHSAH 2018-05-11
     } else {
         uiData.attachments.value = componentsHelper.getComponents(embeddedContents, compRefs);
+    }
+
+    const classification = xmlDoc.meta.classification;
+    if(classification==null){ //if classification is not defined
+        uiData.docClassifications = {};
+    }else{
+        uiData.docClassifications = classification;
     }
     return uiData;
     /*
@@ -298,9 +319,15 @@ const formStateFromAknDocument = (aknDoc) => {
       docCountry: {value: '', error: null },
       docTitle: {value: '', error: null},
       docOfficialDate: {value: '', error: null },
+      docCreatedDate: {value: '', error: null},
+      docModifiedDate: {value: '', error: null},
+      docPublicationDate: {value: '', error: null},
+      docEntryIntoForceDate: {value: '', error: null},
+      docVersionDate: {value: '', error: null},
       docNumber: {value: '', error: null },
       docPart: {value: '', error: null },
-      docIri : {value: '', error: null }
+      docIri : {value: '', error: null },
+      attachments: []
     }
     */      
 };
@@ -311,19 +338,19 @@ const formStateFromAknDocument = (aknDoc) => {
    */
 const getOnlineDocumentFromAknObject = (aknObject) => {
     var uiData = formStateFromAknDocument(aknObject.akomaNtoso);
-
     //Get all workflow state info
     var curWFState = aknObject.workflow.state.status;
     var workflow = Object.assign({}, aknObject.workflow, wf.getWFStateInfo(uiData.docAknType.value, uiData.docType.value, curWFState, wf.wf));
     return {
-        created: aknObject.created,
-        modified: aknObject.modified,
         workflow: workflow,
         permissions: aknObject.permissions,
         akomaNtoso: uiData
     } ;
 };
 
+/**
+ * Convert a single XML document to an object 
+ */
 const convertAknXmlToObject = (req, res, next) => {
     console.log(" IN: convertAknXmlToObject");
     if (res.locals.aknObject.error) {
@@ -335,18 +362,9 @@ const convertAknXmlToObject = (req, res, next) => {
     next();
 };
 
-/*
-* Pipeline that loads a document
-*/
-documentManageAPIs["/document/load"] = [
-    receiveSubmitData,
-    loadXmlForIri,
-    convertAknXmlToObject,
-    //convertXmltoJsonObject,
-    returnResponse
-];
-
-
+/**
+ * Convert the XML documents to objects 
+ */
 const convertAknXmlToObjects = (req, res, next) => {
     console.log(" IN: convertAknXmlToObjects");
     let packages = generalhelper.coerceIntoArray(res.locals.aknObjects.package);
@@ -362,7 +380,9 @@ const convertAknXmlToObjects = (req, res, next) => {
     next();
 };
 
-
+/**
+ * Load the documents allowed for the user's roles.
+ */
 const loadListing = (req, res, next) => {
     const roles = authHelper.getRolesForClient(res.locals.gawati_auth);
     const data = Object.assign({}, res.locals.formObject, {roles})
@@ -393,38 +413,229 @@ const loadListing = (req, res, next) => {
     );    
 };
 
-const authenticate = (req, res, next) => {
-    console.log(" IN: authenticate");
-    const AUTH_OPTIONS = {"authJSON": authJSON};
-    return gauth.authTokenValidate(req, res, next, AUTH_OPTIONS);
-}
-
-documentManageAPIs["/documents"] = [
-    authenticate,
-    receiveSubmitData,
-    loadListing,
-    convertAknXmlToObjects,
-    returnResponse
-];
+/**
+ * Load the filtered documents allowed for the user's roles.
+ */
+const loadFilterListing = (req, res, next) => {
+    const roles = authHelper.getRolesForClient(res.locals.gawati_auth);
+    const data = Object.assign({}, res.locals.formObject, {roles})
+    const loadDocumentsApi = servicehelper.getApi("xmlServer", "getFilteredDocuments");
+    const {url, method} = loadDocumentsApi;
+    axios({
+        method: method,
+        url: url,
+        data: data
+    }).then(
+        (response) => {
+            const {error, success} = response.data;
+            // if no documents, returns an error code
+            if (error == null) {
+                res.locals.aknObjects = response.data;
+                next();
+            } else {
+                // respond with error in case document set is empty
+                const {message, stack} = serializeError(err);
+                res.json({error: {code: "EXCEPTION", value: message + " \n " + stack}});
+            }
+        }
+    ).catch(
+        (err) => {
+            res.locals.aknObjects = err;
+            next();
+        }
+    );    
+};
 
 /**
- * Checks if a document with the given iri already exists in
- * the client data server.
+ * Returns the workflow completion percentage of the document.
+ * @param {object} current document's workflow information.
  */
-const docExists = (req, res, next) => {
+const getWFProgress = (workflow) => {
+    var i = 0;
+    //Get position of current workflow state from among all states
+    for (i; i < workflow.allStates.length; i++) {
+        if (workflow.allStates[i].name === workflow.state.status) {
+            break;
+        }
+    }
+    var progressPercent = ((i+1) / workflow.allStates.length) * 100;
+    return Math.floor(progressPercent);
+}
+
+/**
+ * Sort the documents allowed for the user's roles.
+ */
+const sortListing = (req, res, next) => {
+    const iteratees = req.body.data.sortOrder.fields;
+    const iterateeFns = iteratees.map( field => {
+        if (field === 'docTitle') 
+            return (
+                el => {
+                    return el.akomaNtoso.docTitle.value;
+                }
+            )
+        else if (field === 'state' )
+            return (
+                el => {
+                    return el.workflow[field].status;
+                }
+            )
+        else if (field === 'nextStates') 
+            return (
+                el => {
+                    return el.workflow[field][0];
+                }
+            )
+        else if (field === 'workflow')
+            return (
+                el => {
+                    return getWFProgress(el.workflow);
+                }
+            )  
+    })
+    const orders = req.body.data.sortOrder.orders;
+    const sorted =  lodash.orderBy(res.locals.returnResponse.documents, iterateeFns, orders);
+    res.locals.returnResponse.documents = sorted; 
+    next();
+            
+};
+
+const deleteDocument = (req,res,next) => {
+    console.log(" IN: deleteDocument");
+    console.log("response is " + JSON.stringify(res.locals.returnResponse));   
+    const loadDocumentsApi = servicehelper.getApi("xmlServer", "deleteDocument");
+    const {url, method} = loadDocumentsApi;
+    axios({
+        method: method,
+        url: url,
+        data:res.locals.formObject
+    }).then(
+        (response) => {
+            let attachments = res.locals.returnResponse.akomaNtoso.attachments.value;
+            attapis.deleteAttFromFS(attachments);
+            next();
+        }
+    ).catch(
+        (err) => {
+            console.log("error")
+        }
+    );    
+};
+
+/**
+ * Load meta data from gawati-data and gawati-client-data
+ * merge both the data
+ */
+const loadMetadata = (req, res, next) => {
     console.log(" IN: docExists");
-    const docExistsApi = servicehelper.getApi("xmlServer", "docExists");
-    const {url, method} = docExistsApi;
+    const metadataApi = servicehelper.getApi("xmlServer", "metadata");
+    const {url, method} = metadataApi;
+    let results = {metadata : []};
+    
+    axios({
+        method: method,
+        url: url
+    }).then(
+        (response) => {
+            const metadataApi = servicehelper.getApi("portalData", "metadata");
+            const {url, method} = metadataApi;
+            axios({
+                method: method,
+                url: url
+            }).then(
+                (response2) => {
+                    const metadataApi = servicehelper.getApi("portalData", "metadata");
+                    const {url, method} = metadataApi;
+                    if(response.data.keyword!=undefined){
+                        results.metadata = response.data.keyword;
+                        if(response2.data.keyword!=undefined){
+                            for(var i=0; i<response2.data.keyword.length; i++){
+                                var isExist = false;
+                                for(var j=0; j<response.data.keyword.length; j++){
+                                    if(response2.data.keyword[i]===response.data.keyword[j]){
+                                        isExist = true;
+                                        break;
+                                    }
+                                }
+                                if(!isExist){
+                                    results.metadata.push(response2.data.keyword[i]);
+                                }
+                            }
+                        }
+                        res.locals.returnResponse = results;
+                    }else{
+                        if(response2.data.keyword!=undefined){
+                            results.metadata = response2.data.keyword;
+                        }
+                        res.locals.returnResponse = results;
+                    }
+                    next();
+                }
+            ).catch(
+                (err) => {
+                    console.log(err);
+                    if(response.data.keyword!=undefined){
+                        results.metadata = response.data.keyword;
+                    }
+                    res.locals.returnResponse = results;
+                    next();
+                }
+            );
+        }
+    ).catch(
+        (err) => {
+            const {message, stack} = serializeError(err);
+            res.json({error: {code: "EXCEPTION", value: message + " \n " + stack}});
+        }
+    );
+}
+
+/*
+* Refreshes the tags for AKN.
+ * @param {*} req
+ * @param {*} res
+ * @param {*} next
+ */
+const refreshTags = (req, res, next) => {
+    console.log(" IN: refreshTags");
+    const refreshTagsApi = servicehelper.getApi("xmlServer", "refreshTags");
+    const {url, method} = refreshTagsApi;
+    const {iri} = res.locals.formObject;
+    axios({
+        method: method,
+        url: url,
+        data: {"iri": iri}
+    }).then(
+        (response) => {
+            res.locals.returnResponse = response.data;
+            next();
+        }
+    ).catch(
+        (err) => {
+            res.locals.returnResponse = serializeError(err);
+            next();
+        }
+    );
+};
+
+/**
+ * Saves the XML document metadata to the database
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const saveMetadata = (req, res, next) => {
+    console.log(" IN: saveMetadata");
+    console.log(res.locals.formObject);    
+    const saveMetadataApi = servicehelper.getApi("xmlServer", "saveMetadata");
+    const {url, method} = saveMetadataApi;
     axios({
         method: method,
         url: url,
         data: res.locals.formObject
     }).then(
         (response) => {
-            const {error, success} = response.data;
-            error 
-            ? res.locals.returnResponse = error.code 
-            : res.locals.returnResponse = success.code;
+            res.locals.returnResponse = response.data;
             next();
         }
     ).catch(
@@ -433,19 +644,60 @@ const docExists = (req, res, next) => {
             next();
         }
     );
-}
+};
 
-documentManageAPIs["/document/exists"] = [
-    receiveSubmitData,
-    docExists,
-    returnResponse
-];
 
 /**
- * API stack for each Request end point. 
- * THey are called one after the other in the order of the array
- * YOu need to call next() at the end to ensure the next api in the chain
- * gets called.
+ * Authenticate the user
  */
+const authenticate = (req, res, next) => {
+    console.log(" IN: authenticate");
+    const AUTH_OPTIONS = {"authJSON": authJSON};
+    return gauth.authTokenValidate(req, res, next, AUTH_OPTIONS);
+}
 
-module.exports.documentManage = documentManageAPIs ;
+/**
+ * API methods for each Request end point.
+ * You need to call next() at the end to ensure the next api in the chain
+ * gets called.
+ * Calling res.json(res.locals.returnResponse) will return the response 
+ * without proceeding to the next method in the API stack. 
+ */
+module.exports = {
+    //Add new document methods
+    docExistsOnClient: docExistsOnClient,
+    docExistsOnPortal: docExistsOnPortal,
+    setFormObject: setFormObject,
+    convertFormObjectToAknObject: convertFormObjectToAknObject,
+    convertAknObjectToXml: convertAknObjectToXml,
+    saveToXmlDb: saveToXmlDb,
+
+    //Edit existing document methods
+    updateAknField: updateAknField,
+
+    //Load existing document methods
+    loadXmlForIri: loadXmlForIri,
+
+    //Load documents listing methods 
+    authenticate: authenticate,
+    loadListing: loadListing,
+    loadFilterListing: loadFilterListing,
+    convertAknXmlToObjects: convertAknXmlToObjects,
+    sortListing: sortListing,
+
+    // Delete a document based on doc iri
+    deleteDocument: deleteDocument,
+
+    // Refresh tags
+    refreshTags: refreshTags,
+
+    //Common methods
+    receiveSubmitData: receiveSubmitData,
+    returnResponse: returnResponse,
+    convertAknXmlToObject: convertAknXmlToObject,
+
+    //get meta data
+    loadMetadata: loadMetadata,
+    //save metadata
+    saveMetadata: saveMetadata,
+};
