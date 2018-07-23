@@ -158,9 +158,9 @@ dmAPIs["/documents/custom/meta/edit"] = {
     stack: [
         //dm.authenticate,
         dm.receiveSubmitData,
-        dm.docExistsOnClient,
         dm.convertFormToMetaObject,
         dm.convertMetaObjectToXml,
+        dm.saveCustomMetaToDb,
         dm.returnResponse
     ]
 };

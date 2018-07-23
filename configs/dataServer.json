@@ -57,6 +57,10 @@
             "loadPkg": {
                 "url": "/gwdc/pkg/load",
                 "method": "post"
+            },
+            "saveCustomMeta": {
+                "url": "/gwdc/document/cmeta/add",
+                "method": "post"
             }
         }
     },

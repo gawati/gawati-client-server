@@ -694,35 +694,28 @@ const filterSelectedCM = (customMeta, selected) => {
  */
 const convertFormToMetaObject = (req, res, next) => {
     console.log(" IN: convertFormToMetaObject");
-    //To-Do: Remove dummy true from if statement
-    if (true || res.locals.returnResponse === 'doc_exists_on_client') {
-        const {pkg, selected} = res.locals.formObject;
-        const aknType = pkg.pkgIdentity.docAknType.value;
-        const selectedMeta = filterSelectedCM(pkg.customMeta, selected);
+    const {pkg, selected} = res.locals.formObject;
+    const aknType = pkg.pkgIdentity.docAknType.value;
+    const selectedMeta = filterSelectedCM(pkg.customMeta, selected);
 
-        const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
-        const metaMgr = require(fname);
-        let metaObject = metaMgr.toMetaTemplateObject(selectedMeta);
-        
-        //To-Do: Validation
-        res.locals.metaObject = metaObject;
-        next();
-        // metaMgr.validateMetaObject(metaObject)
-        // .then(() => {
-        //     res.locals.metaObject = metaObject;
-        //     console.log("SET META OBJECT::: ", res.locals.metaObject);
-        //     next();
-        // })
-        // .catch((err) => {
-        //     res.locals.returnResponse = setError('invalid_values', err.errors);
-        //     console.log("Errored::::  ", res.locals.returnResponse);
-        //     next();
-        // });
-
-    } else {
-        res.locals.returnResponse = setError('doc_not_found', 'Document does not exist');
-        next();
-    }
+    const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
+    const metaMgr = require(fname);
+    let metaObject = metaMgr.toMetaTemplateObject(selectedMeta);
+    
+    //To-Do: Validation
+    res.locals.metaObject = metaObject;
+    next();
+    // metaMgr.validateMetaObject(metaObject)
+    // .then(() => {
+    //     res.locals.metaObject = metaObject;
+    //     console.log("SET META OBJECT::: ", res.locals.metaObject);
+    //     next();
+    // })
+    // .catch((err) => {
+    //     res.locals.returnResponse = setError('invalid_values', err.errors);
+    //     console.log("Errored::::  ", res.locals.returnResponse);
+    //     next();
+    // });
 }
 
 /**
@@ -740,13 +733,38 @@ const convertMetaObjectToXml = (req, res, next) => {
         let xml = metaMgr.toMetaXML(res.locals.metaObject);
         // set update = true to ensure the document gets overwritten
         res.locals.xmlPackage = {
-            "fileXml": urihelper.fileNameFromIRI(iri, "xml"),
-            "update": true,
             "iri": iri,
             "data": xml
         };
+        console.log(xml);
     }
     next();
+};
+
+
+/**
+ * Saves the custom metadata XML to the database
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const saveCustomMetaToDb = (req, res, next) => {
+    console.log(" IN: saveCustomMetaToDb");    
+    const saveCMetaApi = servicehelper.getApi("xmlServer", "saveCustomMeta");
+    const {url, method} = saveCMetaApi;
+    axios({
+        method: method,
+        url: url,
+        data: res.locals.xmlPackage
+    })
+    .then((response) => {
+        res.locals.returnResponse = response.data;
+        next();
+    })
+    .catch((err) => {
+        res.locals.returnResponse = err;
+        next();
+    });
 };
 
 /**
@@ -797,6 +815,7 @@ module.exports = {
     getMetaBlueprint: getMetaBlueprint,
     convertFormToMetaObject: convertFormToMetaObject,
     convertMetaObjectToXml: convertMetaObjectToXml,
+    saveCustomMetaToDb: saveCustomMetaToDb,
 
     //Common methods
     receiveSubmitData: receiveSubmitData,
