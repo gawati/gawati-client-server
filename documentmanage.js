@@ -678,6 +678,17 @@ const setError = (code, msg) => {
 }
 
 /**
+ * Filters selected custom metadata
+ */
+const filterSelectedCM = (customMeta, selected) => {
+    const selectedMeta = {};
+    selected.forEach(op => {
+        selectedMeta[op] = customMeta[op];
+    });
+    return selectedMeta;
+}
+
+/**
  * Converts the Form Posting to a Custom Meta Object which is the input for the
  * Handlebars template that outputs Custom Meta XML
  */
@@ -685,22 +696,29 @@ const convertFormToMetaObject = (req, res, next) => {
     console.log(" IN: convertFormToMetaObject");
     //To-Do: Remove dummy true from if statement
     if (true || res.locals.returnResponse === 'doc_exists_on_client') {
-        const {pkg} = res.locals.formObject;
+        const {pkg, selected} = res.locals.formObject;
         const aknType = pkg.pkgIdentity.docAknType.value;
-        const customMeta = pkg.customMeta;
+        const selectedMeta = filterSelectedCM(pkg.customMeta, selected);
 
         const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
         const metaMgr = require(fname);
-        let metaObject = metaMgr.toMetaTemplateObject(customMeta);
-        metaMgr.validateMetaObject(metaObject)
-        .then(() => {
-            res.locals.metaObject = metaObject;
-            next();
-        })
-        .catch((err) => {
-            res.locals.returnResponse = setError('invalid_values', err.errors);
-            next();
-        });
+        let metaObject = metaMgr.toMetaTemplateObject(selectedMeta);
+        
+        //To-Do: Validation
+        res.locals.metaObject = metaObject;
+        next();
+        // metaMgr.validateMetaObject(metaObject)
+        // .then(() => {
+        //     res.locals.metaObject = metaObject;
+        //     console.log("SET META OBJECT::: ", res.locals.metaObject);
+        //     next();
+        // })
+        // .catch((err) => {
+        //     res.locals.returnResponse = setError('invalid_values', err.errors);
+        //     console.log("Errored::::  ", res.locals.returnResponse);
+        //     next();
+        // });
+
     } else {
         res.locals.returnResponse = setError('doc_not_found', 'Document does not exist');
         next();
@@ -718,13 +736,11 @@ const convertMetaObjectToXml = (req, res, next) => {
         const iri = pkg.pkgIdentity.docIri.value;
         const aknType = pkg.pkgIdentity.docAknType.value;
         const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
-        const metaMgr = require(fname);
-
+        const metaMgr = require(fname);        
         let xml = metaMgr.toMetaXML(res.locals.metaObject);
-        console.log("XML::: ", xml);
         // set update = true to ensure the document gets overwritten
         res.locals.xmlPackage = {
-            "fileXml": urihelper.fileNameFromIRI(iriThis, "xml"),
+            "fileXml": urihelper.fileNameFromIRI(iri, "xml"),
             "update": true,
             "iri": iri,
             "data": xml

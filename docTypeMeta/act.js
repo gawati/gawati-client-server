@@ -2,6 +2,7 @@ const yup  = require("yup");
 const moment = require("moment");
 var Handlebars = require("handlebars/runtime");
 const datehelper = require("../utils/DateHelper");
+var hbtemplate = require('../xml_templates/act.js');
 
 /**Yup custom validator */
 yup.addMethod(yup.date, "format", function(formats, parseStrict) {
@@ -41,9 +42,12 @@ const toMetaTemplateObject = (custMeta) => {
     const {docTestDate, docTestDesc, docTestLang} = custMeta;
     // this metaTmpl object is applied on the handlebars schema to generate the XML 
     let metaTmpl = {};
-    metaTmpl.docTestDate = datehelper.parseDateISODatePart(docTestDate.value);
-    metaTmpl.docTestDesc = docTestDesc.value;
-    metaTmpl.docTestLang = docTestLang.value;
+    if (docTestDate)
+        metaTmpl.docTestDate = datehelper.parseDateISODatePart(docTestDate.value);
+    if (docTestDesc)
+        metaTmpl.docTestDesc = docTestDesc.value;
+    if (docTestLang)
+        metaTmpl.docTestLang = docTestLang.value;
     return metaTmpl;
 }
 
@@ -62,7 +66,6 @@ const validateMetaObject = (metaObject) => {
  */
 const toMetaXML = (metaTmpl) => {
     const template = Handlebars.templates["act.hbs"];
-    console.log("Handlebars Templates: ", Handlebars.templates);
     const metaXml = template(metaTmpl);
     return metaXml;
 };
