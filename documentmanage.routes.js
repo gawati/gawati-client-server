@@ -143,16 +143,6 @@ dmAPIs["/documents/metadata/add"] = {
     ]
 };
 
-dmAPIs["/documents/custom/meta"] = {
-    method: "post", 
-    stack: [
-        //dm.authenticate,
-        dm.receiveSubmitData,
-        dm.getMetaBlueprint,
-        dm.returnResponse
-    ]
-};
-
 dmAPIs["/documents/custom/meta/edit"] = {
     method: "post", 
     stack: [

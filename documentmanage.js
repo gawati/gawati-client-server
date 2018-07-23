@@ -8,6 +8,7 @@ const langhelper = require("./utils/LangHelper");
 const componentsHelper = require("./utils/ComponentsHelper");
 const generalhelper = require("./utils/GeneralHelper");
 const authHelper = require("./utils/AuthHelper");
+const cmHelper = require("./utils/CustomMetaHelper");
 const wf = require("./utils/Workflow");
 const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
@@ -311,6 +312,7 @@ const formStateFromAknDocument = (aknDoc) => {
     }else{
         uiData.docClassifications = classification;
     }
+
     return uiData;
     /*
     {
@@ -342,10 +344,12 @@ const getOnlineDocumentFromAknObject = (aknObject) => {
     //Get all workflow state info
     var curWFState = aknObject.workflow.state.status;
     var workflow = Object.assign({}, aknObject.workflow, wf.getWFStateInfo(uiData.docAknType.value, uiData.docType.value, curWFState, wf.wf));
+    const cm = cmHelper.getCustomMetadata(uiData.docAknType.value, aknObject.akomaNtoso);
     return {
         workflow: workflow,
         permissions: aknObject.permissions,
-        akomaNtoso: uiData
+        akomaNtoso: uiData,
+        cm: cm
     } ;
 };
 
@@ -648,23 +652,6 @@ const saveMetadata = (req, res, next) => {
 };
 
 /**
- * Returns the blueprint for metadata form specific to the doc type
- */
-const getMetaBlueprint = (req, res, next) => {
-    console.log(" IN: getMetaBlueprint");
-    const {aknType} = res.locals.formObject;
-    const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
-    try {
-        const metaMgr = require(fname);
-        res.locals.returnResponse = metaMgr.metaFormTemplate;
-    } catch (err) {
-        console.log(err);
-        res.locals.returnResponse = undefined;
-    }
-    next(); 
-}
-
-/**
  * Sets the error message and code.
  * Intended to be used to set returnResponse.
  */
@@ -723,21 +710,17 @@ const convertFormToMetaObject = (req, res, next) => {
  */
 const convertMetaObjectToXml = (req, res, next) => {
     console.log(" IN: convertMetaObjectToXml");
-    //To-Do: Remove dummy true from if statement
-    if (true || !('error' in res.locals.returnResponse)) {
-        const {pkg} = res.locals.formObject;
-        const iri = pkg.pkgIdentity.docIri.value;
-        const aknType = pkg.pkgIdentity.docAknType.value;
-        const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
-        const metaMgr = require(fname);        
-        let xml = metaMgr.toMetaXML(res.locals.metaObject);
-        // set update = true to ensure the document gets overwritten
-        res.locals.xmlPackage = {
-            "iri": iri,
-            "data": xml
-        };
-        console.log(xml);
-    }
+    const {pkg} = res.locals.formObject;
+    const iri = pkg.pkgIdentity.docIri.value;
+    const aknType = pkg.pkgIdentity.docAknType.value;
+    const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
+    const metaMgr = require(fname);
+    let xml = metaMgr.toMetaXML(res.locals.metaObject);
+    // set update = true to ensure the document gets overwritten
+    res.locals.xmlPackage = {
+        "iri": iri,
+        "data": xml
+    };
     next();
 };
 
@@ -812,7 +795,6 @@ module.exports = {
     refreshTags: refreshTags,
 
     //Doc Type specific metadata methods
-    getMetaBlueprint: getMetaBlueprint,
     convertFormToMetaObject: convertFormToMetaObject,
     convertMetaObjectToXml: convertMetaObjectToXml,
     saveCustomMetaToDb: saveCustomMetaToDb,
