@@ -143,4 +143,16 @@ dmAPIs["/documents/metadata/add"] = {
     ]
 };
 
+dmAPIs["/documents/custom/meta/edit"] = {
+    method: "post", 
+    stack: [
+        //dm.authenticate,
+        dm.receiveSubmitData,
+        dm.convertFormToMetaObject,
+        dm.convertMetaObjectToXml,
+        dm.saveCustomMetaToDb,
+        dm.returnResponse
+    ]
+};
+
 module.exports.dmAPIs = dmAPIs;

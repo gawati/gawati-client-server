@@ -8,11 +8,13 @@ const langhelper = require("./utils/LangHelper");
 const componentsHelper = require("./utils/ComponentsHelper");
 const generalhelper = require("./utils/GeneralHelper");
 const authHelper = require("./utils/AuthHelper");
+const cmHelper = require("./utils/CustomMetaHelper");
 const wf = require("./utils/Workflow");
 const authJSON = require("./auth");
 const gauth = require("gawati-auth-middleware");
 const attapis = require("./attapis");
 const lodash = require("lodash");
+const path = require("path");
 
 /**
  * Receives the Form posting, not suitable for multipart form data
@@ -310,6 +312,7 @@ const formStateFromAknDocument = (aknDoc) => {
     }else{
         uiData.docClassifications = classification;
     }
+
     return uiData;
     /*
     {
@@ -341,10 +344,12 @@ const getOnlineDocumentFromAknObject = (aknObject) => {
     //Get all workflow state info
     var curWFState = aknObject.workflow.state.status;
     var workflow = Object.assign({}, aknObject.workflow, wf.getWFStateInfo(uiData.docAknType.value, uiData.docType.value, curWFState, wf.wf));
+    const cm = cmHelper.getCustomMetadata(uiData.docAknType.value, aknObject.akomaNtoso);
     return {
         workflow: workflow,
         permissions: aknObject.permissions,
-        akomaNtoso: uiData
+        akomaNtoso: uiData,
+        cm: cm
     } ;
 };
 
@@ -646,6 +651,104 @@ const saveMetadata = (req, res, next) => {
     );
 };
 
+/**
+ * Sets the error message and code.
+ * Intended to be used to set returnResponse.
+ */
+const setError = (code, msg) => {
+    return {
+        'error': {
+            'code': code,
+            'message': msg
+        }
+    }
+}
+
+/**
+ * Filters selected custom metadata
+ */
+const filterSelectedCM = (customMeta, selected) => {
+    const selectedMeta = {};
+    selected.forEach(op => {
+        selectedMeta[op] = customMeta[op];
+    });
+    return selectedMeta;
+}
+
+/**
+ * Converts the Form Posting to a Custom Meta Object which is the input for the
+ * Handlebars template that outputs Custom Meta XML
+ */
+const convertFormToMetaObject = (req, res, next) => {
+    console.log(" IN: convertFormToMetaObject");
+    const {pkg, selected} = res.locals.formObject;
+    const aknType = pkg.pkgIdentity.docAknType.value;
+    const selectedMeta = filterSelectedCM(pkg.customMeta, selected);
+
+    const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
+    const metaMgr = require(fname);
+    let metaObject = metaMgr.toMetaTemplateObject(selectedMeta);
+    
+    //To-Do: Validation
+    res.locals.metaObject = metaObject;
+    next();
+    // metaMgr.validateMetaObject(metaObject)
+    // .then(() => {
+    //     res.locals.metaObject = metaObject;
+    //     console.log("SET META OBJECT::: ", res.locals.metaObject);
+    //     next();
+    // })
+    // .catch((err) => {
+    //     res.locals.returnResponse = setError('invalid_values', err.errors);
+    //     console.log("Errored::::  ", res.locals.returnResponse);
+    //     next();
+    // });
+}
+
+/**
+ * Convert the Meta Object to XML by applying the pre-compiled template
+ */
+const convertMetaObjectToXml = (req, res, next) => {
+    console.log(" IN: convertMetaObjectToXml");
+    const {pkg} = res.locals.formObject;
+    const iri = pkg.pkgIdentity.docIri.value;
+    const aknType = pkg.pkgIdentity.docAknType.value;
+    const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
+    const metaMgr = require(fname);
+    let xml = metaMgr.toMetaXML(res.locals.metaObject);
+    // set update = true to ensure the document gets overwritten
+    res.locals.xmlPackage = {
+        "iri": iri,
+        "data": xml
+    };
+    next();
+};
+
+
+/**
+ * Saves the custom metadata XML to the database
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const saveCustomMetaToDb = (req, res, next) => {
+    console.log(" IN: saveCustomMetaToDb");    
+    const saveCMetaApi = servicehelper.getApi("xmlServer", "saveCustomMeta");
+    const {url, method} = saveCMetaApi;
+    axios({
+        method: method,
+        url: url,
+        data: res.locals.xmlPackage
+    })
+    .then((response) => {
+        res.locals.returnResponse = response.data;
+        next();
+    })
+    .catch((err) => {
+        res.locals.returnResponse = err;
+        next();
+    });
+};
 
 /**
  * Authenticate the user
@@ -690,6 +793,11 @@ module.exports = {
 
     // Refresh tags
     refreshTags: refreshTags,
+
+    //Doc Type specific metadata methods
+    convertFormToMetaObject: convertFormToMetaObject,
+    convertMetaObjectToXml: convertMetaObjectToXml,
+    saveCustomMetaToDb: saveCustomMetaToDb,
 
     //Common methods
     receiveSubmitData: receiveSubmitData,
