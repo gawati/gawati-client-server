@@ -2,9 +2,9 @@ var Handlebars = require("handlebars/runtime");  var template = Handlebars.templ
 templates['judgment.hbs'] = template({"1":function(container,depth0,helpers,partials,data) {
     var helper;
 
-  return "    <gw:date refersTo=\"#docTestDate\" date=\""
+  return "    <gw:docTestDate>"
     + container.escapeExpression(((helper = (helper = helpers.docTestDate || (depth0 != null ? depth0.docTestDate : depth0)) != null ? helper : helpers.helperMissing),(typeof helper === "function" ? helper.call(depth0 != null ? depth0 : (container.nullContext || {}),{"name":"docTestDate","hash":{},"data":data}) : helper)))
-    + "\" />\n";
+    + "</gw:docTestDate>\n";
 },"3":function(container,depth0,helpers,partials,data) {
     var helper;
 
