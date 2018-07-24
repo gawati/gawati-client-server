@@ -18,8 +18,7 @@ yup.addMethod(yup.date, "format", function(formats, parseStrict) {
  */
 const metaFormTemplate = {
     docTestDate: {value: undefined, error: null, type: 'date', label: 'Document Test Date' },
-    docTestDesc: {value: "", error: null, type: 'string', label: 'Document Test Description'},
-    docTestLang: {value: "" , error: null, type: 'string', label: 'Document Test Language' }
+    docTestDesc: {value: "", error: null, type: 'string', label: 'Document Test Description'}
 };
 
 /**
@@ -28,15 +27,13 @@ const metaFormTemplate = {
  *  This object is subsequently validate against an object schema
  */
 const toMetaTemplateObject = (custMeta) => {
-    const {docTestDate, docTestDesc, docTestLang} = custMeta;
+    const {docTestDate, docTestDesc} = custMeta;
     // this metaTmpl object is applied on the handlebars schema to generate the XML 
     let metaTmpl = {};
     if (docTestDate)
         metaTmpl.docTestDate = datehelper.parseDateISODatePart(docTestDate.value);
     if (docTestDesc)
         metaTmpl.docTestDesc = docTestDesc.value;
-    if (docTestLang)
-        metaTmpl.docTestLang = docTestLang.value;
     return metaTmpl;
 }
 
@@ -45,8 +42,7 @@ const toMetaTemplateObject = (custMeta) => {
  */
 const valDefn = {
     "docTestDate": yup.date().format("YYYY-MM-DD", true).required(),
-    "docTestDesc": yup.string().required(),
-    "docTestLang": yup.string().required()
+    "docTestDesc": yup.string().required()
 }
 
 /**
