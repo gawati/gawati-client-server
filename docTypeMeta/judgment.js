@@ -14,23 +14,11 @@ yup.addMethod(yup.date, "format", function(formats, parseStrict) {
 });
 
 /**
- * This defines a JSON schema (using Yup)
- * The object that is applied onto the handlebars template to generate the XML
- * is based on this schema. This schema is used to validate the object. 
- */
-const metaTmplSchema = yup.object().shape({        
-    "docTestDate": yup.date().format("YYYY-MM-DD", true).required(),
-    "docTestDesc": yup.string().required(),
-    "docTestLang": yup.string().required()
-});
-
-/**
  * Template for metadata object
  */
 const metaFormTemplate = {
     docTestDate: {value: undefined, error: null, type: 'date', label: 'Document Test Date' },
-    docTestDesc: {value: "", error: null, type: 'string', label: 'Document Test Description'},
-    docTestLang: {value: "" , error: null, type: 'string', label: 'Document Test Language' }
+    docTestDesc: {value: "", error: null, type: 'string', label: 'Document Test Description'}
 };
 
 /**
@@ -39,23 +27,35 @@ const metaFormTemplate = {
  *  This object is subsequently validate against an object schema
  */
 const toMetaTemplateObject = (custMeta) => {
-    const {docTestDate, docTestDesc, docTestLang} = custMeta;
+    const {docTestDate, docTestDesc} = custMeta;
     // this metaTmpl object is applied on the handlebars schema to generate the XML 
     let metaTmpl = {};
     if (docTestDate)
         metaTmpl.docTestDate = datehelper.parseDateISODatePart(docTestDate.value);
     if (docTestDesc)
         metaTmpl.docTestDesc = docTestDesc.value;
-    if (docTestLang)
-        metaTmpl.docTestLang = docTestLang.value;
     return metaTmpl;
+}
+
+/**
+ * Validation definition for all fields (using Yup) 
+ */
+const valDefn = {
+    "docTestDate": yup.date().format("YYYY-MM-DD", true).required(),
+    "docTestDesc": yup.string().required()
 }
 
 /**
  * Validates the metadata values submitted by the client.
  */
-const validateMetaObject = (metaObject) => {
-    const valid = metaTmplSchema.validate(metaObject);
+const validateMetaObject = (metaObject, selected) => {
+    //Create new schema for only fields that are selected
+    let curFields = {};
+    selected.forEach(key => {
+        curFields[key] = valDefn[key];
+    })
+    const curSchema = yup.object().shape(curFields);
+    const valid = curSchema.validate(metaObject);
     return valid;
 };
 

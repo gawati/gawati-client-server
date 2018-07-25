@@ -688,21 +688,16 @@ const convertFormToMetaObject = (req, res, next) => {
     const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
     const metaMgr = require(fname);
     let metaObject = metaMgr.toMetaTemplateObject(selectedMeta);
-    
-    //To-Do: Validation
-    res.locals.metaObject = metaObject;
-    next();
-    // metaMgr.validateMetaObject(metaObject)
-    // .then(() => {
-    //     res.locals.metaObject = metaObject;
-    //     console.log("SET META OBJECT::: ", res.locals.metaObject);
-    //     next();
-    // })
-    // .catch((err) => {
-    //     res.locals.returnResponse = setError('invalid_values', err.errors);
-    //     console.log("Errored::::  ", res.locals.returnResponse);
-    //     next();
-    // });
+
+    metaMgr.validateMetaObject(metaObject, selected)
+    .then(() => {
+        res.locals.metaObject = metaObject;
+        next();
+    })
+    .catch((err) => {
+        res.locals.returnResponse = setError('invalid_values', err.errors);
+        next();
+    });
 }
 
 /**
@@ -710,18 +705,22 @@ const convertFormToMetaObject = (req, res, next) => {
  */
 const convertMetaObjectToXml = (req, res, next) => {
     console.log(" IN: convertMetaObjectToXml");
-    const {pkg} = res.locals.formObject;
-    const iri = pkg.pkgIdentity.docIri.value;
-    const aknType = pkg.pkgIdentity.docAknType.value;
-    const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
-    const metaMgr = require(fname);
-    let xml = metaMgr.toMetaXML(res.locals.metaObject);
-    // set update = true to ensure the document gets overwritten
-    res.locals.xmlPackage = {
-        "iri": iri,
-        "data": xml
-    };
-    next();
+    if (res.locals.returnResponse && 'error' in res.locals.returnResponse) {
+        next();
+    } else {
+        const {pkg} = res.locals.formObject;
+        const iri = pkg.pkgIdentity.docIri.value;
+        const aknType = pkg.pkgIdentity.docAknType.value;
+        const fname = path.resolve(path.join('docTypeMeta', (aknType + '.js')));
+        const metaMgr = require(fname);
+        let xml = metaMgr.toMetaXML(res.locals.metaObject);
+        // set update = true to ensure the document gets overwritten
+        res.locals.xmlPackage = {
+            "iri": iri,
+            "data": xml
+        };
+        next();
+    }
 };
 
 
@@ -732,22 +731,26 @@ const convertMetaObjectToXml = (req, res, next) => {
  * @param {*} next 
  */
 const saveCustomMetaToDb = (req, res, next) => {
-    console.log(" IN: saveCustomMetaToDb");    
-    const saveCMetaApi = servicehelper.getApi("xmlServer", "saveCustomMeta");
-    const {url, method} = saveCMetaApi;
-    axios({
-        method: method,
-        url: url,
-        data: res.locals.xmlPackage
-    })
-    .then((response) => {
-        res.locals.returnResponse = response.data;
+    console.log(" IN: saveCustomMetaToDb");
+    if (res.locals.returnResponse && 'error' in res.locals.returnResponse) {
         next();
-    })
-    .catch((err) => {
-        res.locals.returnResponse = err;
-        next();
-    });
+    } else {
+        const saveCMetaApi = servicehelper.getApi("xmlServer", "saveCustomMeta");
+        const {url, method} = saveCMetaApi;
+        axios({
+            method: method,
+            url: url,
+            data: res.locals.xmlPackage
+        })
+        .then((response) => {
+            res.locals.returnResponse = response.data;
+            next();
+        })
+        .catch((err) => {
+            res.locals.returnResponse = err;
+            next();
+        });
+    }
 };
 
 /**
