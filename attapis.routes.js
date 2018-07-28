@@ -25,6 +25,24 @@ attAPIs[`${BASE_URI}/upload`] = {
 };
 
 /*
+* Read the attachment contents as a blob
+* Input query submitted to the API:
+    {
+        {
+            iri: pkg.pkgIdentity.docIri.value,
+            originalFileName : emDoc.origFileName,
+            index: emDoc.index
+        }
+    }
+*/
+attAPIs[`${BASE_URI}/read`] = {
+    method: "get",
+    stack: [
+        attapis.readAtt
+    ]
+};
+
+/*
 * Removes an attachment.
 * Receive the JSON containing the attachment info and the document info.
 * Remove attachment from the FS
