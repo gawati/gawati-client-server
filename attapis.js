@@ -432,6 +432,12 @@ const getAttFSPath = (emDoc, pkg) => {
     return fullPath
 }
 
+const contentTypes = {
+    ".pdf": "application/pdf",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".png": "image/png"
+}
+
 /**
  * Read attachment from FS.
  */
@@ -445,9 +451,9 @@ const readAtt = (req, res, next) => {
     let filePrefix = urihelper.fileNamePrefixFromIRI(iri);
     let attFileName = `${filePrefix}_${req.query.index}${fileExt}`;
     let fullPath = path.join(attPath, attFileName);
-
+    debugger;
     fs.readFile(fullPath, function (err, data){
-        res.contentType("application/pdf");
+        res.contentType(contentTypes[fileExt]);
         res.send(data);
     })
 };
