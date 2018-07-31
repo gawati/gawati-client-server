@@ -167,59 +167,79 @@ const writeSubmittedFiletoFS = (req, res, next) => {
         "step_1": {"status": "", "msg": [] },
         "step_2": {"status": "", "msg": [] }
     };
-    mkdirp(newPath, function(err) {
-        if (err) {
-            logr.error(generalhelper.serverMsg(" ERROR while creating folder "), err) ;
-            responseMsg.step_1.status = "failure";
-            responseMsg.step_1.msg.push(
-                {
-                    "originalname":  formFile.originalname,
-                    "err": err
-                }
-            );
-            res.locals.binaryFilesWriteResponse = responseMsg;
-            next();
-        } else {
-            const fileParams = {
-                index: aknObj["index"],
-                attTitle: aknObj["title"],
-                origName: formFile.originalname,
-                mimeType: formFile.mimetype,
-                buffer: formFile.buffer,
-                fileExt: path.extname(formFile.originalname),
-                filePrefix: urihelper.fileNamePrefixFromIRI(iri),
-                newPath: newPath,
-            };
-            //Generate index for new uploads.
-            if (!fileParams.index) {
-                fileParams.index = getFileIndexDB(attachments);
+    if (formFile === undefined) {
+        // There is no file upload.  This is an edit operation.
+        const embeddedIri = `${iri}_${aknObj["index"]}`;
+        const newFileName = `${urihelper.fileNamePrefixFromIRI(iri)}_${aknObj["index"]}${aknObj["fileType"]}`;
+        responseMsg.step_1.msg.push(
+            {
+                "index": aknObj["index"],
+                "showAs": aknObj["title"],
+                "iriThis": embeddedIri,
+                "origFileName": aknObj["fileName"],
+                "fileName": newFileName,
+                "fileType": aknObj["fileType"],
+                "type": "embedded"
             }
-            fileParams.embeddedIri = `${iri}_${fileParams.index}`;
-            fileParams.newFileName = `${fileParams.filePrefix}_${fileParams.index}${fileParams.fileExt}`;
-
-            writeFile(fileParams, responseMsg)
-                .then(result => {
-                    console.log(" RESPONSE MSG = ", JSON.stringify(result));
-                    res.locals.binaryFilesWriteResponse = responseMsg;
-                    if (generateThumbnails) {
-                        writeThumbnailFile(fileParams, responseMsg)
-                        .then(res => {
-                            next();
-                        })
-                        .catch(err => {
-                            res.locals.binaryFilesWriteResponse = responseMsg;
-                            console.log(err);
-                        });
-                    }  else {
-                        next();
+        );
+        responseMsg.step_1.status = "write_to_fs_success";
+        res.locals.binaryFilesWriteResponse = responseMsg;
+        next();
+    } else {
+        mkdirp(newPath, function(err) {
+            if (err) {
+                logr.error(generalhelper.serverMsg(" ERROR while creating folder "), err) ;
+                responseMsg.step_1.status = "failure";
+                responseMsg.step_1.msg.push(
+                    {
+                        "originalname":  formFile.originalname,
+                        "err": err
                     }
-                })
-                .catch(err => {
-                    res.locals.binaryFilesWriteResponse = responseMsg;
-                    console.log(err);
-                });
-        }
-    });
+                );
+                res.locals.binaryFilesWriteResponse = responseMsg;
+                next();
+            } else {
+                const fileParams = {
+                    index: aknObj["index"],
+                    attTitle: aknObj["title"],
+                    origName: formFile.originalname,
+                    mimeType: formFile.mimetype,
+                    buffer: formFile.buffer,
+                    fileExt: path.extname(formFile.originalname),
+                    filePrefix: urihelper.fileNamePrefixFromIRI(iri),
+                    newPath: newPath,
+                };
+                //Generate index for new uploads.
+                if (!fileParams.index) {
+                    fileParams.index = getFileIndexDB(attachments);
+                }
+                fileParams.embeddedIri = `${iri}_${fileParams.index}`;
+                fileParams.newFileName = `${fileParams.filePrefix}_${fileParams.index}${fileParams.fileExt}`;
+
+                writeFile(fileParams, responseMsg)
+                    .then(result => {
+                        console.log(" RESPONSE MSG = ", JSON.stringify(result));
+                        res.locals.binaryFilesWriteResponse = responseMsg;
+                        if (generateThumbnails) {
+                            writeThumbnailFile(fileParams, responseMsg)
+                            .then(res => {
+                                next();
+                            })
+                            .catch(err => {
+                                res.locals.binaryFilesWriteResponse = responseMsg;
+                                console.log(err);
+                            });
+                        }  else {
+                            next();
+                        }
+                    })
+                    .catch(err => {
+                        res.locals.binaryFilesWriteResponse = responseMsg;
+                        console.log(err);
+                    });
+            }
+        });
+    }
 };
 
 const addAttInfoToAknObject = (req, res, next) => {
