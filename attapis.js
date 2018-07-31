@@ -432,6 +432,32 @@ const getAttFSPath = (emDoc, pkg) => {
     return fullPath
 }
 
+const contentTypes = {
+    ".pdf": "application/pdf",
+    ".docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ".png": "image/png"
+}
+
+/**
+ * Read attachment from FS.
+ */
+const readAtt = (req, res, next) => {
+    let iri = req.query.iri;
+    let arrIri = iri.split("/");
+    let subPath = arrIri.slice(1, arrIri.length - 1 ).join("/");
+    let attPath = path.join(constants.AKN_ATTACHMENTS(), subPath);
+
+    let fileExt = path.extname(req.query.originalFileName);
+    let filePrefix = urihelper.fileNamePrefixFromIRI(iri);
+    let attFileName = `${filePrefix}_${req.query.index}${fileExt}`;
+    let fullPath = path.join(attPath, attFileName);
+    debugger;
+    fs.readFile(fullPath, function (err, data){
+        res.contentType(contentTypes[fileExt]);
+        res.send(data);
+    })
+};
+
 /**
  * Calls the extractor service to get text for the attachment.
  */
@@ -598,6 +624,9 @@ module.exports = {
     removeAttFromFS: removeAttFromFS,
     removeAttInfoFromAknObject: removeAttInfoFromAknObject,
     deleteAttFromFS: deleteAttFromFS,
+
+    //Read attachment method
+    readAtt : readAtt,
 
     //Extract text from attachment methods
     extractText: extractText,
