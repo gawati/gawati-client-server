@@ -6,6 +6,6 @@ RUN npm install
 RUN apk del native-deps
 COPY . /home/node/app
 CMD node ./bin/www
-EXPOSE 3000
+EXPOSE 3000/tcp
 USER node
 
