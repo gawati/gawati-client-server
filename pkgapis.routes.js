@@ -9,6 +9,7 @@ Input json object submitted to the API:
 {
     "data": {
         "iri": "/akn/ke/act/legge/2018-07-06/Test_tags_2/eng@/!main"
+        "noAtt": True (====> Optional flag to get pkg without attachments)
     }
 }
 */
@@ -17,6 +18,7 @@ pkgAPIs[`${BASE_URI}/load`] = {
     stack: [
         pkgapis.receiveSubmitData,
         pkgapis.loadPkgForIri,
+        pkgapis.unzipDBPkg,
         pkgapis.prepareAndSendPkg
     ]
 };
