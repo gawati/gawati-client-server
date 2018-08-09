@@ -86,11 +86,16 @@ const prepareAndSendPkg = (req, res, next) => {
 
     //creates the parent folder 'tmp/tmpxxxx'
     return fileHelper.createFolder(dest)
-    .then((result) => {
-      return axios.all([
-        fileHelper.copyFiles(unzippedPkgPath, dest), 
-        fileHelper.copyFiles(attSrc, dest)
-      ])
+    .then(result => {
+        return fileHelper.fileFolderExists(attSrc)
+    })
+    .then(attExists => {
+        return attExists 
+        ? Promise.all([
+            fileHelper.copyFiles(unzippedPkgPath, dest),
+            fileHelper.copyFiles(attSrc, dest)
+        ])
+        : fileHelper.copyFiles(unzippedPkgPath, dest)
     })
     //Pass returnPkg as callback on completion of zip.
     .then(result => zipFolder(tmpUid, zipPath, () => returnPkg(res, zipPath)))
