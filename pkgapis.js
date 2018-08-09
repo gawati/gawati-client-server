@@ -108,6 +108,26 @@ const prepareAndSendPkg = (req, res, next) => {
 }
 
 /**
+ * Unzips the pkg received from the DB
+ * @param {*} req 
+ * @param {*} res 
+ * @param {*} next 
+ */
+const unzipDBPkg = (req, res, next) => {
+    console.log(" IN: unzipDBPkg");
+    const pkgZipPath = path.join(constants.TMP_PKG_FOLDER(), "pkg.zip");
+    const unzippedPkgPath = path.join(constants.TMP_PKG_FOLDER(), "pkg");
+
+    unzip(pkgZipPath, path.resolve(unzippedPkgPath))
+    .then(result => next())
+    .catch((err) => {
+        res.locals.returnResponse = {"status": "failure"};
+        console.log(err);
+        next();
+    });
+}
+
+/**
  * Loads the metadata XML document and public key (if present) from the db given a specific IRI
  * @param {*} req 
  * @param {*} res 
@@ -128,10 +148,13 @@ const loadPkgForIri = (req, res, next) => {
         return fileHelper.writeFile(new Buffer(response.data, "base64"), pkgZipPath);
     })
     .then(result => {
-        const unzippedPkgPath = path.join(constants.TMP_PKG_FOLDER(), "pkg");
-        return unzip(pkgZipPath, path.resolve(unzippedPkgPath));
+        formObj = res.locals.formObject;
+        if (formObj.hasOwnProperty('noAtt') && formObj.noAtt) {
+            returnPkg(res, pkgZipPath);
+        } else {
+            next();
+        }
     })
-    .then(result => next())
     .catch((err) => {
         res.locals.returnResponse = {"status": "failure"};
         console.log(err);
@@ -237,6 +260,7 @@ module.exports = {
     //Load pkg methods
     receiveSubmitData: receiveSubmitData,
     loadPkgForIri: loadPkgForIri,
+    unzipDBPkg: unzipDBPkg,
     prepareAndSendPkg: prepareAndSendPkg,
 
     //Upload pkg methods
