@@ -68,7 +68,7 @@
         "serviceEndPoint" : "http://localhost:8080/exist/restxq",
         "api": {
             "docExists": {
-                "url": "/gw/doc/exists",
+                "url": "/gw/doc/exists/json",
                 "method": "post"
             },
             "metadata":{
