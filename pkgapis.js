@@ -123,7 +123,10 @@ const unzipDBPkg = (req, res, next) => {
     const pkgZipPath = path.join(constants.TMP_PKG_FOLDER(), "pkg.zip");
     const unzippedPkgPath = path.join(constants.TMP_PKG_FOLDER(), "pkg");
 
-    unzip(pkgZipPath, path.resolve(unzippedPkgPath))
+    fileHelper.removeFileFolder(unzippedPkgPath)
+    .then(result => {
+        return unzip(pkgZipPath, path.resolve(unzippedPkgPath))
+    })
     .then(result => next())
     .catch((err) => {
         res.locals.returnResponse = {"status": "failure"};
