@@ -11,7 +11,6 @@ const generalhelper = require("./utils/GeneralHelper");
 const componentsHelper = require("./utils/ComponentsHelper");
 const servicehelper = require("./utils/ServiceHelper");
 const constants = require("./constants");
-// check if we have enabled thumbnail generation
 const generalConfigs = require("./configs/generalConfigs");
 
 /**
@@ -107,40 +106,6 @@ const writeFile = (fileParams, responseMsg) => {
 };
 
 /**
- * Writes the uploaded attachment to the filesystem.
- *
- * @param {*} file parameters
- * @param {*} response message
- */
-const writeThumbnailFile = (fileParams, responseMsg) => {
-    const {newPath, newFileName, origName} = fileParams;
-    var pdfImage = new PDFImage(path.join(fileParams.newPath, fileParams.newFileName));
-    
-    return new Promise(function(resolve, reject) {
-        pdfImage.convertPage(0).then(function (imagePath) {
-            logr.info(generalhelper.serverMsg(" Thmbnail was written to file system "));
-            responseMsg.step_1.msg.push(
-                {
-                    "thumbnail": imagePath
-                }
-            );
-            responseMsg.step_1.status = "write_to_fs_thumbanil_success";
-            resolve(responseMsg);
-        }, function (err) {
-            logr.error(generalhelper.serverMsg("ERROR while generating thumbnail to file "), err) ;
-            responseMsg.step_1.status = "failure";
-            responseMsg.step_1.msg.push(
-                {
-                    "originalname": origName,
-                    "err": err
-                }
-            );
-            reject(err);
-        });
-    });
-};
-
-/**
  * Writes a binary file to file system.
  * Single uploads only, they are processed from the file
  * provided by multer
@@ -152,7 +117,6 @@ const writeThumbnailFile = (fileParams, responseMsg) => {
 const writeSubmittedFiletoFS = (req, res, next) => {
     console.log(" IN: writeSubmittedFiletoFS", res.locals.formFiles.length, 
         res.locals.formObject.pkgIdentity["docIri"].value);
-    const generateThumbnails = generalConfigs.generateThumbnails;        
     let aknObj = res.locals.formObject.pkgIdentity;
     let attachments = res.locals.formObject.pkgAttachments.value;
     let iri = aknObj["docIri"].value;
@@ -201,18 +165,7 @@ const writeSubmittedFiletoFS = (req, res, next) => {
                 .then(result => {
                     console.log(" RESPONSE MSG = ", JSON.stringify(result));
                     res.locals.binaryFilesWriteResponse = responseMsg;
-                    if (generateThumbnails) {
-                        writeThumbnailFile(fileParams, responseMsg)
-                        .then(res => {
-                            next();
-                        })
-                        .catch(err => {
-                            res.locals.binaryFilesWriteResponse = responseMsg;
-                            console.log(err);
-                        });
-                    }  else {
-                        next();
-                    }
+                    next();
                 })
                 .catch(err => {
                     res.locals.binaryFilesWriteResponse = responseMsg;
