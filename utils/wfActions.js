@@ -17,6 +17,16 @@ function doPublish(wf, params) {
   return qh.publishOnIriQ(JSON.stringify(qObj));
 }
 
+function doRetract(wf, params) {
+  console.log(" IN: Workflow Action 'doRetract'");
+  const qObj = {
+    'iri': params['iri'],
+    'action': 'retract'
+  }
+  return qh.publishOnIriQ(JSON.stringify(qObj));
+}
+
 module.exports = {
-  doPublish: doPublish
+  doPublish: doPublish,
+  doRetract: doRetract
 };
