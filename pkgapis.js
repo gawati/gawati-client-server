@@ -86,11 +86,16 @@ const prepareAndSendPkg = (req, res, next) => {
 
     //creates the parent folder 'tmp/tmpxxxx'
     return fileHelper.createFolder(dest)
-    .then((result) => {
-      return axios.all([
-        fileHelper.copyFiles(unzippedPkgPath, dest), 
-        fileHelper.copyFiles(attSrc, dest)
-      ])
+    .then(result => {
+        return fileHelper.fileFolderExists(attSrc)
+    })
+    .then(attExists => {
+        return attExists 
+        ? Promise.all([
+            fileHelper.copyFiles(unzippedPkgPath, dest),
+            fileHelper.copyFiles(attSrc, dest)
+        ])
+        : fileHelper.copyFiles(unzippedPkgPath, dest)
     })
     //Pass returnPkg as callback on completion of zip.
     .then(result => zipFolder(tmpUid, zipPath, () => returnPkg(res, zipPath)))
@@ -118,7 +123,10 @@ const unzipDBPkg = (req, res, next) => {
     const pkgZipPath = path.join(constants.TMP_PKG_FOLDER(), "pkg.zip");
     const unzippedPkgPath = path.join(constants.TMP_PKG_FOLDER(), "pkg");
 
-    unzip(pkgZipPath, path.resolve(unzippedPkgPath))
+    fileHelper.removeFileFolder(unzippedPkgPath)
+    .then(result => {
+        return unzip(pkgZipPath, path.resolve(unzippedPkgPath))
+    })
     .then(result => next())
     .catch((err) => {
         res.locals.returnResponse = {"status": "failure"};
