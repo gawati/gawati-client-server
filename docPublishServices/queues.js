@@ -76,7 +76,7 @@ function reQueueIri(iri) {
 function handleStatus(statusObj) {
   const {iri, status, message} = statusObj;
   console.log(message);
-  if (status === 'published') {
+  if (status === 'published' || status === 'retracted') {
     dpService.updateStatus(statusObj);
   } else if (status === 'failed') {
     //Requeue: Publish on IRI_Q

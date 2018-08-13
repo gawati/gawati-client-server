@@ -95,11 +95,18 @@ const loadJSONForIri = (iri) => {
   });
 }
 
+const transitToState = {
+  'published': 'published',
+  'retracted': 'editable' 
+}
+
 const updateStatus = (statusObj) => {
   const {status, iri} = statusObj;
+  const transitTo = transitToState[status];
+
   loadJSONForIri(iri)
   .then(res => {
-    transit(res.data, status, iri);
+    transit(res.data, transitTo, iri);
   })
   .catch(err => console.log(err));
 }
