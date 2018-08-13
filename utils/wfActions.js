@@ -10,7 +10,11 @@ const qh = require("./QueueHelper");
 
 function doPublish(wf, params) {
   console.log(" IN: Workflow Action 'doPublish'");
-  return qh.publishOnIriQ(params['iri']);
+  const qObj = {
+    'iri': params['iri'],
+    'action': 'publish'
+  }
+  return qh.publishOnIriQ(JSON.stringify(qObj));
 }
 
 module.exports = {
