@@ -1,12 +1,13 @@
 /**
  * Publish on IRI_Q
  */
-const publishOnIriQ = (iri) => {
-   const mq = require("../docPublishServices/queues");
-   const qName = 'IRI_Q';
-   const ex = mq.getExchange();
-   const key = mq.getQKey(qName);
-   return mq.getChannel(qName).publish(ex, key, new Buffer(iri), {persistent: true});
+const publishOnIriQ = (msg) => {
+  const mq = require("../docPublishServices/queues");
+  const qName = 'IRI_Q';
+  const ex = mq.getExchange();
+  const key = mq.getQKey(qName);
+  const res = mq.getChannel(qName).publish(ex, key, new Buffer(msg), {persistent: true});
+  return res;
 }
 
 module.exports = {
