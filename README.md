@@ -54,15 +54,9 @@ The Gawati Editor supports a workflow based retraction cycle, which allows retra
     - editor-qprocessor: Publishes on STATUS_Q, Consumes IRI_Q.
     - portal-qprocessor: Publishes on ZIP_Q & IRI_Q, Consumes STATUS_Q
     - portal-publisher: Publishes on STATUS_Q, Consumes ZIP_Q & IRI_Q.
-- Status Object: {iri, status, message, action}. 
-    *status* can be
-    - under_processing
-    - under_retraction
-    - failed 
-    - published
-    *action* can be
-    - publish
-    - retract
+- Status Object: {iri, status, message, action}.     
+    *status* can be 'under_processing', 'under_retraction', 'failed', 'published'.  
+    *action* can be 'publish' or 'retract'.  
 
     Note however, that the document state is updated to `under_processing` or `under_retraction` as soon as the user submits the publish/retract request. The document status is again updated only when the status is `published` or `retracted`. 
     The statuses `under_processing`, `under_retraction` and `failed` in Status Object are only meant for exchaging information about the progress of the publish workflow and do not trigger document state updates *(ASHOK: This last point merits further discussion)*.
