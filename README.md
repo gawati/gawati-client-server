@@ -61,6 +61,8 @@ The Gawati Editor supports a workflow based retraction cycle, which allows retra
     Note however, that the document state is updated to `under_processing` or `under_retraction` as soon as the user submits the publish/retract request. The document status is again updated only when the status is `published` or `retracted`. 
     The statuses `under_processing`, `under_retraction` and `failed` in Status Object are only meant for exchaging information about the progress of the publish workflow and do not trigger document state updates *(ASHOK: This last point merits further discussion)*.
 
+- Sign Aware: If a document is digitally signed via the Editor, the public key associated with it is also published or retracted.
+
 ## Setup
 
 *Publishing/Retraction Workflow* consists of several components which need to be started in the given order:
