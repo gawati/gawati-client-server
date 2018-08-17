@@ -58,9 +58,25 @@ const createFolder = (path) => {
   });
 }
 
+/**
+ * Check if file/folder exists
+ */
+const fileFolderExists = (path) => {
+  return new Promise(function(resolve, reject) {
+    fs.access(path, fs.constants.R_OK, function(err) {
+      if (err) {
+        err.code === 'ENOENT' ? resolve(false) : reject(err);
+      } else {
+        resolve(true)
+      }
+    })
+  });
+}
+
 module.exports = {
     createFolder: createFolder,
     removeFileFolder: removeFileFolder,
     copyFiles: copyFiles,
-    writeFile: writeFile
+    writeFile: writeFile,
+    fileFolderExists: fileFolderExists
 };

@@ -124,6 +124,26 @@
                     "roles": "admin publisher editor"
                 }
             ]
+        },
+        {
+            "name": "under_retraction",
+            "title": "Under Retraction",
+            "level": "5",
+            "color": "final",
+            "permission": [
+                {
+                    "name": "view",
+                    "roles": "client.Admin client.Public"
+                },
+                {
+                    "name": "list",
+                    "roles": "client.Admin client.Publisher"
+                },
+                {
+                    "name": "transit",
+                    "roles": "client.Admin client.Publisher client.Editor"
+                }
+            ]
         }
     ]},
     "transitions": {"transition": [
@@ -162,10 +182,19 @@
         {
             "name": "make_retract",
             "icon": "fa-building",
-            "title": "Retract",
+            "title": "Send for Retraction",
             "from": "published",
+            "to": "under_retraction",
+            "bySystem": false,
+            "postTransit": "doRetract"
+        },
+        {
+            "name": "make_retracted",
+            "icon": "fa-building",
+            "title": "Make Retracted",
+            "from": "under_retraction",
             "to": "editable",
-            "bySystem": false
+            "bySystem": true
         }
     ]}
 }}

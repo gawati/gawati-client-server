@@ -61,11 +61,11 @@ function publisherIriQ(conn) {
 /**
  * Put iri back in IRI_Q
  */
-function reQueueIri(iri) {
+function reQueueIri(qObj) {
   const qName = 'IRI_Q';
   const ex = getExchange();
   const key = getQKey(qName);
-  getChannel(qName).publish(ex, key, new Buffer(iri), {persistent: true});
+  getChannel(qName).publish(ex, key, new Buffer(JSON.stringify(qObj)), {persistent: true});
 }
 
 /**
@@ -74,14 +74,14 @@ function reQueueIri(iri) {
  * If failed, requeue the iri.
  */
 function handleStatus(statusObj) {
-  const {iri, status, message} = statusObj;
+  const {iri, status, message, action} = statusObj;
   console.log(message);
-  if (status === 'published') {
+  if (status === 'published' || status === 'retracted') {
     dpService.updateStatus(statusObj);
   } else if (status === 'failed') {
     //Requeue: Publish on IRI_Q
     console.log(" Requeue ", iri);
-    setTimeout(() => reQueueIri(iri), 5000);
+    setTimeout(() => reQueueIri({'iri': iri, 'action': action}), 5000);
   }
 }
  
